@@ -1,2 +1,2 @@
-// Export page components here
-// Example: export { default as HomePage } from './HomePage';
+export { default as HomePage } from './HomePage';
+export { default as NotFoundPage } from './NotFoundPage';
