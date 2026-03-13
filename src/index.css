@@ -29,5 +29,9 @@
 }
 
 @theme {
+  --color-white: #ffffff;
+  --color-blue-300: #e8f3ff;
+  --color-blue-600: #3182f6;
   --color-gray-500: #f9fafb;
+  --color-gray-46: #6b7684;
 }
