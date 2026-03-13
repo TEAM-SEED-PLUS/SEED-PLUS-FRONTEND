@@ -27,3 +27,7 @@
       sans-serif;
   }
 }
+
+@theme {
+  --color-gray-500: #f9fafb;
+}
