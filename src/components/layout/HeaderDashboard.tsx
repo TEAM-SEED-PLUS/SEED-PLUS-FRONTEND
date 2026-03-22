@@ -2,7 +2,7 @@ import Logo from '../../assets/Logo.svg';
 
 export const Header = () => {
   return (
-    <header className="fixed bg-white top-0 flex justify-between items-center w-full h-24 px-24 py-4">
+    <header className="fixed bg-white top-0 flex justify-between items-center w-full h-[var(--header-height)] px-24 py-4">
       <div className="flex flex-row items-center gap-4">
         <img src={Logo} alt="Logo" />
         <div className="text-2xl font-bold">스마트 소상공인 대시보드</div>

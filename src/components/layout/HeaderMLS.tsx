@@ -6,7 +6,7 @@ const HeaderMLS = () => {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>('홈');
 
   return (
-    <header className="w-full h-14 bg-white flex justify-between items-center px-6 gap-8">
+    <header className="fixed top-0 left-0 w-full h-(--header-height) bg-white flex justify-between items-center px-6 gap-8">
       <div>
         <img src={SEEDPLUS} alt="SEED+ 로고" />
       </div>
