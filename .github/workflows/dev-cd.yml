@@ -33,7 +33,8 @@ jobs:
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
         run: |
-          ansible-playbook -i ${{ secrets.TARGET_IP }}:2224, -u ubuntu infra-repo/openstack-cd/playbooks/os_dev_deploy.yml \
+          cd infra-repo/openstack-cd
+          ansible-playbook -i ${{ secrets.TARGET_IP }}:2224, -u ubuntu playbooks/os_dev_deploy.yml \
             --extra-vars "target_app=frontend \
                           ecr_registry=${{ secrets.ECR_REGISTRY }} \
                           ecr_repository=${{ secrets.ECR_REPOSITORY }} \
