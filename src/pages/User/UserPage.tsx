@@ -1,8 +1,9 @@
-import HeaderMLS from '@/components/layout/HeaderMLS';
+import { HeaderUser } from '@/components/layout';
 import NewsFeed from '@/components/ui/NewsFeed';
 import type { NewsItem } from '@/types/types';
+import { useState } from 'react';
 
-const MlsPage = () => {
+const UserPage = () => {
   const news: NewsItem[] = [
     {
       category: '시장뉴스',
@@ -38,9 +39,31 @@ const MlsPage = () => {
     },
   ];
 
+  const Feedtabs = [
+    { id: 'news', label: '📰 뉴스' },
+    { id: 'community', label: '💬 커뮤니티' },
+  ] as const;
+
+  const [activeTab, setActiveTab] =
+    useState<(typeof Feedtabs)[number]['id']>('news');
+
   return (
     <div className="w-full min-h-screen bg-gray-500 py-5 px-6 mt-(--header-height)">
-      <HeaderMLS />
+      <HeaderUser />
+      <div className="border-2-solid">
+        {Feedtabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-5 py-2.5 text-sm ${
+              activeTab === tab.id ? 'font-bold text-blue-600' : 'text-gray-46'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {news.map((item, index) => (
         <NewsFeed key={index} {...item} />
       ))}
@@ -48,4 +71,4 @@ const MlsPage = () => {
   );
 };
 
-export default MlsPage;
+export default UserPage;

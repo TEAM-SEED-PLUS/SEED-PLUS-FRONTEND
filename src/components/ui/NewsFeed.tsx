@@ -16,7 +16,7 @@ const NewsFeed = (news: NewsItem) => {
   return (
     <div className="w-full h-32 px-5 py-4 bg-white rounded-xl mb-3 cursor-pointer border border-solid border-[#e5e8eb] transition-shadow">
       <span
-        className={`${styles.bg} ${styles.text} mb-2 py-0.5 px-2 rounded-sm text-[11px] font-semibold`}
+        className={`${styles.bg} ${styles.text} inline-block mb-2 py-0.5 px-2 rounded-sm text-[11px] font-semibold`}
       >
         {news.category}
       </span>
