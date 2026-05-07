@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import SEEDPLUS from '@/assets/SEEDPLUS.svg';
 
-const HeaderMLS = () => {
+const HeaderUser = () => {
   const tabs = ['홈', '피드', '내 상가 만들어보기', '점포주 로그인'] as const;
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>('홈');
 
@@ -41,4 +41,4 @@ const HeaderMLS = () => {
   );
 };
 
-export default HeaderMLS;
+export default HeaderUser;
