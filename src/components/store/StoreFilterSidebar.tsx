@@ -18,7 +18,13 @@ const districts = [
   { label: '송파구', count: '89' },
 ];
 
-const StoreFilterSidebar = () => {
+interface StoreFilterSidebarProps {
+  onOpenRevenueCalculator: () => void;
+}
+
+const StoreFilterSidebar = ({
+  onOpenRevenueCalculator,
+}: StoreFilterSidebarProps) => {
   return (
     <aside className="fixed left-0 top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[270px] border-r border-[#e5e8eb] bg-white lg:block">
       <div className="flex h-full flex-col justify-between px-4 py-6">
@@ -76,6 +82,7 @@ const StoreFilterSidebar = () => {
         <div className="space-y-3">
           <button
             type="button"
+            onClick={onOpenRevenueCalculator}
             className="h-11 w-full rounded-lg bg-blue-600 text-sm font-extrabold text-white"
           >
             🧮 수익률 추정 계산기

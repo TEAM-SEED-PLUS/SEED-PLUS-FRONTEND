@@ -1,16 +1,22 @@
+import { useState } from 'react';
 import { HeaderUser } from '@/components/layout';
 import {
   ExpertMatchSidebar,
+  RevenueEstimateModal,
   StoreFilterSidebar,
   StoreGrid,
   StoreToolbar,
 } from '@/components/store';
 
 const UserPage = () => {
+  const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-500">
       <HeaderUser activeNav="store" />
-      <StoreFilterSidebar />
+      <StoreFilterSidebar
+        onOpenRevenueCalculator={() => setIsRevenueModalOpen(true)}
+      />
       <ExpertMatchSidebar />
 
       <main className="px-6 pb-10 pt-[calc(var(--header-height)+24px)] lg:ml-[270px] 2xl:mr-[360px]">
@@ -37,6 +43,10 @@ const UserPage = () => {
           <StoreGrid />
         </div>
       </main>
+
+      {isRevenueModalOpen && (
+        <RevenueEstimateModal onClose={() => setIsRevenueModalOpen(false)} />
+      )}
     </div>
   );
 };
