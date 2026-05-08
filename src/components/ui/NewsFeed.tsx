@@ -14,19 +14,19 @@ const NewsFeed = (news: NewsItem) => {
   };
 
   return (
-    <div className="w-full h-32 px-5 py-4 bg-white rounded-xl mb-3 cursor-pointer border border-solid border-[#e5e8eb] transition-shadow">
+    <article className="mb-3 w-full cursor-pointer rounded-xl border border-solid border-[#e5e8eb] bg-white px-5 py-4 transition-shadow hover:shadow-sm">
       <span
-        className={`${styles.bg} ${styles.text} inline-block mb-2 py-0.5 px-2 rounded-sm text-[11px] font-semibold`}
+        className={`${styles.bg} ${styles.text} mb-2 inline-block rounded-sm px-2 py-0.5 text-[11px] font-semibold`}
       >
         {news.category}
       </span>
-      <div className="text-sm font-bold mb-1.5">{news.title}</div>
+      <div className="mb-1.5 text-sm font-bold">{news.title}</div>
       <div className="text-xs text-gray-46">{news.content}</div>
-      <div className="flex mt-2.5 gap-3 text-[11px] text-[#b0b8c1]">
-        <div>🕛 {news.recentTime}</div>
-        <div>👁️‍🗨️ {news.viewer.toLocaleString()}명</div>
+      <div className="mt-2.5 flex gap-3 text-[11px] text-[#b0b8c1]">
+        <div>🕒 {news.recentTime}</div>
+        <div>👀 {news.viewer.toLocaleString()}명</div>
       </div>
-    </div>
+    </article>
   );
 };
 

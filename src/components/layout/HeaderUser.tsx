@@ -1,39 +1,55 @@
-import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import SEEDPLUS from '@/assets/SEEDPLUS.svg';
 
-const HeaderUser = () => {
-  const tabs = ['홈', '피드', '내 상가 만들어보기', '점포주 로그인'] as const;
-  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>('홈');
+type UserNav = 'home' | 'feed' | 'store' | 'login';
 
+interface HeaderUserProps {
+  activeNav?: UserNav;
+}
+
+const navItems: { id: UserNav; label: string; to: string }[] = [
+  { id: 'home', label: '홈', to: '/' },
+  { id: 'feed', label: '피드', to: '/feed' },
+  { id: 'store', label: '내 상가 만들어보기', to: '/management' },
+  { id: 'login', label: '점포주 로그인', to: '/management' },
+];
+
+const HeaderUser = ({ activeNav = 'home' }: HeaderUserProps) => {
   return (
-    <header className="fixed top-0 left-0 w-full h-(--header-height) bg-white flex justify-between items-center px-6 gap-8">
-      <div>
-        <img src={SEEDPLUS} alt="SEED+ 로고" />
-      </div>
-      <div className="flex w-full gap-1">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-              activeTab === tab
-                ? 'bg-blue-300 text-blue-600 font-bold'
-                : 'bg-transparent text-gray-46 hover:bg-gray-100 font-medium'
+    <header className="fixed left-0 top-0 z-10 flex h-[var(--header-height)] w-full items-center justify-between border-b border-[#e5e8eb] bg-white px-6">
+      <Link to="/" className="flex w-[116px] items-center">
+        <img src={SEEDPLUS} alt="SEED+" className="h-6" />
+      </Link>
+
+      <nav className="flex flex-1 items-center gap-2">
+        {navItems.map((item) => (
+          <Link
+            key={item.id}
+            to={item.to}
+            className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${
+              activeNav === item.id
+                ? 'bg-blue-300 text-blue-600'
+                : 'text-gray-46 hover:bg-gray-500'
             }`}
-            aria-pressed={activeTab === tab}
           >
-            {tab}
-          </button>
+            {item.label}
+          </Link>
         ))}
-      </div>
-      <div className="flex items-center justify-center gap-3">
-        <input
-          type="text"
-          className="w-50 h-8.5 rounded-[20px] border border-[#e5e8eb] font-normal text-[13px] px-4.5 py-2 text-[#b0b8c1] bg-gray-500"
-          placeholder="🔍 검색하세요"
-        />
-        <button className="w-18 h-8.5 px-4 py-2 text-[13px] font-bold bg-blue-600 text-white rounded-[20px]">
+      </nav>
+
+      <div className="flex items-center gap-3">
+        <label className="flex h-9 w-56 items-center rounded-full border border-[#e5e8eb] bg-gray-500 px-4 text-sm text-[#b0b8c1]">
+          🔍
+          <input
+            type="text"
+            className="ml-2 w-full bg-transparent outline-none placeholder:text-[#b0b8c1]"
+            placeholder="검색하세요"
+          />
+        </label>
+        <button
+          type="button"
+          className="h-9 rounded-full bg-blue-600 px-5 text-sm font-bold text-white"
+        >
           로그인
         </button>
       </div>
