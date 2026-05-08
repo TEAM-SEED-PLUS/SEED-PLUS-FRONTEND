@@ -1,6 +1,22 @@
+import { useState } from 'react';
 import { HeaderUser } from '@/components/layout';
 
 const LoginPage = () => {
+  const [requiredTerms, setRequiredTerms] = useState({
+    personalInfo: true,
+    thirdParty: true,
+  });
+
+  const isAllRequiredChecked =
+    requiredTerms.personalInfo && requiredTerms.thirdParty;
+
+  const handleAllRequiredChange = (checked: boolean) => {
+    setRequiredTerms({
+      personalInfo: checked,
+      thirdParty: checked,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#eef5ff] via-white to-white">
       <HeaderUser activeNav="login" />
@@ -53,7 +69,10 @@ const LoginPage = () => {
             <label className="mt-7 flex items-center gap-3 text-sm font-extrabold text-[#191f28]">
               <input
                 type="checkbox"
-                defaultChecked
+                checked={isAllRequiredChecked}
+                onChange={(event) =>
+                  handleAllRequiredChange(event.target.checked)
+                }
                 className="h-5 w-5 accent-blue-600"
               />
               필수 약관에 모두 동의
@@ -64,7 +83,13 @@ const LoginPage = () => {
                 <span className="flex items-center gap-3">
                   <input
                     type="checkbox"
-                    defaultChecked
+                    checked={requiredTerms.personalInfo}
+                    onChange={(event) =>
+                      setRequiredTerms((prev) => ({
+                        ...prev,
+                        personalInfo: event.target.checked,
+                      }))
+                    }
                     className="h-5 w-5 accent-blue-600"
                   />
                   개인정보 수집·이용 동의 (점포주 인증)
@@ -77,7 +102,13 @@ const LoginPage = () => {
                 <span className="flex items-center gap-3">
                   <input
                     type="checkbox"
-                    defaultChecked
+                    checked={requiredTerms.thirdParty}
+                    onChange={(event) =>
+                      setRequiredTerms((prev) => ({
+                        ...prev,
+                        thirdParty: event.target.checked,
+                      }))
+                    }
                     className="h-5 w-5 accent-blue-600"
                   />
                   개인정보 제3자 제공 동의 (데이터 분석)

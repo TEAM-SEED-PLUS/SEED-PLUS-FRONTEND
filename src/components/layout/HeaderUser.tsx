@@ -48,7 +48,7 @@ const HeaderUser = ({ activeNav = 'home' }: HeaderUserProps) => {
         </label>
         <Link
           to="/login"
-          className="h-9 rounded-full bg-blue-600 px-5 text-sm font-bold text-white"
+          className="inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-bold text-white"
         >
           로그인
         </Link>
