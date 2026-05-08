@@ -8,16 +8,16 @@ interface HeaderUserProps {
 }
 
 const navItems: { id: UserNav; label: string; to: string }[] = [
-  { id: 'home', label: '홈', to: '/' },
+  { id: 'home', label: '홈', to: '/home' },
   { id: 'feed', label: '피드', to: '/feed' },
   { id: 'store', label: '내 상가 만들어보기', to: '/management' },
-  { id: 'login', label: '점포주 로그인', to: '/management' },
+  { id: 'login', label: '점포주 로그인', to: '/login' },
 ];
 
 const HeaderUser = ({ activeNav = 'home' }: HeaderUserProps) => {
   return (
     <header className="fixed left-0 top-0 z-10 flex h-[var(--header-height)] w-full items-center justify-between border-b border-[#e5e8eb] bg-white px-6">
-      <Link to="/" className="flex w-[116px] items-center">
+      <Link to="/home" className="flex w-[116px] items-center">
         <img src={SEEDPLUS} alt="SEED+" className="h-6" />
       </Link>
 
@@ -46,12 +46,12 @@ const HeaderUser = ({ activeNav = 'home' }: HeaderUserProps) => {
             placeholder="검색하세요"
           />
         </label>
-        <button
-          type="button"
+        <Link
+          to="/login"
           className="h-9 rounded-full bg-blue-600 px-5 text-sm font-bold text-white"
         >
           로그인
-        </button>
+        </Link>
       </div>
     </header>
   );
