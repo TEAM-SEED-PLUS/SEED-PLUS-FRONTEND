@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { HeaderUser } from '@/components/layout';
 
 const LoginPage = () => {
-  const [loginMethod, setLoginMethod] = useState<'phone' | 'qr'>('phone');
   const [requiredTerms, setRequiredTerms] = useState({
     personalInfo: true,
     thirdParty: true,
@@ -19,153 +17,124 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#eef5ff] via-white to-white">
-      <HeaderUser activeNav="login" />
-      <main className="flex min-h-screen items-center justify-center px-6 pt-[var(--header-height)]">
-        <section className="w-full max-w-[470px] rounded-2xl bg-white px-11 py-10 shadow-[0_20px_60px_rgba(49,130,246,0.14)]">
-          <div>
-            <div className="text-2xl font-extrabold text-blue-600">
-              SEED+ MLS
-            </div>
-            <h1 className="mt-2 text-2xl font-extrabold text-[#191f28]">
-              점포주 로그인
-            </h1>
-            <p className="mt-2 text-sm font-medium text-gray-46">
-              내 점포 데이터를 관리하고 스마트하게 운영하세요
-            </p>
-          </div>
+    <div className="flex min-h-screen items-center justify-center bg-gray-500 px-6">
+      <main className="w-full max-w-[470px] rounded-lg border border-[#d8dde5] bg-white px-5 py-6">
+        <div className="text-center">
+          <h1 className="text-xl font-extrabold text-[#191f28]">
+            점포주 로그인
+          </h1>
+          <p className="mt-5 text-xs font-medium text-[#4e5968]">
+            내 점포 데이터를 관리하고 스마트하게 운영하세요
+          </p>
+        </div>
 
-          <div className="mt-9 grid grid-cols-2 border-b border-[#e5e8eb] text-center text-sm font-extrabold">
-            <button
-              type="button"
-              onClick={() => setLoginMethod('phone')}
-              className={`border-b-2 pb-3 ${
-                loginMethod === 'phone'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-46'
-              }`}
-            >
-              휴대폰 번호로 로그인
-            </button>
-            <button
-              type="button"
-              onClick={() => setLoginMethod('qr')}
-              className={`border-b-2 pb-3 ${
-                loginMethod === 'qr'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-46'
-              }`}
-            >
-              QR코드로 로그인
-            </button>
-          </div>
+        <div className="mt-7 border-b-2 border-blue-600 pb-3 text-center text-xs font-medium text-[#191f28]">
+          휴대폰 번호로 로그인
+        </div>
 
-          {loginMethod === 'phone' ? (
-            <form className="mt-6">
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  className="h-12 rounded-lg border border-[#e5e8eb] px-4 text-sm font-medium outline-none placeholder:text-gray-46 focus:border-blue-600"
-                  placeholder="이름"
-                />
-                <input
-                  type="text"
-                  className="h-12 rounded-lg border border-[#e5e8eb] px-4 text-sm font-medium outline-none placeholder:text-gray-46 focus:border-blue-600"
-                  placeholder="생년월일 6자리"
-                />
-              </div>
+        <form className="mt-4">
+          <label className="block">
+            <span className="mb-2 block text-xs font-medium text-gray-46">
+              이름
+            </span>
+            <input
+              type="text"
+              placeholder="이름을 입력해주세요."
+              className="h-11 w-full rounded-sm border border-[#d8dde5] px-3 text-xs outline-none placeholder:text-[#b0b8c1] focus:border-blue-600"
+            />
+          </label>
 
+          <label className="mt-4 block">
+            <span className="mb-2 block text-xs font-medium text-gray-46">
+              생년월일
+            </span>
+            <input
+              type="text"
+              placeholder="ex) 900101"
+              className="h-11 w-full rounded-sm border border-[#d8dde5] px-3 text-xs outline-none placeholder:text-[#b0b8c1] focus:border-blue-600"
+            />
+          </label>
+
+          <label className="mt-4 block">
+            <span className="mb-2 block text-xs font-medium text-gray-46">
+              휴대폰 번호
+            </span>
+            <input
+              type="tel"
+              placeholder="ex) 01000000000"
+              className="h-11 w-full rounded-sm border border-[#d8dde5] px-3 text-xs outline-none placeholder:text-[#b0b8c1] focus:border-blue-600"
+            />
+          </label>
+
+          <label className="mt-4 flex items-center gap-1.5 text-xs font-extrabold text-[#191f28]">
+            <input
+              type="checkbox"
+              checked={isAllRequiredChecked}
+              onChange={(event) =>
+                handleAllRequiredChange(event.target.checked)
+              }
+              className="h-3.5 w-3.5 accent-blue-600"
+            />
+            필수 약관에 모두 동의
+          </label>
+
+          <div className="mt-3 space-y-3 text-xs text-[#191f28]">
+            <label className="flex items-center gap-1.5">
               <input
-                type="tel"
-                className="mt-3 h-12 w-full rounded-lg border border-[#e5e8eb] px-4 text-sm font-medium outline-none placeholder:text-gray-46 focus:border-blue-600"
-                placeholder="휴대폰 번호"
+                type="checkbox"
+                checked={requiredTerms.personalInfo}
+                onChange={(event) =>
+                  setRequiredTerms((prev) => ({
+                    ...prev,
+                    personalInfo: event.target.checked,
+                  }))
+                }
+                className="h-3.5 w-3.5 accent-blue-600"
               />
-
-              <label className="mt-7 flex items-center gap-3 text-sm font-extrabold text-[#191f28]">
-                <input
-                  type="checkbox"
-                  checked={isAllRequiredChecked}
-                  onChange={(event) =>
-                    handleAllRequiredChange(event.target.checked)
-                  }
-                  className="h-5 w-5 accent-blue-600"
-                />
-                필수 약관에 모두 동의
-              </label>
-
-              <div className="mt-4 border-t border-[#e5e8eb] pt-4">
-                <label className="flex items-center justify-between py-2 text-sm font-medium text-gray-46">
-                  <span className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={requiredTerms.personalInfo}
-                      onChange={(event) =>
-                        setRequiredTerms((prev) => ({
-                          ...prev,
-                          personalInfo: event.target.checked,
-                        }))
-                      }
-                      className="h-5 w-5 accent-blue-600"
-                    />
-                    개인정보 수집·이용 동의 (점포주 인증)
-                  </span>
-                  <button type="button" className="text-[#b0b8c1]">
-                    ›
-                  </button>
-                </label>
-                <label className="flex items-center justify-between py-2 text-sm font-medium text-gray-46">
-                  <span className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={requiredTerms.thirdParty}
-                      onChange={(event) =>
-                        setRequiredTerms((prev) => ({
-                          ...prev,
-                          thirdParty: event.target.checked,
-                        }))
-                      }
-                      className="h-5 w-5 accent-blue-600"
-                    />
-                    개인정보 제3자 제공 동의 (데이터 분석)
-                  </span>
-                  <button type="button" className="text-[#b0b8c1]">
-                    ›
-                  </button>
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                className="mt-7 h-14 w-full rounded-lg bg-blue-600 text-base font-extrabold text-white transition-colors hover:bg-[#1f6fe5]"
-              >
-                로그인
+              <span>개인정보 수집·이용 동의 (점포주 인증)</span>
+              <button type="button" className="font-bold text-blue-600">
+                내용보기
               </button>
-            </form>
-          ) : (
-            <div className="pt-16 text-center">
-              <div className="mx-auto flex h-52 w-52 items-center justify-center rounded-2xl border-2 border-dashed border-[#d8dde5] bg-gray-500">
-                <div className="flex h-16 w-14 items-center justify-center rounded-lg bg-gradient-to-b from-blue-600 to-[#5b3f91] text-4xl shadow-sm">
-                  📱
-                </div>
-              </div>
-              <p className="mt-7 text-base font-medium text-gray-46">
-                상가MLS 앱에서 QR코드를 스캔하세요
-              </p>
-            </div>
-          )}
+            </label>
 
-          <div className="mt-5 space-y-2 text-center text-sm font-medium">
-            <button type="button" className="text-blue-600">
-              앱 없이 로그인하기
-            </button>
-            <div className="text-gray-46">
-              아직 회원이 아닌가요?{' '}
-              <button type="button" className="text-blue-600">
-                가입하기
+            <label className="flex items-center gap-1.5">
+              <input
+                type="checkbox"
+                checked={requiredTerms.thirdParty}
+                onChange={(event) =>
+                  setRequiredTerms((prev) => ({
+                    ...prev,
+                    thirdParty: event.target.checked,
+                  }))
+                }
+                className="h-3.5 w-3.5 accent-blue-600"
+              />
+              <span>개인정보 제3자 제공 동의 (데이터 분석)</span>
+              <button type="button" className="font-bold text-blue-600">
+                내용보기
               </button>
-            </div>
+            </label>
           </div>
-        </section>
+
+          <button
+            type="submit"
+            className="mt-4 h-12 w-full rounded-md bg-blue-600 text-sm font-extrabold text-white transition-colors hover:bg-[#1f6fe5]"
+          >
+            로그인
+          </button>
+        </form>
+
+        <div className="mt-4 space-y-1.5 text-center text-xs font-medium">
+          <button type="button" className="text-gray-46">
+            앱 없이 로그인하기
+          </button>
+          <div className="text-gray-46">
+            아직 회원이 아니신가요?{' '}
+            <button type="button" className="font-bold text-blue-600">
+              가입하기
+            </button>
+          </div>
+        </div>
       </main>
     </div>
   );
