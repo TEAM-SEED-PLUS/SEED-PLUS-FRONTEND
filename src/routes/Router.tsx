@@ -1,5 +1,11 @@
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
-import { FeedPage, HomePage, LoginPage, NotFoundPage, UserPage } from '@/pages';
+import {
+  FeedPage,
+  HomePage,
+  LoginPage,
+  NotFoundPage,
+  StoreBuilderPage,
+} from '@/pages';
 
 const Router = () => {
   return (
@@ -10,7 +16,7 @@ const Router = () => {
         <Route path="/feed" element={<FeedPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="*" element={<NotFoundPage />} />
-        <Route path="/management" element={<UserPage />} />
+        <Route path="/store-builder" element={<StoreBuilderPage />} />
       </Routes>
     </BrowserRouter>
   );
