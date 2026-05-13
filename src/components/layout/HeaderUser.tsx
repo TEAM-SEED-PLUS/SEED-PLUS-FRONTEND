@@ -10,7 +10,7 @@ interface HeaderUserProps {
 const navItems: { id: UserNav; label: string; to: string }[] = [
   { id: 'home', label: '홈', to: '/home' },
   { id: 'feed', label: '피드', to: '/feed' },
-  { id: 'store', label: '내 상가 만들기', to: '/management' },
+  { id: 'store', label: '내 상가 만들기', to: '/store-builder' },
 ];
 
 const HeaderUser = ({ activeNav = 'home' }: HeaderUserProps) => {

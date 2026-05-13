@@ -10,7 +10,7 @@ import {
 } from '@/components/store';
 import { getMockAuthenticated } from '@/utils/auth';
 
-const UserPage = () => {
+const StoreBuilderPage = () => {
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
   const isAuthenticated = getMockAuthenticated();
 
@@ -60,4 +60,4 @@ const UserPage = () => {
   );
 };
 
-export default UserPage;
+export default StoreBuilderPage;

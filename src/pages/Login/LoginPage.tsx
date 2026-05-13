@@ -23,7 +23,7 @@ const LoginPage = () => {
   const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMockAuthenticated(true);
-    navigate('/management');
+    navigate('/store-builder');
   };
 
   return (
