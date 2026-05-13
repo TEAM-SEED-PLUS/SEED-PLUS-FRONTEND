@@ -1,4 +1,3 @@
-export { default as Dashboard } from './Dashboard/Dashboard';
 export { default as FeedPage } from './Feed/FeedPage';
 export { default as HomePage } from './Home/HomePage';
 export { default as LoginPage } from './Login/LoginPage';
