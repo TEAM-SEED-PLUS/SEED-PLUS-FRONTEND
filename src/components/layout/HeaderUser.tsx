@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import SEEDPLUS from '@/assets/SEEDPLUS.svg';
 
-type UserNav = 'home' | 'feed' | 'store' | 'login';
+type UserNav = 'home' | 'feed' | 'store';
 
 interface HeaderUserProps {
   activeNav?: UserNav;
@@ -11,7 +11,6 @@ const navItems: { id: UserNav; label: string; to: string }[] = [
   { id: 'home', label: '홈', to: '/home' },
   { id: 'feed', label: '피드', to: '/feed' },
   { id: 'store', label: '내 상가 만들어보기', to: '/management' },
-  { id: 'login', label: '점포주 로그인', to: '/login' },
 ];
 
 const HeaderUser = ({ activeNav = 'home' }: HeaderUserProps) => {

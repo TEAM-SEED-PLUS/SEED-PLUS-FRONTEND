@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { HeaderUser } from '@/components/layout';
 import {
   ExpertMatchSidebar,
@@ -7,9 +8,15 @@ import {
   StoreGrid,
   StoreToolbar,
 } from '@/components/store';
+import { getMockAuthenticated } from '@/utils/auth';
 
 const UserPage = () => {
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
+  const isAuthenticated = getMockAuthenticated();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-500">
