@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const industries = [
   { label: '전체', count: '1,234', active: true },
   { label: '음식점', count: '649' },
@@ -74,16 +76,16 @@ const StoreFilterSidebar = ({
           <button
             type="button"
             onClick={onOpenRevenueCalculator}
-            className="h-11 w-full rounded-lg bg-blue-600 text-xs font-extrabold text-white"
+            className="h-11 w-full rounded-lg bg-blue-600 text-xs font-extrabold text-white transition hover:bg-blue-700"
           >
             수익률 추정 계산기
           </button>
-          <button
-            type="button"
-            className="h-11 w-full rounded-lg bg-blue-600 text-xs font-extrabold text-white"
+          <Link
+            to="/store-builder/survival-calculator"
+            className="flex h-11 w-full items-center justify-center rounded-lg bg-green-600 text-xs font-extrabold text-white transition hover:bg-green-700"
           >
-            생존률 측정 계산기
-          </button>
+            생존율 측정 계산기
+          </Link>
         </div>
       </div>
     </aside>
