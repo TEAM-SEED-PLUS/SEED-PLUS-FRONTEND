@@ -26,27 +26,29 @@ const UserPage = () => {
       />
       <ExpertMatchSidebar />
 
-      <main className="px-6 pb-10 pt-[calc(var(--header-height)+24px)] lg:ml-[270px] 2xl:mr-[360px]">
-        <div className="mb-5 flex items-start justify-between gap-4">
+      <main className="px-8 pb-10 pt-[calc(var(--header-height)+32px)] lg:ml-[184px] 2xl:mr-[264px]">
+        <div className="mb-7">
           <div>
-            <h1 className="text-2xl font-extrabold text-[#191f28]">
-              내 상가 만들어보기
-            </h1>
-            <p className="mt-1 text-sm font-bold text-gray-46">
-              업종·지역별 예상 매출과 수익률을 시뮬레이션해보세요
+            <p className="text-2xl font-medium text-[#191f28]">
+              내가 만든 상가 얼마나 성장할 수 있을까요?
             </p>
+            <h1 className="mt-1 text-2xl font-extrabold text-[#191f28]">
+              업종·지역별 예상매출과 수익률 분석을 시작하세요!
+            </h1>
           </div>
+        </div>
+
+        <div className="mb-5 flex items-center justify-between">
+          <StoreToolbar />
           <button
             type="button"
-            className="hidden rounded-lg bg-blue-600 px-7 py-3 text-base font-extrabold text-white md:block"
+            className="hidden rounded-lg bg-blue-600 px-7 py-3 text-sm font-extrabold text-white md:block"
           >
-            + 내 상가 만들기
+            내 상가만들기
           </button>
         </div>
 
-        <StoreToolbar />
-
-        <div className="mt-5">
+        <div>
           <StoreGrid />
         </div>
       </main>
