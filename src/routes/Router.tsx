@@ -5,6 +5,7 @@ import {
   LoginPage,
   NotFoundPage,
   StoreBuilderPage,
+  SurvivalCalculatorPage,
 } from '@/pages';
 
 const Router = () => {
@@ -15,8 +16,12 @@ const Router = () => {
         <Route path="/home" element={<HomePage />} />
         <Route path="/feed" element={<FeedPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="*" element={<NotFoundPage />} />
         <Route path="/store-builder" element={<StoreBuilderPage />} />
+        <Route
+          path="/store-builder/survival-calculator"
+          element={<SurvivalCalculatorPage />}
+        />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
