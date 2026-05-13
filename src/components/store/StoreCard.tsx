@@ -9,7 +9,9 @@ export interface StoreItem {
   rank: number;
   score: number;
   likes: number;
-  badge: string;
+  comments: number;
+  reposts: number;
+  saved?: boolean;
 }
 
 interface StoreCardProps {
@@ -18,67 +20,79 @@ interface StoreCardProps {
 
 const StoreCard = ({ store }: StoreCardProps) => {
   return (
-    <article className="overflow-hidden rounded-xl border border-[#e5e8eb] bg-white">
-      <div className="px-5 py-4">
-        <div className="flex items-start justify-between gap-4">
-          <h2 className="text-lg font-extrabold text-[#191f28]">
+    <article className="overflow-hidden rounded-lg border border-[#d8dde5] bg-white">
+      <div className="px-5 py-5">
+        <div className="mb-5 flex items-center justify-between">
+          <span className="rounded-full bg-[#fff3e0] px-3 py-1 text-xs font-bold text-[#f2992e]">
+            🏆 이달 랭킹 #{store.rank}
+          </span>
+          <button
+            type="button"
+            className="flex h-6 w-6 items-center justify-center"
+            aria-label="북마크"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M5 4V19.1683C5 19.9595 5.87525 20.4373 6.54076 20.0095L11.4592 16.8476C11.7887 16.6359 12.2113 16.6359 12.5408 16.8476L17.4592 20.0095C18.1248 20.4373 19 19.9595 19 19.1683V4C19 3.44772 18.5523 3 18 3H6C5.44772 3 5 3.44772 5 4Z"
+                fill={store.saved ? '#3182F6' : 'none'}
+                stroke={store.saved ? '#3182F6' : '#8b95a1'}
+                strokeWidth="1.5"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <h2 className="text-base font-extrabold text-[#191f28]">
             {store.name}
           </h2>
-          <span className="rounded-lg bg-blue-300 px-3 py-1 text-sm font-extrabold text-blue-600">
-            ⭐ {store.score}
+          <span className="text-xs font-bold text-gray-46">
+            {store.category}
           </span>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-gray-46">
-          <span className="rounded-md bg-gray-500 px-2.5 py-1">
-            🏪 {store.category}
-          </span>
-          <span className="rounded-md bg-gray-500 px-2.5 py-1">
-            📍 {store.district}
-          </span>
-          <span className="rounded-md bg-gray-500 px-2.5 py-1">
-            📐 {store.area}
-          </span>
+        <div className="mt-5 flex gap-7 text-xs font-medium text-gray-46">
+          <span>⌖ {store.district}</span>
+          <span>▱ {store.area}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 border-y border-[#e5e8eb] px-5 py-4 text-center">
-        <div>
+      <div className="mx-5 grid grid-cols-3 gap-2 text-center">
+        <div className="rounded-md bg-gray-500 px-2 py-2">
           <div className="text-xs font-bold text-gray-46">예상 월매출</div>
-          <div className="mt-1 text-lg font-extrabold text-[#e55757]">
+          <div className="mt-1 text-lg font-extrabold text-blue-600">
             {store.sales}
           </div>
         </div>
-        <div>
-          <div className="text-xs font-bold text-gray-46">순이익률</div>
-          <div className="mt-1 text-lg font-extrabold text-[#e55757]">
-            {store.profit}
-          </div>
-        </div>
-        <div>
+        <div className="rounded-md bg-gray-500 px-2 py-2">
           <div className="text-xs font-bold text-gray-46">투자회수</div>
           <div className="mt-1 text-lg font-extrabold text-[#191f28]">
             {store.payback}
           </div>
         </div>
-      </div>
-
-      <div className="px-5 py-3 text-sm font-bold text-gray-46">
-        이달 랭킹 <span className="text-blue-600">#{store.rank}</span> ·
-        Property Score <span className="text-blue-600">{store.score}점</span>
-      </div>
-
-      <div className="flex items-center justify-between border-t border-[#e5e8eb] px-5 py-3 text-sm font-bold text-gray-46">
-        <div className="flex gap-5">
-          <span>🤍 {store.likes}</span>
-          <button type="button">💬 댓글</button>
+        <div className="rounded-md bg-gray-500 px-2 py-2">
+          <div className="text-xs font-bold text-gray-46">순이익률</div>
+          <div className="mt-1 text-lg font-extrabold text-[#d91c1c]">
+            {store.profit}
+          </div>
         </div>
-        <button
-          type="button"
-          className="rounded-full border border-[#e5e8eb] px-4 py-2 text-blue-600"
-        >
-          🔁 리포스트
-        </button>
+      </div>
+
+      <div className="mx-5 mt-3 flex items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600">
+        <span>Property Score ⓘ</span>
+        <span>{store.score}점</span>
+      </div>
+
+      <div className="flex gap-5 px-5 py-4 text-sm font-medium text-[#4e5968]">
+        <span>♡ {store.likes}</span>
+        <span>♧ {store.comments}</span>
+        <span>↻ {store.reposts}</span>
       </div>
     </article>
   );

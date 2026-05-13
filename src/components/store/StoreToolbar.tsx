@@ -10,27 +10,20 @@ const filters = [
 
 const StoreToolbar = () => {
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <button
-        type="button"
-        className="rounded-full border border-dashed border-blue-600 px-4 py-2 text-sm font-extrabold text-blue-600"
-      >
-        + 필터 추가
-      </button>
+    <div className="flex flex-wrap items-center gap-2">
       {filters.map((filter, index) => (
         <button
           key={filter}
           type="button"
-          className={`rounded-full border px-4 py-2 text-sm font-bold ${
+          className={`min-w-20 rounded-lg border px-4 py-2.5 text-sm font-bold ${
             index === 0
               ? 'border-blue-600 bg-blue-600 text-white'
-              : 'border-[#e5e8eb] bg-white text-gray-46'
+              : 'border-[#d8dde5] bg-white text-gray-46'
           }`}
         >
           {filter}⌄
         </button>
       ))}
-      <span className="text-sm font-bold text-gray-46">총 6개</span>
     </div>
   );
 };
