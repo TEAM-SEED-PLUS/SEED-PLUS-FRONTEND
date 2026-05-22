@@ -212,7 +212,7 @@ const LoginPage = () => {
 
           <div className="mt-10 space-y-1.5 text-center text-sm font-medium">
             <Link
-              to="/home"
+              to="/store-builder"
               className="text-gray-46 transition-colors hover:text-blue-600"
             >
               앱 없이 로그인하기

@@ -16,7 +16,7 @@ const navItems: { id: UserNav; label: string; to: string }[] = [
 const HeaderUser = ({ activeNav = 'home' }: HeaderUserProps) => {
   return (
     <header className="fixed left-0 top-0 z-10 flex h-[var(--header-height)] w-full items-center justify-between border-b border-[#e5e8eb] bg-white px-5">
-      <Link to="/home" className="flex w-[88px] items-center">
+      <Link to="/" className="flex w-[88px] items-center">
         <img src={SEEDPLUS} alt="SEED+" className="h-6" />
       </Link>
 
