@@ -8,15 +8,13 @@ interface HeaderUserProps {
 }
 
 const navItems: { id: UserNav; label: string; to: string }[] = [
-  // { id: 'home', label: '홈', to: '/home' },
-  // { id: 'feed', label: '피드', to: '/feed' },
   { id: 'store', label: '내 상가 만들기', to: '/store-builder' },
 ];
 
-const HeaderUser = ({ activeNav = 'home' }: HeaderUserProps) => {
+const HeaderUser = ({ activeNav = 'store' }: HeaderUserProps) => {
   return (
     <header className="fixed left-0 top-0 z-10 flex h-[var(--header-height)] w-full items-center justify-between border-b border-[#e5e8eb] bg-white px-5">
-      <Link to="/" className="flex w-[88px] items-center">
+      <Link to="/store-builder" className="flex w-[88px] items-center">
         <img src={SEEDPLUS} alt="SEED+" className="h-6" />
       </Link>
 

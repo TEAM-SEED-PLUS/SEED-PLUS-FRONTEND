@@ -1,18 +1,11 @@
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
-import {
-  FeedPage,
-  HomePage,
-  LoginPage,
-  NotFoundPage,
-  StoreBuilderPage,
-} from '@/pages';
+import { FeedPage, LoginPage, NotFoundPage, StoreBuilderPage } from '@/pages';
 
 const Router = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/home" element={<HomePage />} />
+        <Route path="/" element={<Navigate to="/store-builder" replace />} />
         <Route path="/feed" element={<FeedPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/store-builder" element={<StoreBuilderPage />} />

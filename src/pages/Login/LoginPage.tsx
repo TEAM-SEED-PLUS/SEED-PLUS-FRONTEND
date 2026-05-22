@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import LoginTermsModal from '@/components/login/LoginTermsModal';
 import { HeaderUser } from '@/components/layout';
 import { setMockAuthenticated } from '@/utils/auth';
@@ -211,12 +211,13 @@ const LoginPage = () => {
           )}
 
           <div className="mt-10 space-y-1.5 text-center text-sm font-medium">
-            <Link
-              to="/home"
+            <button
+              type="button"
+              onClick={handleLogin}
               className="text-gray-46 transition-colors hover:text-blue-600"
             >
               앱 없이 로그인하기
-            </Link>
+            </button>
             <div className="text-gray-46">
               아직 회원이 아니신가요?{' '}
               <button type="button" className="font-bold text-blue-600">
