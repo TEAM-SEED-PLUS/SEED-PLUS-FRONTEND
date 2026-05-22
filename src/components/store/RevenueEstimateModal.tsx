@@ -9,7 +9,7 @@ const labelClass = 'mb-2 block text-sm font-medium text-[#333d4b]';
 
 const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
   return (
-    <div className="fixed inset-x-0 bottom-0 top-[64px] z-30 flex items-start justify-center overflow-y-auto bg-[#f5f6f8] px-8 py-6">
+    <div className="fixed inset-x-0 bottom-0 top-14 z-30 flex items-start justify-center overflow-y-auto bg-[#f5f6f8] pt-30 px-8 py-6">
       <section className="relative grid w-full max-w-[1120px] grid-cols-1 gap-8 lg:grid-cols-2">
         <button
           type="button"

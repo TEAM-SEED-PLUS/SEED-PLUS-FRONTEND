@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom';
-
 const industries = [
   { label: '전체', count: '1,234', active: true },
   { label: '음식점', count: '649' },
@@ -22,10 +20,12 @@ const districts = [
 
 interface StoreFilterSidebarProps {
   onOpenRevenueCalculator: () => void;
+  onOpenSurvivalCalculator: () => void;
 }
 
 const StoreFilterSidebar = ({
   onOpenRevenueCalculator,
+  onOpenSurvivalCalculator,
 }: StoreFilterSidebarProps) => {
   return (
     <aside className="fixed left-0 top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[184px] border-r border-[#e5e8eb] bg-white lg:block">
@@ -80,12 +80,13 @@ const StoreFilterSidebar = ({
           >
             수익률 추정 계산기
           </button>
-          <Link
-            to="/store-builder/survival-calculator"
-            className="flex h-11 w-full items-center justify-center rounded-lg bg-green-600 text-xs font-extrabold text-white transition hover:bg-green-700"
+          <button
+            type="button"
+            onClick={onOpenSurvivalCalculator}
+            className="h-11 w-full rounded-lg bg-blue-600 text-xs font-extrabold text-white transition hover:bg-blue-700"
           >
             생존율 측정 계산기
-          </Link>
+          </button>
         </div>
       </div>
     </aside>

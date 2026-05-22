@@ -5,3 +5,4 @@ export { default as RevenueEstimateModal } from './RevenueEstimateModal';
 export { default as StoreFilterSidebar } from './StoreFilterSidebar';
 export { default as StoreGrid } from './StoreGrid';
 export { default as StoreToolbar } from './StoreToolbar';
+export { default as SurvivalEstimateModal } from './SurvivalEstimateModal';

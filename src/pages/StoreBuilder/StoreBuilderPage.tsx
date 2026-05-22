@@ -8,12 +8,14 @@ import {
   StoreFilterSidebar,
   StoreGrid,
   StoreToolbar,
+  SurvivalEstimateModal,
 } from '@/components/store';
 import { getMockAuthenticated } from '@/utils/auth';
 
 const StoreBuilderPage = () => {
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
   const [isCreateStoreModalOpen, setIsCreateStoreModalOpen] = useState(false);
+  const [isSurvivalModalOpen, setIsSurvivalModalOpen] = useState(false);
   const isAuthenticated = getMockAuthenticated();
 
   if (!isAuthenticated) {
@@ -25,6 +27,7 @@ const StoreBuilderPage = () => {
       <HeaderUser activeNav="store" />
       <StoreFilterSidebar
         onOpenRevenueCalculator={() => setIsRevenueModalOpen(true)}
+        onOpenSurvivalCalculator={() => setIsSurvivalModalOpen(true)}
       />
       <ExpertMatchSidebar />
 
@@ -58,6 +61,10 @@ const StoreBuilderPage = () => {
 
       {isCreateStoreModalOpen && (
         <CreateStoreModal onClose={() => setIsCreateStoreModalOpen(false)} />
+      )}
+
+      {isSurvivalModalOpen && (
+        <SurvivalEstimateModal onClose={() => setIsSurvivalModalOpen(false)} />
       )}
     </div>
   );
