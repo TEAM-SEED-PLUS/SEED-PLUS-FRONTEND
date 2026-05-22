@@ -1,5 +1,5 @@
 import { Link, Navigate } from 'react-router-dom';
-import SEEDPLUS from '@/assets/SEEDPLUS.svg';
+import SEEDPLUS from '@/assets/SEEDPLUS.png';
 import { getMockAuthenticated } from '@/utils/auth';
 
 const dataBadges = [

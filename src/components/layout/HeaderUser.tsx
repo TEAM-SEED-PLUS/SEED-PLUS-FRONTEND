@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import SEEDPLUS from '@/assets/SEEDPLUS.svg';
+import SEEDPLUS from '@/assets/SEEDPLUS.png';
 
 type UserNav = 'home' | 'feed' | 'store';
 
@@ -27,7 +27,7 @@ const HeaderUser = ({ activeNav = 'home' }: HeaderUserProps) => {
             to={item.to}
             className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
               activeNav === item.id
-                ? 'bg-blue-300 text-blue-600'
+                ? 'text-blue-600'
                 : 'text-gray-46 hover:bg-gray-500'
             }`}
           >
