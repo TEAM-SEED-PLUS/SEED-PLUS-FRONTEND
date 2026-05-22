@@ -1,9 +1,7 @@
 const AUTH_STORAGE_KEY = 'seed-plus-authenticated';
 
 export const isMockAuthEnabled = () => {
-  return (
-    import.meta.env.DEV || import.meta.env.VITE_ENABLE_MOCK_AUTH === 'true'
-  );
+  return import.meta.env.VITE_ENABLE_MOCK_AUTH !== 'false';
 };
 
 export const setMockAuthenticated = (isAuthenticated: boolean) => {
