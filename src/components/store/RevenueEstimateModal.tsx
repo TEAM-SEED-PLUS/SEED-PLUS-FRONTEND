@@ -35,14 +35,19 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
               <span className={labelClass}>상가명</span>
               <input
                 type="text"
-                placeholder="예)성수 스페셜티 카페"
+                placeholder="예) 성수 스페셜티 카페"
                 className={inputClass}
               />
             </label>
 
             <label className="block">
               <span className={labelClass}>예상직원수</span>
-              <input type="number" defaultValue={2} className={inputClass} />
+              <input
+                type="number"
+                defaultValue={2}
+                placeholder="예) 2"
+                className={inputClass}
+              />
             </label>
 
             <label className="block">
@@ -71,7 +76,7 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
               <span className={labelClass}>면적(m²)</span>
               <input
                 type="number"
-                placeholder="Placeholder"
+                placeholder="예) 50"
                 className={inputClass}
               />
             </label>
@@ -80,7 +85,7 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
               <span className={labelClass}>초기투자금(만원)</span>
               <input
                 type="number"
-                placeholder="Placeholder"
+                placeholder="예) 5000"
                 className={inputClass}
               />
             </label>
@@ -89,7 +94,7 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
               <span className={labelClass}>월 임대료(만원)</span>
               <input
                 type="number"
-                placeholder="Placeholder"
+                placeholder="예) 300"
                 className={inputClass}
               />
             </label>
@@ -98,7 +103,7 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
               <span className={labelClass}>권리금(만원)</span>
               <input
                 type="number"
-                placeholder="Placeholder"
+                placeholder="예) 3000"
                 className={inputClass}
               />
             </label>

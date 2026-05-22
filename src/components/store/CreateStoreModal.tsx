@@ -7,10 +7,19 @@ const inputClass =
 
 const labelClass = 'mb-3 block text-base font-medium text-[#4e5968]';
 
+const storeFields = [
+  { label: '지역', type: 'text', placeholder: '예) 강남구 역삼동' },
+  { label: '면적(m²)', type: 'number', placeholder: '예) 65' },
+  { label: '예상매출', type: 'number', placeholder: '예) 4600만원' },
+  { label: '수익률', type: 'number', placeholder: '예) 20%' },
+  { label: '권리금', type: 'number', placeholder: '예) 3000만원' },
+  { label: '임대료', type: 'number', placeholder: '예) 250만원' },
+];
+
 const CreateStoreModal = ({ onClose }: CreateStoreModalProps) => {
   return (
-    <div className="fixed inset-0 z-40 flex justify-center overflow-y-auto bg-white/70 px-6 pb-6 pt-[calc(var(--header-height)+16px)] backdrop-blur-[1px]">
-      <section className="relative max-h-[calc(100vh-var(--header-height)-32px)] w-full max-w-[594px] overflow-y-auto bg-white px-6 pb-6 pt-6 shadow-[0_18px_60px_rgba(25,31,40,0.12)]">
+    <div className="scrollbar-hide fixed inset-0 z-40 flex justify-center overflow-y-auto bg-white/70 px-6 pb-6 pt-[calc(var(--header-height)+16px)] backdrop-blur-[1px]">
+      <section className="scrollbar-hide relative max-h-[calc(100vh-var(--header-height)-32px)] w-full max-w-[594px] overflow-y-auto bg-white px-6 pb-6 pt-6 shadow-[0_18px_60px_rgba(25,31,40,0.12)]">
         <button
           type="button"
           onClick={onClose}
@@ -41,19 +50,12 @@ const CreateStoreModal = ({ onClose }: CreateStoreModalProps) => {
             </select>
           </label>
 
-          {[
-            ['지역', 'text'],
-            ['면적(m²)', 'number'],
-            ['예상매출', 'number'],
-            ['수익률', 'number'],
-            ['권리금', 'number'],
-            ['임대료', 'number'],
-          ].map(([label, type]) => (
-            <label key={label} className="mt-6 block">
-              <span className={labelClass}>{label}</span>
+          {storeFields.map((field) => (
+            <label key={field.label} className="mt-6 block">
+              <span className={labelClass}>{field.label}</span>
               <input
-                type={type}
-                placeholder="Placeholder"
+                type={field.type}
+                placeholder={field.placeholder}
                 className={inputClass}
               />
             </label>
