@@ -65,7 +65,7 @@ const LoginPage = () => {
     <div className="min-h-screen bg-gray-500">
       <HeaderUser />
       <main className="flex min-h-screen items-center justify-center px-6 pt-[var(--header-height)]">
-        <section className="w-full max-w-[568px] rounded-lg border border-[#d8dde5] bg-white px-6 py-7">
+        <section className="w-full max-w-150 rounded-lg border border-[#d8dde5] bg-white px-6 py-7">
           <div className="text-center">
             <h1 className="text-xl font-extrabold text-[#191f28]">
               점포주 로그인
@@ -220,7 +220,11 @@ const LoginPage = () => {
             </button>
             <div className="text-gray-46">
               아직 회원이 아니신가요?{' '}
-              <button type="button" className="font-bold text-blue-600">
+              <button
+                type="button"
+                onClick={() => navigate('/signup')}
+                className="font-bold text-blue-600"
+              >
                 가입하기
               </button>
             </div>
