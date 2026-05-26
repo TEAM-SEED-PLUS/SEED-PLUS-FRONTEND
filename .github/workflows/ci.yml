@@ -4,6 +4,10 @@ on:
   push:
     branches: [ "develop" ]
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_REGION: ap-northeast-2
   ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
@@ -16,32 +20,27 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      # 1. GitHub Secrets를 이용하여 물리적인 .env 파일 생성
       - name: Create .env file for Vite build
         run: |
           cat << 'EOF' > .env
           ${{ secrets.ENV_FILE }}
           EOF
-        
-      # 2. AWS 인증
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.CI_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 3. ECR 로그인
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 4. Docker 이미지 빌드 및 푸시
       - name: Build, Tag, and Push Docker Image to ECR
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build \
             -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
-          
+
           docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
