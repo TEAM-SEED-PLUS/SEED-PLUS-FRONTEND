@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SEEDPLUS from '@/assets/SEEDPLUS.png';
+import { useAuth } from '@/auth';
 
 type UserNav = 'home' | 'feed' | 'store';
 
@@ -12,6 +13,17 @@ const navItems: { id: UserNav; label: string; to: string }[] = [
 ];
 
 const HeaderUser = ({ activeNav = 'store' }: HeaderUserProps) => {
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate('/login');
+    }
+  };
+
   return (
     <header className="fixed left-0 top-0 z-10 flex h-[var(--header-height)] w-full items-center justify-between border-b border-[#e5e8eb] bg-white px-5">
       <Link to="/store-builder" className="flex w-[88px] items-center">
@@ -41,14 +53,24 @@ const HeaderUser = ({ activeNav = 'store' }: HeaderUserProps) => {
             className="w-full bg-transparent outline-none placeholder:text-[#b0b8c1]"
             placeholder="검색어를 입력하세요"
           />
-          🔍
+          <span aria-hidden="true">&#128269;</span>
         </label>
-        <Link
-          to="/login"
-          className="inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-bold text-white"
-        >
-          로그인
-        </Link>
+        {isAuthenticated ? (
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-bold text-white"
+          >
+            로그아웃
+          </button>
+        ) : (
+          <Link
+            to="/login"
+            className="inline-flex h-9 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-bold text-white"
+          >
+            로그인
+          </Link>
+        )}
       </div>
     </header>
   );

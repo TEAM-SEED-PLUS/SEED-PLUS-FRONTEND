@@ -10,13 +10,21 @@ import {
   StoreToolbar,
   SurvivalEstimateModal,
 } from '@/components/store';
-import { getMockAuthenticated } from '@/utils/auth';
+import { useAuth } from '@/auth';
 
 const StoreBuilderPage = () => {
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
   const [isCreateStoreModalOpen, setIsCreateStoreModalOpen] = useState(false);
   const [isSurvivalModalOpen, setIsSurvivalModalOpen] = useState(false);
-  const isAuthenticated = getMockAuthenticated();
+  const { isAuthenticated, status } = useAuth();
+
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-500 text-sm font-medium text-gray-46">
+        인증 상태를 확인하고 있습니다.
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
