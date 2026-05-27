@@ -1,4 +1,5 @@
 export interface StoreItem {
+  id: number;
   name: string;
   category: string;
   district: string;
@@ -92,7 +93,7 @@ const StoreCard = ({ store }: StoreCardProps) => {
       <div className="flex gap-5 px-5 py-4 text-sm font-medium text-[#4e5968]">
         <span>♡ {store.likes}</span>
         <span>♧ {store.comments}</span>
-        <span>↻ {store.reposts}</span>
+        {store.reposts > 0 && <span>↻ {store.reposts}</span>}
       </div>
     </article>
   );

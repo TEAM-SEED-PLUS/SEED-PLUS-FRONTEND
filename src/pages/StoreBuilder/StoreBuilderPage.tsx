@@ -11,12 +11,28 @@ import {
   SurvivalEstimateModal,
 } from '@/components/store';
 import { useAuth } from '@/auth';
+import useStoreBuilderData from './useStoreBuilderData';
 
 const StoreBuilderPage = () => {
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
   const [isCreateStoreModalOpen, setIsCreateStoreModalOpen] = useState(false);
   const [isSurvivalModalOpen, setIsSurvivalModalOpen] = useState(false);
   const { isAuthenticated, status } = useAuth();
+  const {
+    stores,
+    industries,
+    districts,
+    totalStores,
+    selectedIndustry,
+    selectedDistrict,
+    selectedIndustryId,
+    selectedRegionId,
+    isMetadataLoading,
+    isStoreLoading,
+    errorMessage,
+    selectIndustry,
+    selectDistrict,
+  } = useStoreBuilderData(isAuthenticated);
 
   if (status === 'loading') {
     return (
@@ -36,6 +52,14 @@ const StoreBuilderPage = () => {
       <StoreFilterSidebar
         onOpenRevenueCalculator={() => setIsRevenueModalOpen(true)}
         onOpenSurvivalCalculator={() => setIsSurvivalModalOpen(true)}
+        industries={industries}
+        districts={districts}
+        totalStores={totalStores}
+        selectedIndustryId={selectedIndustryId}
+        selectedRegionId={selectedRegionId}
+        isLoading={isMetadataLoading || isStoreLoading}
+        onSelectIndustry={selectIndustry}
+        onSelectDistrict={selectDistrict}
       />
       <ExpertMatchSidebar />
 
@@ -50,7 +74,10 @@ const StoreBuilderPage = () => {
         </div>
 
         <div className="mb-5 flex items-center justify-between">
-          <StoreToolbar />
+          <StoreToolbar
+            industryLabel={selectedIndustry?.name ?? '전체'}
+            districtLabel={selectedDistrict?.sigungu ?? '지역'}
+          />
           <button
             type="button"
             onClick={() => setIsCreateStoreModalOpen(true)}
@@ -60,7 +87,11 @@ const StoreBuilderPage = () => {
           </button>
         </div>
 
-        <StoreGrid />
+        <StoreGrid
+          stores={stores}
+          isLoading={isStoreLoading}
+          errorMessage={errorMessage}
+        />
       </main>
 
       {isRevenueModalOpen && (

@@ -1,19 +1,18 @@
 import downChevron from '@/assets/icons/down-chevron.svg';
 
-const filters = [
-  '전체',
-  '지역',
-  '면적',
-  '예상매출',
-  '수익률',
-  '권리금',
-  '임대료',
-];
+const filters = ['면적', '예상매출', '수익률', '권리금', '임대료'];
 
-const StoreToolbar = () => {
+interface StoreToolbarProps {
+  industryLabel: string;
+  districtLabel: string;
+}
+
+const StoreToolbar = ({ industryLabel, districtLabel }: StoreToolbarProps) => {
+  const filterLabels = [industryLabel, districtLabel, ...filters];
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {filters.map((filter, index) => (
+      {filterLabels.map((filter, index) => (
         <button
           key={filter}
           type="button"
