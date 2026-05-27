@@ -32,6 +32,7 @@ const StoreBuilderPage = () => {
     errorMessage,
     selectIndustry,
     selectDistrict,
+    reloadStores,
   } = useStoreBuilderData(isAuthenticated);
 
   if (status === 'loading') {
@@ -99,7 +100,12 @@ const StoreBuilderPage = () => {
       )}
 
       {isCreateStoreModalOpen && (
-        <CreateStoreModal onClose={() => setIsCreateStoreModalOpen(false)} />
+        <CreateStoreModal
+          industries={industries}
+          districts={districts}
+          onCreated={reloadStores}
+          onClose={() => setIsCreateStoreModalOpen(false)}
+        />
       )}
 
       {isSurvivalModalOpen && (

@@ -1,4 +1,5 @@
 import { apiClient } from './httpClient';
+import { getCsrfHeaders } from './authApi';
 
 type ApiResponse<T> = {
   status: number;
@@ -25,7 +26,7 @@ export type IndustryResponse = {
   children?: IndustryResponse[];
 };
 
-type CommercialAreaResponse = {
+export type CommercialAreaResponse = {
   commercialAreaId: number;
   name: string;
 };
@@ -67,6 +68,31 @@ export type BuilderStoreListResponse = {
   pageInfo: PageInfo;
 };
 
+type PagedCommercialAreaResponse = {
+  content: CommercialAreaResponse[];
+  pageInfo: PageInfo;
+};
+
+export type CreateBuilderStoreRequest = {
+  regionId: number;
+  commercialAreaId: number;
+  industryId: number;
+  name: string;
+  building: {
+    address: string;
+  };
+  metrics: {
+    area: number;
+    expectedMonthlySales: number;
+    expectedProfitRate: number;
+    investmentPaybackMonths: number;
+    monthlyRent: number;
+    deposit: number;
+    investmentAmount: number;
+  };
+  visibilityStatus: 'PUBLIC';
+};
+
 export const getBuilderStores = async (params: BuilderStoreListParams = {}) => {
   const response = await apiClient.get<ApiResponse<BuilderStoreListResponse>>(
     '/api/v1/builder-stores',
@@ -88,4 +114,26 @@ export const getSeoulDistricts = async () => {
     params: { sido: '서울특별시', codeType: 'SIGUNGU' },
   });
   return response.data;
+};
+
+export const getCommercialAreas = async (regionId: number) => {
+  const response = await apiClient.get<
+    ApiResponse<PagedCommercialAreaResponse>
+  >('/api/v1/commercial-areas', {
+    params: { page: 0, size: 100, regionId, status: 'ACTIVE' },
+  });
+  return response.data.data.content;
+};
+
+export const createBuilderStore = async (
+  payload: CreateBuilderStoreRequest
+) => {
+  const response = await apiClient.post<ApiResponse<unknown>>(
+    '/api/v1/builder-stores',
+    payload,
+    {
+      headers: await getCsrfHeaders(),
+    }
+  );
+  return response.data.data;
 };

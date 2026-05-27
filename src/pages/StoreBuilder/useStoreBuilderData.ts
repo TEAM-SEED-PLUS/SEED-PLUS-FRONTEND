@@ -43,6 +43,7 @@ const useStoreBuilderData = (enabled: boolean) => {
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
   const [isStoreLoading, setIsStoreLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!enabled) {
@@ -116,7 +117,7 @@ const useStoreBuilderData = (enabled: boolean) => {
     return () => {
       active = false;
     };
-  }, [enabled, selectedIndustryId, selectedRegionId]);
+  }, [enabled, reloadKey, selectedIndustryId, selectedRegionId]);
 
   const selectedIndustry = useMemo(
     () =>
@@ -152,6 +153,12 @@ const useStoreBuilderData = (enabled: boolean) => {
     setSelectedRegionId(regionId);
   };
 
+  const reloadStores = () => {
+    setIsStoreLoading(true);
+    setErrorMessage('');
+    setReloadKey((current) => current + 1);
+  };
+
   return {
     stores,
     industries,
@@ -166,6 +173,7 @@ const useStoreBuilderData = (enabled: boolean) => {
     errorMessage,
     selectIndustry,
     selectDistrict,
+    reloadStores,
   };
 };
 

@@ -40,7 +40,7 @@ type ApiErrorResponse = {
   message?: string;
 };
 
-const getCsrfHeaders = async () => {
+export const getCsrfHeaders = async () => {
   const response = await apiClient.get<ApiResponse<CsrfTokenResponse>>(
     '/api/v1/auth/csrf',
     { skipAuthRefresh: true }
