@@ -6,6 +6,8 @@ interface StoreGridProps {
   errorMessage: string;
   pendingBookmarkIds: number[];
   onToggleBookmark: (store: StoreItem) => void;
+  pendingLikeIds: number[];
+  onToggleLike: (store: StoreItem) => void;
 }
 
 const StoreGrid = ({
@@ -14,6 +16,8 @@ const StoreGrid = ({
   errorMessage,
   pendingBookmarkIds,
   onToggleBookmark,
+  pendingLikeIds,
+  onToggleLike,
 }: StoreGridProps) => {
   if (isLoading) {
     return (
@@ -47,6 +51,8 @@ const StoreGrid = ({
           store={store}
           isBookmarkPending={pendingBookmarkIds.includes(store.id)}
           onToggleBookmark={onToggleBookmark}
+          isLikePending={pendingLikeIds.includes(store.id)}
+          onToggleLike={onToggleLike}
         />
       ))}
     </div>

@@ -10,21 +10,25 @@ export interface StoreItem {
   rank: number;
   score: number;
   likes: number;
-  comments: number;
   reposts: number;
   saved?: boolean;
+  liked?: boolean;
 }
 
 interface StoreCardProps {
   store: StoreItem;
   isBookmarkPending: boolean;
   onToggleBookmark: (store: StoreItem) => void;
+  isLikePending: boolean;
+  onToggleLike: (store: StoreItem) => void;
 }
 
 const StoreCard = ({
   store,
   isBookmarkPending,
   onToggleBookmark,
+  isLikePending,
+  onToggleLike,
 }: StoreCardProps) => {
   return (
     <article className="overflow-hidden rounded-lg border border-[#d8dde5] bg-white">
@@ -100,8 +104,21 @@ const StoreCard = ({
       </div>
 
       <div className="flex gap-5 px-5 py-4 text-sm font-medium text-[#4e5968]">
-        <span>♡ {store.likes}</span>
-        <span>♧ {store.comments}</span>
+        <button
+          type="button"
+          onClick={() => onToggleLike(store)}
+          disabled={isLikePending}
+          aria-label={store.liked ? '좋아요 취소' : '좋아요'}
+          aria-pressed={store.liked ?? false}
+          className={`transition disabled:opacity-50 ${
+            store.liked ? 'font-bold text-[#e5484d]' : 'hover:text-[#e5484d]'
+          }`}
+        >
+          <span className="mr-1 text-xl leading-none">
+            {store.liked ? '♥' : '♡'}
+          </span>
+          {store.likes}
+        </button>
         {store.reposts > 0 && <span>↻ {store.reposts}</span>}
       </div>
     </article>

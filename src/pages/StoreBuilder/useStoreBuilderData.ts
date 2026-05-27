@@ -5,10 +5,12 @@ import {
   getBuilderStoreDetail,
   getIndustries,
   getSeoulDistricts,
+  likeBuilderStore,
   type BuilderStoreSummaryResponse,
   type IndustryResponse,
   type RegionResponse,
   unbookmarkBuilderStore,
+  unlikeBuilderStore,
 } from '@/api';
 import type { StoreItem } from '@/components/store/StoreCard';
 
@@ -30,8 +32,8 @@ const toStoreItem = (
   rank: index + 1,
   score: store.propertyScore,
   likes: store.likeCount,
-  comments: store.commentCount,
   reposts: 0,
+  liked: undefined,
 });
 
 const useStoreBuilderData = (enabled: boolean) => {
@@ -48,6 +50,7 @@ const useStoreBuilderData = (enabled: boolean) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
   const [pendingBookmarkIds, setPendingBookmarkIds] = useState<number[]>([]);
+  const [pendingLikeIds, setPendingLikeIds] = useState<number[]>([]);
   const [interactionError, setInteractionError] = useState('');
 
   useEffect(() => {
@@ -195,6 +198,41 @@ const useStoreBuilderData = (enabled: boolean) => {
     }
   };
 
+  const toggleLike = async (store: StoreItem) => {
+    if (pendingLikeIds.includes(store.id)) {
+      return;
+    }
+
+    setInteractionError('');
+    setPendingLikeIds((current) => [...current, store.id]);
+    try {
+      const currentLiked =
+        store.liked ?? (await getBuilderStoreDetail(store.id)).liked;
+
+      if (currentLiked) {
+        await unlikeBuilderStore(store.id);
+      } else {
+        await likeBuilderStore(store.id);
+      }
+
+      setStores((current) =>
+        current.map((item) =>
+          item.id === store.id
+            ? {
+                ...item,
+                liked: !currentLiked,
+                likes: item.likes + (currentLiked ? -1 : 1),
+              }
+            : item
+        )
+      );
+    } catch {
+      setInteractionError('좋아요 상태를 변경하지 못했습니다.');
+    } finally {
+      setPendingLikeIds((current) => current.filter((id) => id !== store.id));
+    }
+  };
+
   return {
     stores,
     industries,
@@ -209,10 +247,12 @@ const useStoreBuilderData = (enabled: boolean) => {
     errorMessage,
     interactionError,
     pendingBookmarkIds,
+    pendingLikeIds,
     selectIndustry,
     selectDistrict,
     reloadStores,
     toggleBookmark,
+    toggleLike,
   };
 };
 

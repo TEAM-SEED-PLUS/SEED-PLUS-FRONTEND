@@ -32,10 +32,12 @@ const StoreBuilderPage = () => {
     errorMessage,
     interactionError,
     pendingBookmarkIds,
+    pendingLikeIds,
     selectIndustry,
     selectDistrict,
     reloadStores,
     toggleBookmark,
+    toggleLike,
   } = useStoreBuilderData(isAuthenticated);
 
   if (status === 'loading') {
@@ -103,6 +105,8 @@ const StoreBuilderPage = () => {
           errorMessage={errorMessage}
           pendingBookmarkIds={pendingBookmarkIds}
           onToggleBookmark={toggleBookmark}
+          pendingLikeIds={pendingLikeIds}
+          onToggleLike={toggleLike}
         />
       </main>
 

@@ -163,3 +163,17 @@ export const unbookmarkBuilderStore = async (builderStoreId: number) => {
     headers: await getCsrfHeaders(),
   });
 };
+
+export const likeBuilderStore = async (builderStoreId: number) => {
+  await apiClient.post(
+    `/api/v1/builder-stores/${builderStoreId}/likes`,
+    undefined,
+    { headers: await getCsrfHeaders() }
+  );
+};
+
+export const unlikeBuilderStore = async (builderStoreId: number) => {
+  await apiClient.delete(`/api/v1/builder-stores/${builderStoreId}/likes`, {
+    headers: await getCsrfHeaders(),
+  });
+};
