@@ -107,6 +107,9 @@ const CreateStoreModal = ({
   const [isAreaLoading, setIsAreaLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const hasSelectedRegion = Boolean(form.regionId);
+  const hasNoCommercialAreas =
+    hasSelectedRegion && !isAreaLoading && commercialAreas.length === 0;
 
   useEffect(() => {
     if (!form.regionId) {
@@ -154,6 +157,11 @@ const CreateStoreModal = ({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (hasNoCommercialAreas) {
+      setErrorMessage('선택한 지역에 등록 가능한 상권이 없습니다.');
+      return;
+    }
 
     if (Object.values(form).some((value) => !value.trim())) {
       setErrorMessage('모든 항목을 입력해주세요.');
@@ -265,13 +273,15 @@ const CreateStoreModal = ({
               onChange={(event) =>
                 updateField('commercialAreaId', event.target.value)
               }
-              disabled={!form.regionId || isAreaLoading}
+              disabled={!form.regionId || isAreaLoading || hasNoCommercialAreas}
               className={inputClass}
             >
               <option value="">
                 {isAreaLoading
                   ? '상권을 불러오는 중입니다'
-                  : '상권을 선택하세요'}
+                  : hasNoCommercialAreas
+                    ? '선택 가능한 상권이 없습니다'
+                    : '상권을 선택하세요'}
               </option>
               {commercialAreas.map((area) => (
                 <option
@@ -282,6 +292,11 @@ const CreateStoreModal = ({
                 </option>
               ))}
             </select>
+            {hasNoCommercialAreas && (
+              <span className="mt-2 block text-sm font-medium text-[#e5484d]">
+                선택한 지역에는 등록 가능한 상권 데이터가 없습니다.
+              </span>
+            )}
           </label>
 
           <label className="block sm:col-span-2">
@@ -316,7 +331,7 @@ const CreateStoreModal = ({
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isAreaLoading || hasNoCommercialAreas}
             className="mt-2 h-14 w-full rounded-lg bg-blue-600 text-lg font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5] sm:col-span-2"
           >
             {isSubmitting ? '등록 중...' : '확인'}

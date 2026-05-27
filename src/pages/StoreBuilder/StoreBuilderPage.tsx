@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { HeaderUser } from '@/components/layout';
 import {
+  AreaFilterSheet,
   CreateStoreModal,
   ExpertMatchSidebar,
   RevenueEstimateModal,
@@ -17,6 +18,7 @@ const StoreBuilderPage = () => {
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
   const [isCreateStoreModalOpen, setIsCreateStoreModalOpen] = useState(false);
   const [isSurvivalModalOpen, setIsSurvivalModalOpen] = useState(false);
+  const [isAreaFilterOpen, setIsAreaFilterOpen] = useState(false);
   const { isAuthenticated, status } = useAuth();
   const {
     stores,
@@ -27,6 +29,7 @@ const StoreBuilderPage = () => {
     selectedDistrict,
     selectedIndustryId,
     selectedRegionId,
+    areaFilter,
     isMetadataLoading,
     isStoreLoading,
     errorMessage,
@@ -35,6 +38,8 @@ const StoreBuilderPage = () => {
     pendingLikeIds,
     selectIndustry,
     selectDistrict,
+    applyAreaFilter,
+    resetFilters,
     reloadStores,
     toggleBookmark,
     toggleLike,
@@ -83,6 +88,15 @@ const StoreBuilderPage = () => {
           <StoreToolbar
             industryLabel={selectedIndustry?.name ?? '전체'}
             districtLabel={selectedDistrict?.sigungu ?? '지역'}
+            areaLabel={areaFilter.label}
+            hasAnyFilter={
+              selectedIndustryId !== null ||
+              selectedRegionId !== null ||
+              areaFilter.minArea !== undefined ||
+              areaFilter.maxArea !== undefined
+            }
+            onOpenAreaFilter={() => setIsAreaFilterOpen(true)}
+            onResetFilters={resetFilters}
           />
           <button
             type="button"
@@ -125,6 +139,21 @@ const StoreBuilderPage = () => {
 
       {isSurvivalModalOpen && (
         <SurvivalEstimateModal onClose={() => setIsSurvivalModalOpen(false)} />
+      )}
+
+      {isAreaFilterOpen && (
+        <AreaFilterSheet
+          currentFilter={areaFilter}
+          onClose={() => setIsAreaFilterOpen(false)}
+          onReset={() => {
+            resetFilters();
+            setIsAreaFilterOpen(false);
+          }}
+          onApply={(filter) => {
+            applyAreaFilter(filter);
+            setIsAreaFilterOpen(false);
+          }}
+        />
       )}
     </div>
   );

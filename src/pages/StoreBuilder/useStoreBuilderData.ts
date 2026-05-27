@@ -36,11 +36,21 @@ const toStoreItem = (
   liked: undefined,
 });
 
+export type AreaFilterValue = {
+  label: string;
+  minArea?: number;
+  maxArea?: number;
+};
+
+const defaultAreaFilter: AreaFilterValue = { label: '면적' };
+
 const useStoreBuilderData = (enabled: boolean) => {
   const [selectedIndustryId, setSelectedIndustryId] = useState<number | null>(
     null
   );
   const [selectedRegionId, setSelectedRegionId] = useState<number | null>(null);
+  const [areaFilter, setAreaFilter] =
+    useState<AreaFilterValue>(defaultAreaFilter);
   const [industries, setIndustries] = useState<IndustryResponse[]>([]);
   const [districts, setDistricts] = useState<RegionResponse[]>([]);
   const [stores, setStores] = useState<StoreItem[]>([]);
@@ -101,6 +111,8 @@ const useStoreBuilderData = (enabled: boolean) => {
       sort: 'uploadedAt,desc',
       industryId: selectedIndustryId ?? undefined,
       regionId: selectedRegionId ?? undefined,
+      minArea: areaFilter.minArea,
+      maxArea: areaFilter.maxArea,
     })
       .then((response) => {
         if (!active) {
@@ -125,7 +137,7 @@ const useStoreBuilderData = (enabled: boolean) => {
     return () => {
       active = false;
     };
-  }, [enabled, reloadKey, selectedIndustryId, selectedRegionId]);
+  }, [areaFilter, enabled, reloadKey, selectedIndustryId, selectedRegionId]);
 
   const selectedIndustry = useMemo(
     () =>
@@ -159,6 +171,20 @@ const useStoreBuilderData = (enabled: boolean) => {
     setIsStoreLoading(true);
     setErrorMessage('');
     setSelectedRegionId(regionId);
+  };
+
+  const applyAreaFilter = (nextFilter: AreaFilterValue) => {
+    setIsStoreLoading(true);
+    setErrorMessage('');
+    setAreaFilter(nextFilter);
+  };
+
+  const resetFilters = () => {
+    setIsStoreLoading(true);
+    setErrorMessage('');
+    setSelectedIndustryId(null);
+    setSelectedRegionId(null);
+    setAreaFilter({ ...defaultAreaFilter });
   };
 
   const reloadStores = () => {
@@ -242,6 +268,7 @@ const useStoreBuilderData = (enabled: boolean) => {
     selectedDistrict,
     selectedIndustryId,
     selectedRegionId,
+    areaFilter,
     isMetadataLoading,
     isStoreLoading,
     errorMessage,
@@ -250,6 +277,8 @@ const useStoreBuilderData = (enabled: boolean) => {
     pendingLikeIds,
     selectIndustry,
     selectDistrict,
+    applyAreaFilter,
+    resetFilters,
     reloadStores,
     toggleBookmark,
     toggleLike,

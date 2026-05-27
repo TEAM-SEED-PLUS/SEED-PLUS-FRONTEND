@@ -66,6 +66,8 @@ export type BuilderStoreListParams = {
   sort?: string;
   regionId?: number;
   industryId?: number;
+  minArea?: number;
+  maxArea?: number;
 };
 
 export type BuilderStoreListResponse = {
