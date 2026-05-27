@@ -46,6 +46,11 @@ export type BuilderStoreSummaryResponse = {
   industry: IndustryResponse;
 };
 
+export type BuilderStoreDetailResponse = BuilderStoreSummaryResponse & {
+  liked: boolean;
+  bookmarked: boolean;
+};
+
 export type PageInfo = {
   page: number;
   size: number;
@@ -136,4 +141,25 @@ export const createBuilderStore = async (
     }
   );
   return response.data.data;
+};
+
+export const getBuilderStoreDetail = async (builderStoreId: number) => {
+  const response = await apiClient.get<ApiResponse<BuilderStoreDetailResponse>>(
+    `/api/v1/builder-stores/${builderStoreId}`
+  );
+  return response.data.data;
+};
+
+export const bookmarkBuilderStore = async (builderStoreId: number) => {
+  await apiClient.post(
+    `/api/v1/builder-stores/${builderStoreId}/bookmarks`,
+    undefined,
+    { headers: await getCsrfHeaders() }
+  );
+};
+
+export const unbookmarkBuilderStore = async (builderStoreId: number) => {
+  await apiClient.delete(`/api/v1/builder-stores/${builderStoreId}/bookmarks`, {
+    headers: await getCsrfHeaders(),
+  });
 };

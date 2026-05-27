@@ -4,9 +4,17 @@ interface StoreGridProps {
   stores: StoreItem[];
   isLoading: boolean;
   errorMessage: string;
+  pendingBookmarkIds: number[];
+  onToggleBookmark: (store: StoreItem) => void;
 }
 
-const StoreGrid = ({ stores, isLoading, errorMessage }: StoreGridProps) => {
+const StoreGrid = ({
+  stores,
+  isLoading,
+  errorMessage,
+  pendingBookmarkIds,
+  onToggleBookmark,
+}: StoreGridProps) => {
   if (isLoading) {
     return (
       <div className="rounded-lg border border-[#d8dde5] bg-white px-5 py-14 text-center text-sm font-medium text-gray-46">
@@ -34,7 +42,12 @@ const StoreGrid = ({ stores, isLoading, errorMessage }: StoreGridProps) => {
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3">
       {stores.map((store) => (
-        <StoreCard key={store.id} store={store} />
+        <StoreCard
+          key={store.id}
+          store={store}
+          isBookmarkPending={pendingBookmarkIds.includes(store.id)}
+          onToggleBookmark={onToggleBookmark}
+        />
       ))}
     </div>
   );

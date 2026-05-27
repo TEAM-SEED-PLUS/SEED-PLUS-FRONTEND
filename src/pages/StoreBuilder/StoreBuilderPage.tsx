@@ -30,9 +30,12 @@ const StoreBuilderPage = () => {
     isMetadataLoading,
     isStoreLoading,
     errorMessage,
+    interactionError,
+    pendingBookmarkIds,
     selectIndustry,
     selectDistrict,
     reloadStores,
+    toggleBookmark,
   } = useStoreBuilderData(isAuthenticated);
 
   if (status === 'loading') {
@@ -88,10 +91,18 @@ const StoreBuilderPage = () => {
           </button>
         </div>
 
+        {interactionError && (
+          <p className="mb-4 rounded-md bg-[#fffafa] px-4 py-3 text-sm font-medium text-[#e5484d]">
+            {interactionError}
+          </p>
+        )}
+
         <StoreGrid
           stores={stores}
           isLoading={isStoreLoading}
           errorMessage={errorMessage}
+          pendingBookmarkIds={pendingBookmarkIds}
+          onToggleBookmark={toggleBookmark}
         />
       </main>
 

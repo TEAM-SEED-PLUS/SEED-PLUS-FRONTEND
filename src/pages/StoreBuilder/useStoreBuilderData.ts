@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  bookmarkBuilderStore,
   getBuilderStores,
+  getBuilderStoreDetail,
   getIndustries,
   getSeoulDistricts,
   type BuilderStoreSummaryResponse,
   type IndustryResponse,
   type RegionResponse,
+  unbookmarkBuilderStore,
 } from '@/api';
 import type { StoreItem } from '@/components/store/StoreCard';
 
@@ -44,6 +47,8 @@ const useStoreBuilderData = (enabled: boolean) => {
   const [isStoreLoading, setIsStoreLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
+  const [pendingBookmarkIds, setPendingBookmarkIds] = useState<number[]>([]);
+  const [interactionError, setInteractionError] = useState('');
 
   useEffect(() => {
     if (!enabled) {
@@ -159,6 +164,37 @@ const useStoreBuilderData = (enabled: boolean) => {
     setReloadKey((current) => current + 1);
   };
 
+  const toggleBookmark = async (store: StoreItem) => {
+    if (pendingBookmarkIds.includes(store.id)) {
+      return;
+    }
+
+    setInteractionError('');
+    setPendingBookmarkIds((current) => [...current, store.id]);
+    try {
+      const currentSaved =
+        store.saved ?? (await getBuilderStoreDetail(store.id)).bookmarked;
+
+      if (currentSaved) {
+        await unbookmarkBuilderStore(store.id);
+      } else {
+        await bookmarkBuilderStore(store.id);
+      }
+
+      setStores((current) =>
+        current.map((item) =>
+          item.id === store.id ? { ...item, saved: !currentSaved } : item
+        )
+      );
+    } catch {
+      setInteractionError('북마크 상태를 변경하지 못했습니다.');
+    } finally {
+      setPendingBookmarkIds((current) =>
+        current.filter((id) => id !== store.id)
+      );
+    }
+  };
+
   return {
     stores,
     industries,
@@ -171,9 +207,12 @@ const useStoreBuilderData = (enabled: boolean) => {
     isMetadataLoading,
     isStoreLoading,
     errorMessage,
+    interactionError,
+    pendingBookmarkIds,
     selectIndustry,
     selectDistrict,
     reloadStores,
+    toggleBookmark,
   };
 };
 

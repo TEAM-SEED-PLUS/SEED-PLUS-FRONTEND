@@ -17,9 +17,15 @@ export interface StoreItem {
 
 interface StoreCardProps {
   store: StoreItem;
+  isBookmarkPending: boolean;
+  onToggleBookmark: (store: StoreItem) => void;
 }
 
-const StoreCard = ({ store }: StoreCardProps) => {
+const StoreCard = ({
+  store,
+  isBookmarkPending,
+  onToggleBookmark,
+}: StoreCardProps) => {
   return (
     <article className="overflow-hidden rounded-lg border border-[#d8dde5] bg-white">
       <div className="px-5 py-5">
@@ -29,8 +35,11 @@ const StoreCard = ({ store }: StoreCardProps) => {
           </span>
           <button
             type="button"
-            className="flex h-6 w-6 items-center justify-center"
-            aria-label="북마크"
+            onClick={() => onToggleBookmark(store)}
+            disabled={isBookmarkPending}
+            className="flex h-6 w-6 items-center justify-center disabled:opacity-50"
+            aria-label={store.saved ? '북마크 해제' : '북마크 추가'}
+            aria-pressed={store.saved ?? false}
           >
             <svg
               width="24"
