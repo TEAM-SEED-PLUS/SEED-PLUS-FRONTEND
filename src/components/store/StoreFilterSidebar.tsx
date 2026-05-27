@@ -1,24 +1,29 @@
-import { DISTRICT_COUNTS, SEOUL_DISTRICTS } from './storeDistricts';
-
-const industries = [
-  { label: '전체', count: '1,234', active: true },
-  { label: '음식점', count: '649' },
-  { label: '카페/음료', count: '231' },
-  { label: '소매/판매', count: '23' },
-  { label: '미용/뷰티', count: '95' },
-  { label: '헬스/스포츠', count: '23' },
-  { label: '교육/학원', count: '54' },
-  { label: '생활서비스', count: '12' },
-];
+import type { IndustryResponse, RegionResponse } from '@/api';
 
 interface StoreFilterSidebarProps {
   onOpenRevenueCalculator: () => void;
   onOpenSurvivalCalculator: () => void;
+  industries: IndustryResponse[];
+  districts: RegionResponse[];
+  totalStores: number;
+  selectedIndustryId: number | null;
+  selectedRegionId: number | null;
+  isLoading: boolean;
+  onSelectIndustry: (industryId: number | null) => void;
+  onSelectDistrict: (regionId: number | null) => void;
 }
 
 const StoreFilterSidebar = ({
   onOpenRevenueCalculator,
   onOpenSurvivalCalculator,
+  industries,
+  districts,
+  totalStores,
+  selectedIndustryId,
+  selectedRegionId,
+  isLoading,
+  onSelectIndustry,
+  onSelectDistrict,
 }: StoreFilterSidebarProps) => {
   return (
     <aside className="fixed left-0 top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[184px] border-r border-[#e5e8eb] bg-white lg:block">
@@ -29,18 +34,34 @@ const StoreFilterSidebar = ({
               업종별 <span>⌄</span>
             </h2>
             <div className="space-y-1">
+              <button
+                type="button"
+                onClick={() => onSelectIndustry(null)}
+                className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-xs font-medium ${
+                  selectedIndustryId === null
+                    ? 'bg-blue-300 text-blue-600'
+                    : 'text-gray-46 hover:bg-gray-500'
+                }`}
+              >
+                <span>전체</span>
+                {selectedRegionId === null && (
+                  <span>
+                    {isLoading ? '-' : totalStores.toLocaleString('ko-KR')}
+                  </span>
+                )}
+              </button>
               {industries.map((industry) => (
                 <button
-                  key={industry.label}
+                  key={industry.industryId}
                   type="button"
+                  onClick={() => onSelectIndustry(industry.industryId)}
                   className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-xs font-medium ${
-                    industry.active
+                    selectedIndustryId === industry.industryId
                       ? 'bg-blue-300 text-blue-600'
                       : 'text-gray-46 hover:bg-gray-500'
                   }`}
                 >
-                  <span>{industry.label}</span>
-                  <span>{industry.count}</span>
+                  <span>{industry.name}</span>
                 </button>
               ))}
             </div>
@@ -51,16 +72,29 @@ const StoreFilterSidebar = ({
               지역별 <span>⌄</span>
             </h2>
             <div className="scrollbar-hide max-h-[276px] space-y-1 overflow-y-auto">
-              {SEOUL_DISTRICTS.map((district) => (
+              <button
+                type="button"
+                onClick={() => onSelectDistrict(null)}
+                className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-xs font-medium ${
+                  selectedRegionId === null
+                    ? 'bg-blue-300 text-blue-600'
+                    : 'text-gray-46 hover:bg-gray-500'
+                }`}
+              >
+                <span>전체</span>
+              </button>
+              {districts.map((district) => (
                 <button
-                  key={district}
+                  key={district.regionId}
                   type="button"
-                  className="flex w-full items-center justify-between rounded-md px-3 py-2.5 text-xs font-medium text-gray-46 hover:bg-gray-500"
+                  onClick={() => onSelectDistrict(district.regionId)}
+                  className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-xs font-medium ${
+                    selectedRegionId === district.regionId
+                      ? 'bg-blue-300 text-blue-600'
+                      : 'text-gray-46 hover:bg-gray-500'
+                  }`}
                 >
-                  <span>{district}</span>
-                  {DISTRICT_COUNTS[district] && (
-                    <span>{DISTRICT_COUNTS[district]}</span>
-                  )}
+                  <span>{district.sigungu}</span>
                 </button>
               ))}
             </div>

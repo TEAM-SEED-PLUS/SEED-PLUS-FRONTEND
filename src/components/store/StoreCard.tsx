@@ -1,4 +1,5 @@
 export interface StoreItem {
+  id: number;
   name: string;
   category: string;
   district: string;
@@ -9,16 +10,26 @@ export interface StoreItem {
   rank: number;
   score: number;
   likes: number;
-  comments: number;
   reposts: number;
   saved?: boolean;
+  liked?: boolean;
 }
 
 interface StoreCardProps {
   store: StoreItem;
+  isBookmarkPending: boolean;
+  onToggleBookmark: (store: StoreItem) => void;
+  isLikePending: boolean;
+  onToggleLike: (store: StoreItem) => void;
 }
 
-const StoreCard = ({ store }: StoreCardProps) => {
+const StoreCard = ({
+  store,
+  isBookmarkPending,
+  onToggleBookmark,
+  isLikePending,
+  onToggleLike,
+}: StoreCardProps) => {
   return (
     <article className="overflow-hidden rounded-lg border border-[#d8dde5] bg-white">
       <div className="px-5 py-5">
@@ -28,8 +39,11 @@ const StoreCard = ({ store }: StoreCardProps) => {
           </span>
           <button
             type="button"
-            className="flex h-6 w-6 items-center justify-center"
-            aria-label="북마크"
+            onClick={() => onToggleBookmark(store)}
+            disabled={isBookmarkPending}
+            className="flex h-6 w-6 items-center justify-center disabled:opacity-50"
+            aria-label={store.saved ? '북마크 해제' : '북마크 추가'}
+            aria-pressed={store.saved ?? false}
           >
             <svg
               width="24"
@@ -90,9 +104,22 @@ const StoreCard = ({ store }: StoreCardProps) => {
       </div>
 
       <div className="flex gap-5 px-5 py-4 text-sm font-medium text-[#4e5968]">
-        <span>♡ {store.likes}</span>
-        <span>♧ {store.comments}</span>
-        <span>↻ {store.reposts}</span>
+        <button
+          type="button"
+          onClick={() => onToggleLike(store)}
+          disabled={isLikePending}
+          aria-label={store.liked ? '좋아요 취소' : '좋아요'}
+          aria-pressed={store.liked ?? false}
+          className={`transition disabled:opacity-50 ${
+            store.liked ? 'font-bold text-[#e5484d]' : 'hover:text-[#e5484d]'
+          }`}
+        >
+          <span className="mr-1 text-xl leading-none">
+            {store.liked ? '♥' : '♡'}
+          </span>
+          {store.likes}
+        </button>
+        {store.reposts > 0 && <span>↻ {store.reposts}</span>}
       </div>
     </article>
   );

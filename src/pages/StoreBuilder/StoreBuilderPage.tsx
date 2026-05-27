@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { HeaderUser } from '@/components/layout';
 import {
+  AreaFilterSheet,
   CreateStoreModal,
   ExpertMatchSidebar,
   RevenueEstimateModal,
@@ -10,13 +11,47 @@ import {
   StoreToolbar,
   SurvivalEstimateModal,
 } from '@/components/store';
-import { getMockAuthenticated } from '@/utils/auth';
+import { useAuth } from '@/auth';
+import useStoreBuilderData from './useStoreBuilderData';
 
 const StoreBuilderPage = () => {
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
   const [isCreateStoreModalOpen, setIsCreateStoreModalOpen] = useState(false);
   const [isSurvivalModalOpen, setIsSurvivalModalOpen] = useState(false);
-  const isAuthenticated = getMockAuthenticated();
+  const [isAreaFilterOpen, setIsAreaFilterOpen] = useState(false);
+  const { isAuthenticated, status } = useAuth();
+  const {
+    stores,
+    industries,
+    districts,
+    totalStores,
+    selectedIndustry,
+    selectedDistrict,
+    selectedIndustryId,
+    selectedRegionId,
+    areaFilter,
+    isMetadataLoading,
+    isStoreLoading,
+    errorMessage,
+    interactionError,
+    pendingBookmarkIds,
+    pendingLikeIds,
+    selectIndustry,
+    selectDistrict,
+    applyAreaFilter,
+    resetFilters,
+    reloadStores,
+    toggleBookmark,
+    toggleLike,
+  } = useStoreBuilderData(isAuthenticated);
+
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-500 text-sm font-medium text-gray-46">
+        인증 상태를 확인하고 있습니다.
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -28,6 +63,14 @@ const StoreBuilderPage = () => {
       <StoreFilterSidebar
         onOpenRevenueCalculator={() => setIsRevenueModalOpen(true)}
         onOpenSurvivalCalculator={() => setIsSurvivalModalOpen(true)}
+        industries={industries}
+        districts={districts}
+        totalStores={totalStores}
+        selectedIndustryId={selectedIndustryId}
+        selectedRegionId={selectedRegionId}
+        isLoading={isMetadataLoading || isStoreLoading}
+        onSelectIndustry={selectIndustry}
+        onSelectDistrict={selectDistrict}
       />
       <ExpertMatchSidebar />
 
@@ -42,7 +85,19 @@ const StoreBuilderPage = () => {
         </div>
 
         <div className="mb-5 flex items-center justify-between">
-          <StoreToolbar />
+          <StoreToolbar
+            industryLabel={selectedIndustry?.name ?? '전체'}
+            districtLabel={selectedDistrict?.sigungu ?? '지역'}
+            areaLabel={areaFilter.label}
+            hasAnyFilter={
+              selectedIndustryId !== null ||
+              selectedRegionId !== null ||
+              areaFilter.minArea !== undefined ||
+              areaFilter.maxArea !== undefined
+            }
+            onOpenAreaFilter={() => setIsAreaFilterOpen(true)}
+            onResetFilters={resetFilters}
+          />
           <button
             type="button"
             onClick={() => setIsCreateStoreModalOpen(true)}
@@ -52,7 +107,21 @@ const StoreBuilderPage = () => {
           </button>
         </div>
 
-        <StoreGrid />
+        {interactionError && (
+          <p className="mb-4 rounded-md bg-[#fffafa] px-4 py-3 text-sm font-medium text-[#e5484d]">
+            {interactionError}
+          </p>
+        )}
+
+        <StoreGrid
+          stores={stores}
+          isLoading={isStoreLoading}
+          errorMessage={errorMessage}
+          pendingBookmarkIds={pendingBookmarkIds}
+          onToggleBookmark={toggleBookmark}
+          pendingLikeIds={pendingLikeIds}
+          onToggleLike={toggleLike}
+        />
       </main>
 
       {isRevenueModalOpen && (
@@ -60,11 +129,31 @@ const StoreBuilderPage = () => {
       )}
 
       {isCreateStoreModalOpen && (
-        <CreateStoreModal onClose={() => setIsCreateStoreModalOpen(false)} />
+        <CreateStoreModal
+          industries={industries}
+          districts={districts}
+          onCreated={reloadStores}
+          onClose={() => setIsCreateStoreModalOpen(false)}
+        />
       )}
 
       {isSurvivalModalOpen && (
         <SurvivalEstimateModal onClose={() => setIsSurvivalModalOpen(false)} />
+      )}
+
+      {isAreaFilterOpen && (
+        <AreaFilterSheet
+          currentFilter={areaFilter}
+          onClose={() => setIsAreaFilterOpen(false)}
+          onReset={() => {
+            resetFilters();
+            setIsAreaFilterOpen(false);
+          }}
+          onApply={(filter) => {
+            applyAreaFilter(filter);
+            setIsAreaFilterOpen(false);
+          }}
+        />
       )}
     </div>
   );
