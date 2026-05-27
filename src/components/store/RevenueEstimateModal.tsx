@@ -1,3 +1,5 @@
+import { SEOUL_DISTRICTS } from './storeDistricts';
+
 interface RevenueEstimateModalProps {
   onClose: () => void;
 }
@@ -64,11 +66,9 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
             <label className="block">
               <span className={labelClass}>지역선택</span>
               <select defaultValue="강남구" className={inputClass}>
-                <option>강남구</option>
-                <option>마포구</option>
-                <option>성동구</option>
-                <option>종로구</option>
-                <option>용산구</option>
+                {SEOUL_DISTRICTS.map((district) => (
+                  <option key={district}>{district}</option>
+                ))}
               </select>
             </label>
 

@@ -7,6 +7,7 @@ interface LoginTermsModalProps {
   requiredTerms: RequiredTerms;
   onChangeTerms: (terms: RequiredTerms) => void;
   onSubmit: () => void;
+  submitLabel?: string;
 }
 
 const termText =
@@ -16,6 +17,7 @@ const LoginTermsModal = ({
   requiredTerms,
   onChangeTerms,
   onSubmit,
+  submitLabel = '로그인',
 }: LoginTermsModalProps) => {
   const isAllRequiredChecked =
     requiredTerms.personalInfo && requiredTerms.thirdParty;
@@ -103,7 +105,7 @@ const LoginTermsModal = ({
         onClick={onSubmit}
         className="mt-5 h-14 w-full rounded-md bg-blue-600 text-base font-extrabold text-white transition-colors hover:bg-[#1f6fe5]"
       >
-        로그인
+        {submitLabel}
       </button>
     </>
   );

@@ -1,3 +1,5 @@
+import { DISTRICT_COUNTS, SEOUL_DISTRICTS } from './storeDistricts';
+
 const industries = [
   { label: '전체', count: '1,234', active: true },
   { label: '음식점', count: '649' },
@@ -7,15 +9,6 @@ const industries = [
   { label: '헬스/스포츠', count: '23' },
   { label: '교육/학원', count: '54' },
   { label: '생활서비스', count: '12' },
-];
-
-const districts = [
-  { label: '강남구', count: '649' },
-  { label: '마포구', count: '434' },
-  { label: '성동구', count: '23' },
-  { label: '종로구', count: '95' },
-  { label: '용산구', count: '23' },
-  { label: '송파구', count: '54' },
 ];
 
 interface StoreFilterSidebarProps {
@@ -29,7 +22,7 @@ const StoreFilterSidebar = ({
 }: StoreFilterSidebarProps) => {
   return (
     <aside className="fixed left-0 top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[184px] border-r border-[#e5e8eb] bg-white lg:block">
-      <div className="flex h-full flex-col justify-between px-4 py-5">
+      <div className="scrollbar-hide h-full overflow-y-auto px-4 py-5">
         <div>
           <section>
             <h2 className="mb-3 flex items-center justify-between px-1 text-xs font-medium text-[#8b95a1]">
@@ -57,22 +50,24 @@ const StoreFilterSidebar = ({
             <h2 className="mb-3 flex items-center justify-between px-1 text-xs font-medium text-[#8b95a1]">
               지역별 <span>⌄</span>
             </h2>
-            <div className="space-y-1">
-              {districts.map((district) => (
+            <div className="scrollbar-hide max-h-[276px] space-y-1 overflow-y-auto">
+              {SEOUL_DISTRICTS.map((district) => (
                 <button
-                  key={district.label}
+                  key={district}
                   type="button"
                   className="flex w-full items-center justify-between rounded-md px-3 py-2.5 text-xs font-medium text-gray-46 hover:bg-gray-500"
                 >
-                  <span>{district.label}</span>
-                  <span>{district.count}</span>
+                  <span>{district}</span>
+                  {DISTRICT_COUNTS[district] && (
+                    <span>{DISTRICT_COUNTS[district]}</span>
+                  )}
                 </button>
               ))}
             </div>
           </section>
         </div>
 
-        <div className="space-y-2">
+        <div className="mt-6 space-y-2">
           <button
             type="button"
             onClick={onOpenRevenueCalculator}
