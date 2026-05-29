@@ -1,4 +1,4 @@
-import downChevron from '@/assets/icons/down-chevron.svg';
+import downChevron from '@/assets/icons/down-chevron-icon.svg';
 
 const unavailableFilters = ['예상매출', '수익률', '권리금', '임대료'];
 

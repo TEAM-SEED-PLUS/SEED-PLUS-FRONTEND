@@ -1,3 +1,7 @@
+import location from '@/assets/icons/location-icon.svg';
+import ruler from '@/assets/icons/ruler-icon.svg';
+import questionMark from '@/assets/icons/questionMark-icon.svg';
+
 export interface StoreItem {
   id: number;
   name: string;
@@ -72,8 +76,13 @@ const StoreCard = ({
         </div>
 
         <div className="mt-5 flex gap-7 text-xs font-medium text-gray-46">
-          <span>⌖ {store.district}</span>
-          <span>▱ {store.area}</span>
+          <span className="flex gap-2">
+            <img src={location} alt="위치 아이콘" /> {store.district}
+          </span>
+          <span className="flex gap-2">
+            <img src={ruler} alt="면적 아이콘" />
+            {store.area}
+          </span>
         </div>
       </div>
 
@@ -99,7 +108,10 @@ const StoreCard = ({
       </div>
 
       <div className="mx-5 mt-3 flex items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600">
-        <span>Property Score ⓘ</span>
+        <span className="flex gap-2">
+          Property Score
+          <img src={questionMark} alt="질문 아이콘" />
+        </span>
         <span>{/*{store.score}*/}? 점</span>
       </div>
 
