@@ -349,7 +349,8 @@ const RevenueEstimateModal = ({
 
           <button
             type="button"
-            className="mt-4 h-12 w-full rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700"
+            disabled
+            className="disabled:cursor-not-allowed disabled:bg-gray-300 mt-4 h-12 w-full rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700"
           >
             내 상가 목록에 저장하기
           </button>
