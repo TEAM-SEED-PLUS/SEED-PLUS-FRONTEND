@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 import {
   createBuilderStore,
-  getCommercialAreas,
-  type CommercialAreaResponse,
   type IndustryResponse,
   type RegionResponse,
 } from '@/api';
@@ -38,6 +36,7 @@ const initialForm: FormState = {
 const inputClass =
   'h-12 w-full rounded-sm border border-[#d8dde5] bg-white px-4 text-sm text-[#191f28] outline-none placeholder:text-[#8b95a1] focus:border-blue-600';
 const labelClass = 'mb-2 block text-sm font-medium text-[#4e5968]';
+const FIXED_COMMERCIAL_AREA_ID = 1;
 const storeNamePlaceholder = '내 상가';
 const toWon = (value: string) => Number(value) * 10000;
 const metricFields: {
@@ -75,15 +74,8 @@ const CreateStoreModal = ({
   onCreated,
 }: CreateStoreModalProps) => {
   const [form, setForm] = useState<FormState>(initialForm);
-  const [commercialAreas, setCommercialAreas] = useState<
-    CommercialAreaResponse[]
-  >([]);
-  const [isAreaLoading, setIsAreaLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const hasSelectedRegion = Boolean(form.regionId);
-  const hasNoCommercialAreas =
-    hasSelectedRegion && !isAreaLoading && commercialAreas.length === 0;
   const selectedDistrict = districts.find(
     (district) => String(district.regionId) === form.regionId
   );
@@ -91,42 +83,8 @@ const CreateStoreModal = ({
     (industry) => String(industry.industryId) === form.industryId
   );
 
-  useEffect(() => {
-    if (!form.regionId) {
-      return;
-    }
-
-    let active = true;
-
-    getCommercialAreas(Number(form.regionId))
-      .then((areas) => {
-        if (active) {
-          setCommercialAreas(areas);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setCommercialAreas([]);
-          setErrorMessage('상권 목록을 불러오지 못했습니다.');
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setIsAreaLoading(false);
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [form.regionId]);
-
   const updateField = (field: keyof FormState, value: string) => {
     setErrorMessage('');
-    if (field === 'regionId') {
-      setCommercialAreas([]);
-      setIsAreaLoading(Boolean(value));
-    }
 
     setForm((previous) => ({
       ...previous,
@@ -137,11 +95,6 @@ const CreateStoreModal = ({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (hasNoCommercialAreas) {
-      setErrorMessage('선택한 지역에 등록 가능한 상권이 없습니다.');
-      return;
-    }
-
     if (Object.values(form).some((value) => !value.trim())) {
       setErrorMessage('모든 항목을 입력해주세요.');
       return;
@@ -150,7 +103,6 @@ const CreateStoreModal = ({
     setIsSubmitting(true);
     setErrorMessage('');
     try {
-      const firstCommercialArea = commercialAreas[0];
       const paybackMonths = Math.max(
         1,
         Math.round(
@@ -161,7 +113,7 @@ const CreateStoreModal = ({
 
       await createBuilderStore({
         regionId: Number(form.regionId),
-        commercialAreaId: firstCommercialArea.commercialAreaId,
+        commercialAreaId: FIXED_COMMERCIAL_AREA_ID,
         industryId: Number(form.industryId),
         name: `${selectedDistrict?.sigungu ?? ''} ${
           selectedIndustry?.name ?? storeNamePlaceholder
@@ -170,6 +122,10 @@ const CreateStoreModal = ({
           address: selectedDistrict
             ? `${selectedDistrict.sido} ${selectedDistrict.sigungu}`
             : storeNamePlaceholder,
+          name: 'Seed Building',
+          floor: 15,
+          totalArea: Number(form.area),
+          locationComplete: true,
         },
         metrics: {
           area: Number(form.area),
@@ -180,7 +136,9 @@ const CreateStoreModal = ({
           deposit: toWon(form.deposit),
           monthlyRent: toWon(form.monthlyRent),
         },
+        description: '테스트 가상 점포',
         visibilityStatus: 'PUBLIC',
+        imageUrls: [],
       });
       onCreated();
       onClose();
@@ -264,25 +222,13 @@ const CreateStoreModal = ({
             </label>
           ))}
 
-          {hasSelectedRegion && isAreaLoading && (
-            <p className="text-sm font-medium text-[#4e5968]">
-              상권 데이터를 확인하고 있습니다.
-            </p>
-          )}
-
-          {hasNoCommercialAreas && (
-            <p className="text-sm font-medium text-[#e5484d]">
-              선택한 지역에는 등록 가능한 상권 데이터가 없습니다.
-            </p>
-          )}
-
           {errorMessage && (
             <p className="text-sm font-medium text-[#e5484d]">{errorMessage}</p>
           )}
 
           <button
             type="submit"
-            disabled={isSubmitting || isAreaLoading || hasNoCommercialAreas}
+            disabled={isSubmitting}
             className="mt-1 h-12 w-full rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
           >
             {isSubmitting ? '생성 중...' : '생성하기'}

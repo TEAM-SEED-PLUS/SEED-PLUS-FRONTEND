@@ -90,6 +90,12 @@ export type CreateBuilderStoreRequest = {
   name: string;
   building: {
     address: string;
+    name?: string;
+    floor?: number;
+    totalArea?: number;
+    latitude?: number;
+    longitude?: number;
+    locationComplete?: boolean;
   };
   metrics: {
     area: number;
@@ -100,7 +106,9 @@ export type CreateBuilderStoreRequest = {
     deposit: number;
     investmentAmount: number;
   };
+  description?: string;
   visibilityStatus: 'PUBLIC';
+  imageUrls?: string[];
 };
 
 export const getBuilderStores = async (params: BuilderStoreListParams = {}) => {
