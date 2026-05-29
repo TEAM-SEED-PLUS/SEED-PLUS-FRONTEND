@@ -157,7 +157,7 @@ const StoreBuilderPage = () => {
       />
       <ExpertMatchSidebar />
 
-      <main className="px-8 pb-10 pt-[calc(var(--header-height)+32px)] lg:ml-[184px] 2xl:mr-[264px]">
+      <main className="px-8 pb-10 pt-[calc(var(--header-height)+32px)] lg:ml-59 2xl:mr-[264px]">
         <div className="mb-7">
           <p className="text-2xl font-medium text-[#191f28]">
             내가 만든 상가 얼마나 성장할 수 있을까요?

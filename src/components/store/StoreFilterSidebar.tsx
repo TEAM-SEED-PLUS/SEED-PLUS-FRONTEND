@@ -26,7 +26,7 @@ const StoreFilterSidebar = ({
   onSelectDistrict,
 }: StoreFilterSidebarProps) => {
   return (
-    <aside className="fixed left-0 top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[184px] border-r border-[#e5e8eb] bg-white lg:block">
+    <aside className="fixed left-0 top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-59 border-r border-[#e5e8eb] bg-white lg:block">
       <div className="scrollbar-hide h-full overflow-y-auto px-4 py-5">
         <div>
           <section>
@@ -55,7 +55,7 @@ const StoreFilterSidebar = ({
                   key={industry.industryId}
                   type="button"
                   onClick={() => onSelectIndustry(industry.industryId)}
-                  className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-xs font-medium ${
+                  className={`flex w-full items-start rounded-md px-3 py-2.5 text-xs font-medium ${
                     selectedIndustryId === industry.industryId
                       ? 'bg-blue-300 text-blue-600'
                       : 'text-gray-46 hover:bg-gray-500'

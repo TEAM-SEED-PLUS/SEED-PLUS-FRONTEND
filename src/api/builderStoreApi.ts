@@ -129,31 +129,30 @@ export const getIndustries = async (level: IndustryLevel = 'LARGE') => {
   return response.data.data;
 };
 
-const flattenIndustries = (
-  industries: IndustryResponse[]
-): IndustryResponse[] =>
-  industries.flatMap((industry) => [
-    industry,
-    ...flattenIndustries(industry.children ?? []),
-  ]);
+const analysisIndustryCodes = [
+  'G2',
+  'I1',
+  'I2',
+  'L1',
+  'M1',
+  'N1',
+  'P1',
+  'Q1',
+  'R1',
+  'S2',
+];
+
+const analysisIndustryCodeSet = new Set(analysisIndustryCodes);
 
 export const getAnalysisIndustries = async () => {
-  try {
-    const smallIndustries = await getIndustries('SMALL');
-    if (smallIndustries.length > 0) {
-      return smallIndustries;
-    }
-  } catch {
-    // Fall back to nested industry children below when the level query is unavailable.
-  }
-
   const largeIndustries = await getIndustries('LARGE');
-  const nestedSmallIndustries = flattenIndustries(largeIndustries).filter(
-    (industry) => industry.level === 'SMALL'
-  );
-  return nestedSmallIndustries.length > 0
-    ? nestedSmallIndustries
-    : largeIndustries;
+  return largeIndustries
+    .filter((industry) => analysisIndustryCodeSet.has(industry.industryCode))
+    .sort(
+      (left, right) =>
+        analysisIndustryCodes.indexOf(left.industryCode) -
+        analysisIndustryCodes.indexOf(right.industryCode)
+    );
 };
 
 export const getSeoulDistricts = async () => {
