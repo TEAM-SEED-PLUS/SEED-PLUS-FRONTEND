@@ -105,6 +105,7 @@ const StoreBuilderPage = () => {
     industries,
     analysisIndustries,
     districts,
+    legalDongs,
     totalStores,
     selectedIndustry,
     selectedDistrict,
@@ -217,6 +218,7 @@ const StoreBuilderPage = () => {
         <RevenueEstimateModal
           industries={analysisIndustries}
           districts={districts}
+          legalDongs={legalDongs}
           onClose={() => setIsRevenueModalOpen(false)}
         />
       )}
@@ -234,6 +236,7 @@ const StoreBuilderPage = () => {
         <SurvivalEstimateModal
           industries={analysisIndustries}
           districts={districts}
+          legalDongs={legalDongs}
           onClose={() => setIsSurvivalModalOpen(false)}
         />
       )}

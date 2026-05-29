@@ -6,6 +6,7 @@ import {
   getBuilderStoreDetail,
   getIndustries,
   getSeoulDistricts,
+  getSeoulLegalDongs,
   likeBuilderStore,
   type BuilderStoreSummaryResponse,
   type IndustryResponse,
@@ -96,6 +97,7 @@ const useStoreBuilderData = (enabled: boolean) => {
     IndustryResponse[]
   >([]);
   const [districts, setDistricts] = useState<RegionResponse[]>([]);
+  const [legalDongs, setLegalDongs] = useState<RegionResponse[]>([]);
   const [totalStores, setTotalStores] = useState(0);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
   const [isStoreLoading, setIsStoreLoading] = useState(true);
@@ -112,14 +114,20 @@ const useStoreBuilderData = (enabled: boolean) => {
 
     let active = true;
 
-    Promise.all([getIndustries(), getAnalysisIndustries(), getSeoulDistricts()])
-      .then(([industryList, analysisIndustryList, districtList]) => {
+    Promise.all([
+      getIndustries(),
+      getAnalysisIndustries(),
+      getSeoulDistricts(),
+      getSeoulLegalDongs(),
+    ])
+      .then(([industryList, analysisIndustryList, districtList, dongList]) => {
         if (!active) {
           return;
         }
 
         setIndustries(industryList);
         setAnalysisIndustries(analysisIndustryList);
+        setLegalDongs(dongList);
         setDistricts(
           [...districtList].sort((left, right) =>
             left.sigungu.localeCompare(right.sigungu, 'ko-KR')
@@ -353,6 +361,7 @@ const useStoreBuilderData = (enabled: boolean) => {
     industries,
     analysisIndustries,
     districts,
+    legalDongs,
     totalStores,
     selectedIndustry,
     selectedDistrict,

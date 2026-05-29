@@ -11,6 +11,7 @@ import {
 interface SurvivalEstimateModalProps {
   industries: IndustryResponse[];
   districts: RegionResponse[];
+  legalDongs: RegionResponse[];
   onClose: () => void;
 }
 
@@ -129,6 +130,21 @@ const formatNumber = (value?: number, digits = 0) =>
       });
 const signedScore = (value: number) => `${value > 0 ? '+' : ''}${value}`;
 
+const getRepresentativeLegalDongCode = (
+  districtCode: string,
+  districts: RegionResponse[],
+  legalDongs: RegionResponse[]
+) => {
+  const selectedDistrict = districts.find(
+    (district) => String(district.code) === districtCode
+  );
+
+  return (
+    legalDongs.find((dong) => dong.sigungu === selectedDistrict?.sigungu)
+      ?.code ?? ''
+  );
+};
+
 const VariableSlider = ({
   label,
   value,
@@ -177,6 +193,7 @@ const VariableSlider = ({
 const SurvivalEstimateModal = ({
   industries,
   districts,
+  legalDongs,
   onClose,
 }: SurvivalEstimateModalProps) => {
   const [form, setForm] = useState<SurvivalForm>(initialForm);
@@ -231,11 +248,22 @@ const SurvivalEstimateModal = ({
       return;
     }
 
+    const legalDongCode = getRepresentativeLegalDongCode(
+      form.regionCode,
+      districts,
+      legalDongs
+    );
+
+    if (!legalDongCode) {
+      setErrorMessage('선택한 구에 해당하는 동 코드를 찾을 수 없습니다.');
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage('');
     try {
       const response = await calculateSurvivalAnalysis({
-        regionCode: form.regionCode,
+        regionCode: legalDongCode,
         industryCode: form.industryCode,
         area: toNumber(form.area),
         rent: toNumber(form.rent),

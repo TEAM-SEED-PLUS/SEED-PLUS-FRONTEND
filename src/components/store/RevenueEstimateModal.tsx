@@ -11,6 +11,7 @@ import {
 interface RevenueEstimateModalProps {
   industries: IndustryResponse[];
   districts: RegionResponse[];
+  legalDongs: RegionResponse[];
   onClose: () => void;
 }
 
@@ -49,9 +50,25 @@ const formatNumber = (value?: number, digits = 0) =>
         minimumFractionDigits: digits,
       });
 
+const getRepresentativeLegalDongCode = (
+  districtCode: string,
+  districts: RegionResponse[],
+  legalDongs: RegionResponse[]
+) => {
+  const selectedDistrict = districts.find(
+    (district) => String(district.code) === districtCode
+  );
+
+  return (
+    legalDongs.find((dong) => dong.sigungu === selectedDistrict?.sigungu)
+      ?.code ?? ''
+  );
+};
+
 const RevenueEstimateModal = ({
   industries,
   districts,
+  legalDongs,
   onClose,
 }: RevenueEstimateModalProps) => {
   const [form, setForm] = useState<RevenueForm>(initialForm);
@@ -89,12 +106,23 @@ const RevenueEstimateModal = ({
       return;
     }
 
+    const legalDongCode = getRepresentativeLegalDongCode(
+      form.regionCode,
+      districts,
+      legalDongs
+    );
+
+    if (!legalDongCode) {
+      setErrorMessage('선택한 구에 해당하는 동 코드를 찾을 수 없습니다.');
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage('');
     try {
       const response = await calculateProfitAnalysis({
         industryCode: form.industryCode,
-        regionCode: form.regionCode,
+        regionCode: legalDongCode,
         area: toNumber(form.area),
         invest: toNumber(form.invest),
         rent: toNumber(form.rent),

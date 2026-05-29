@@ -163,6 +163,13 @@ export const getSeoulDistricts = async () => {
   return response.data;
 };
 
+export const getSeoulLegalDongs = async () => {
+  const response = await apiClient.get<RegionResponse[]>('/api/v1/regions', {
+    params: { sido: '서울특별시', codeType: 'LEGAL_DONG' },
+  });
+  return response.data;
+};
+
 export const getCommercialAreas = async (regionId: number) => {
   const response = await apiClient.get<
     ApiResponse<PagedCommercialAreaResponse>
