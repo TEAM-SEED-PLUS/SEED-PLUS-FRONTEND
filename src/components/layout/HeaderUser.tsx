@@ -6,6 +6,7 @@ type UserNav = 'home' | 'feed' | 'store';
 
 interface HeaderUserProps {
   activeNav?: UserNav;
+  onMenuClick?: () => void;
 }
 
 const navItems: { id: UserNav; label: string; to: string }[] = [
@@ -44,7 +45,7 @@ const MenuIcon = () => (
   </svg>
 );
 
-const HeaderUser = ({ activeNav = 'store' }: HeaderUserProps) => {
+const HeaderUser = ({ activeNav = 'store', onMenuClick }: HeaderUserProps) => {
   const navigate = useNavigate();
   const { isAuthenticated, logout } = useAuth();
 
@@ -74,7 +75,7 @@ const HeaderUser = ({ activeNav = 'store' }: HeaderUserProps) => {
   );
 
   return (
-    <header className="fixed left-0 top-0 z-10 h-[var(--header-height)] w-full border-b border-[#e5e8eb] bg-white">
+    <header className="fixed left-0 top-0 z-30 h-[var(--header-height)] w-full border-b border-[#e5e8eb] bg-white">
       <div className="hidden h-full items-center justify-between px-5 md:flex">
         <Link to="/store-builder" className="flex w-[88px] items-center">
           <img src={SEEDPLUS} alt="SEED+" className="h-6" />
@@ -112,6 +113,7 @@ const HeaderUser = ({ activeNav = 'store' }: HeaderUserProps) => {
       <div className="grid h-full grid-cols-[44px_1fr_auto] items-center px-2 md:hidden">
         <button
           type="button"
+          onClick={onMenuClick}
           aria-label="메뉴 열기"
           className="flex h-10 w-10 items-center justify-center rounded-md text-[#333d4b] transition hover:bg-gray-500"
         >

@@ -4,6 +4,7 @@ import { HeaderUser } from '@/components/layout';
 import {
   CreateStoreModal,
   ExpertMatchSidebar,
+  MobileStoreSidebar,
   RangeFilterSheet,
   RevenueEstimateModal,
   StoreFilterSidebar,
@@ -97,6 +98,7 @@ const StoreBuilderPage = () => {
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
   const [isCreateStoreModalOpen, setIsCreateStoreModalOpen] = useState(false);
   const [isSurvivalModalOpen, setIsSurvivalModalOpen] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeRangeFilter, setActiveRangeFilter] =
     useState<StoreRangeFilterKey | null>(null);
   const { isAuthenticated, status } = useAuth();
@@ -142,10 +144,36 @@ const StoreBuilderPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-500">
-      <HeaderUser activeNav="store" />
+      <HeaderUser
+        activeNav="store"
+        onMenuClick={() => setIsMobileSidebarOpen((current) => !current)}
+      />
       <StoreFilterSidebar
         onOpenRevenueCalculator={() => setIsRevenueModalOpen(true)}
         onOpenSurvivalCalculator={() => setIsSurvivalModalOpen(true)}
+        industries={industries}
+        districts={districts}
+        totalStores={totalStores}
+        selectedIndustryId={selectedIndustryId}
+        selectedRegionId={selectedRegionId}
+        isLoading={isMetadataLoading || isStoreLoading}
+        onSelectIndustry={selectIndustry}
+        onSelectDistrict={selectDistrict}
+      />
+      <MobileStoreSidebar
+        isOpen={isMobileSidebarOpen}
+        onOpenCreateStore={() => {
+          setIsMobileSidebarOpen(false);
+          setIsCreateStoreModalOpen(true);
+        }}
+        onOpenRevenueCalculator={() => {
+          setIsMobileSidebarOpen(false);
+          setIsRevenueModalOpen(true);
+        }}
+        onOpenSurvivalCalculator={() => {
+          setIsMobileSidebarOpen(false);
+          setIsSurvivalModalOpen(true);
+        }}
         industries={industries}
         districts={districts}
         totalStores={totalStores}
