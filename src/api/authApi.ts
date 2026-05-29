@@ -94,9 +94,11 @@ export const logout = async () => {
   });
 };
 
-export const getMyProfile = async () => {
-  const response =
-    await apiClient.get<ApiResponse<UserMeResponse>>('/api/v1/users/me');
+export const getMyProfile = async (skipAuthRefresh = false) => {
+  const response = await apiClient.get<ApiResponse<UserMeResponse>>(
+    '/api/v1/users/me',
+    { skipAuthRefresh }
+  );
   return response.data.data;
 };
 
