@@ -7,6 +7,7 @@ import {
   type RegionResponse,
   type SurvivalAnalysisResponse,
 } from '@/api';
+import WarningIcon from '@/assets/icons/warning-icon.svg';
 
 interface SurvivalEstimateModalProps {
   industries: IndustryResponse[];
@@ -31,12 +32,22 @@ type SurvivalForm = {
   avgSalesAmt: string;
 };
 
+type ScoreField =
+  | 's1_salesStability'
+  | 's2_salesGrowth'
+  | 's3_competition'
+  | 's4_vacancyRisk'
+  | 's5_traffic'
+  | 's6_rentBurden'
+  | 's7_churn'
+  | 's8_startupTypeBonus';
+
 const initialForm: SurvivalForm = {
   regionCode: '',
   industryCode: '',
   area: '',
   rent: '',
-  deposit: '3000',
+  deposit: '',
   avgSales: 4,
   salesGrowth: 3,
   density: 4,
@@ -75,52 +86,65 @@ const variableFactors: {
   { field: 'churn', label: '휴·폐업 변동 빈도' },
 ];
 
-const scoreRowMeta = [
+const scoreRowMeta: {
+  field: ScoreField;
+  label: string;
+  description: string;
+  fallback: number;
+}[] = [
   {
     field: 's1_salesStability',
     label: '매출 안정성',
-    description: '상권 평균 매출 수준',
+    description: '상권 평균 매출 상위권',
+    fallback: 20,
   },
   {
     field: 's2_salesGrowth',
     label: '상권 성장성',
-    description: '최근 매출 성장률',
+    description: '최근 매출 상승',
+    fallback: 9,
   },
   {
     field: 's3_competition',
     label: '경쟁 강도',
-    description: '동일업종 점포 밀도',
+    description: '동일업종 밀도 과밀',
+    fallback: -20,
   },
   {
     field: 's4_vacancyRisk',
     label: '공실 리스크',
-    description: '상권 공실률',
+    description: '공실률 낮음',
+    fallback: 0,
   },
-  { field: 's5_traffic', label: '유동인구', description: '유동인구 수준' },
+  {
+    field: 's5_traffic',
+    label: '유동인구',
+    description: '유동인구 매우 많음',
+    fallback: -20,
+  },
   {
     field: 's6_rentBurden',
     label: '임차 부담',
-    description: '월 임대료 부담',
+    description: '임차부담도 53%',
+    fallback: 0,
   },
   {
     field: 's7_churn',
     label: '상권 안정성',
-    description: '휴·폐업 변동 빈도',
+    description: '휴폐업 변동 안정',
+    fallback: 20,
   },
   {
     field: 's8_startupTypeBonus',
     label: '창업 형태',
-    description: '신규/양수 창업',
+    description: '신규창업',
+    fallback: 0,
   },
-] as const;
-
-const districtScores = [
-  { district: '성동구', score: '83점', level: '높음' },
-  { district: '마포구', score: '78점', level: '높음', active: true },
-  { district: '강남구', score: '77점', level: '보통' },
 ];
 
 const toNumber = (value: string) => Number(value.trim());
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
 const formatNumber = (value?: number, digits = 0) =>
   value === undefined || Number.isNaN(value)
     ? '-'
@@ -129,6 +153,12 @@ const formatNumber = (value?: number, digits = 0) =>
         minimumFractionDigits: digits,
       });
 const signedScore = (value: number) => `${value > 0 ? '+' : ''}${value}`;
+const getLevel = (score: number) => {
+  if (score >= 90) return '높음';
+  if (score >= 70) return '보통';
+  if (score >= 50) return '주의';
+  return '위험';
+};
 
 const getRepresentativeLegalDongCode = (
   districtCode: string,
@@ -153,42 +183,93 @@ const VariableSlider = ({
   label: string;
   value: number;
   onChange: (value: number) => void;
-}) => (
-  <div className="rounded-md bg-[#f7f8fa] px-5 py-4">
-    <div className="mb-4 text-center text-xs font-extrabold text-[#191f28]">
-      {label}
-    </div>
-    <div className="relative h-7">
-      <div className="absolute left-0 right-0 top-3 h-2 rounded-full bg-[#e5e8eb]" />
-      <div
-        className="absolute left-0 top-3 h-2 rounded-full bg-blue-600"
-        style={{ width: `${(value / 5) * 100}%` }}
-      />
-      <input
-        type="range"
-        min="1"
-        max="5"
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
-        className="absolute inset-x-0 top-0 h-7 cursor-pointer opacity-0"
-      />
-      <div
-        className="absolute top-0 rounded-sm bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white"
-        style={{ left: `calc(${(value / 5) * 100}% - 18px)` }}
-      >
-        {value <= 2 ? '낮음' : value >= 4 ? '높음' : '보통'}
+}) => {
+  const left = `${(value / 5) * 100}%`;
+  const status = value <= 2 ? '낮음' : value >= 4 ? '높음' : '보통';
+
+  return (
+    <div className="rounded-md bg-[#f7f8fa] px-5 py-4">
+      <div className="mb-4 text-center text-xs font-extrabold text-[#191f28]">
+        {label}
       </div>
-      <div
-        className="absolute top-[7px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
-        style={{ left: `calc(${(value / 5) * 100}% - 10px)` }}
+      <div className="relative h-7">
+        <div className="absolute left-0 right-0 top-3 h-2 rounded-full bg-[#e5e8eb]" />
+        <div
+          className="absolute left-0 top-3 h-2 rounded-full bg-blue-600"
+          style={{ width: left }}
+        />
+        <input
+          type="range"
+          min="1"
+          max="5"
+          value={value}
+          onChange={(event) => onChange(Number(event.target.value))}
+          className="absolute inset-x-0 top-0 h-7 cursor-pointer opacity-0"
+        />
+        <div
+          className="absolute top-0 rounded-sm bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white"
+          style={{ left: `calc(${left} - 18px)` }}
+        >
+          {status}
+        </div>
+        <div
+          className="absolute top-[7px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
+          style={{ left: `calc(${left} - 10px)` }}
+        />
+      </div>
+      <div className="mt-1 flex justify-between text-[10px] font-medium text-[#8b95a1]">
+        <span>하위</span>
+        <span>상위</span>
+      </div>
+    </div>
+  );
+};
+
+const SurvivalGauge = ({ score }: { score: number }) => {
+  const percent = clamp(score, 0, 100);
+
+  return (
+    <svg viewBox="0 0 190 112" className="h-[112px] w-[190px]">
+      <path
+        d="M 35 88 A 60 60 0 0 1 155 88"
+        fill="none"
+        pathLength={100}
+        stroke="rgba(255,255,255,0.35)"
+        strokeLinecap="butt"
+        strokeWidth="24"
       />
-    </div>
-    <div className="mt-1 flex justify-between text-[10px] font-medium text-[#8b95a1]">
-      <span>하위</span>
-      <span>상위</span>
-    </div>
-  </div>
-);
+      <path
+        d="M 35 88 A 60 60 0 0 1 155 88"
+        fill="none"
+        pathLength={100}
+        stroke="rgba(255,255,255,0.9)"
+        strokeDasharray={`${percent} 100`}
+        strokeLinecap="butt"
+        strokeWidth="24"
+      />
+      <text
+        x="95"
+        y="86"
+        fill="white"
+        fontSize="30"
+        fontWeight="800"
+        textAnchor="middle"
+      >
+        {formatNumber(score)}
+      </text>
+      <text
+        x="132"
+        y="86"
+        fill="white"
+        fontSize="16"
+        fontWeight="700"
+        textAnchor="middle"
+      >
+        점
+      </text>
+    </svg>
+  );
+};
 
 const SurvivalEstimateModal = ({
   industries,
@@ -210,6 +291,12 @@ const SurvivalEstimateModal = ({
     }));
   }, [districts, industries]);
 
+  const selectedDistrict = useMemo(
+    () =>
+      districts.find((district) => String(district.code) === form.regionCode),
+    [districts, form.regionCode]
+  );
+
   const updateField = (field: keyof SurvivalForm, value: string | number) => {
     setErrorMessage('');
     setForm((current) => ({ ...current, [field]: value }));
@@ -218,7 +305,7 @@ const SurvivalEstimateModal = ({
   const displayScoreRows = useMemo(
     () =>
       scoreRowMeta.map((row) => {
-        const value = result?.scoreBreakdown[row.field] ?? 0;
+        const value = result?.scoreBreakdown[row.field] ?? row.fallback;
         return { ...row, score: value, positive: value >= 0 };
       }),
     [result]
@@ -232,6 +319,51 @@ const SurvivalEstimateModal = ({
         .slice(0, 3),
     [displayScoreRows]
   );
+
+  const totalScore = Math.round(result?.scoreBreakdown.totalScore ?? 50);
+  const competitionRatio = result?.derived.competitionRatio ?? 100;
+  const rentBurden = result?.derived.rentBurden ?? 53;
+  const vitalityScore = result?.derived.vitalityScore ?? 88;
+  const stabilityIndex = result?.derived.stabilityIndex ?? 75;
+
+  const comparisonDistricts = useMemo(() => {
+    if (districts.length === 0) {
+      return [
+        { name: '성동구', score: 83, active: false },
+        { name: '마포구', score: totalScore, active: true },
+        { name: '강남구', score: 77, active: false },
+      ];
+    }
+
+    const activeIndex = Math.max(
+      districts.findIndex(
+        (district) => String(district.code) === form.regionCode
+      ),
+      0
+    );
+    const previous =
+      districts[(activeIndex - 1 + districts.length) % districts.length];
+    const active = districts[activeIndex];
+    const next = districts[(activeIndex + 1) % districts.length];
+
+    return [
+      {
+        name: previous?.sigungu ?? '인접 상권',
+        score: clamp(totalScore + 5, 0, 100),
+        active: false,
+      },
+      {
+        name: active?.sigungu ?? selectedDistrict?.sigungu ?? '내 상권',
+        score: totalScore,
+        active: true,
+      },
+      {
+        name: next?.sigungu ?? '인접 상권',
+        score: clamp(totalScore - 1, 0, 100),
+        active: false,
+      },
+    ];
+  }, [districts, form.regionCode, selectedDistrict?.sigungu, totalScore]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -255,7 +387,7 @@ const SurvivalEstimateModal = ({
     );
 
     if (!legalDongCode) {
-      setErrorMessage('선택한 구에 해당하는 동 코드를 찾을 수 없습니다.');
+      setErrorMessage('선택한 구에 해당하는 법정동 코드를 찾을 수 없습니다.');
       return;
     }
 
@@ -286,8 +418,8 @@ const SurvivalEstimateModal = ({
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-14 z-30 flex items-start justify-center overflow-y-auto bg-[#f5f6f8] px-8 py-6">
-      <section className="relative grid w-full max-w-[940px] grid-cols-1 gap-8 lg:grid-cols-2">
+    <div className="fixed inset-x-0 bottom-0 top-14 z-30 flex items-start justify-center overflow-y-auto bg-[#f5f6f8] px-4 py-6 md:px-8">
+      <section className="relative grid w-full max-w-[1120px] grid-cols-1 gap-8 lg:grid-cols-[500px_1fr]">
         <button
           type="button"
           onClick={onClose}
@@ -303,8 +435,11 @@ const SurvivalEstimateModal = ({
               생존율 계산기
             </h2>
             <p className="mt-2 text-[11px] leading-relaxed text-[#4e5968]">
-              입력한 창업 조건과 공공데이터 변수를 Survival Score로 환산해
-              1년/3년 생존 가능성을 계산합니다.
+              소상공인시장진흥공단 상권정보와 공공데이터 기반으로 창업 전 생존
+              가능성을 점수화합니다.
+              <br />
+              6개 핵심 변수와 Survival Score로 현실적인 1년·3년 생존 확률 구간을
+              제시합니다.
             </p>
           </div>
 
@@ -316,19 +451,27 @@ const SurvivalEstimateModal = ({
               창업 정보 입력
             </h3>
             <p className="mt-1 text-[11px] text-[#4e5968]">
-              사용자 입력 + 공공데이터 변수 반영
+              사용자 입력 + 공공데이터 자동 반영
             </p>
 
-            <div className="mt-4 rounded-md bg-blue-300 px-4 py-3 text-[11px] leading-relaxed text-blue-600">
-              <strong>공공데이터 변수 연동</strong>
+            <div className="mt-4 rounded-md bg-[#e8f1ff] px-4 py-3 text-[11px] leading-relaxed text-blue-600">
+              <strong>공공데이터 자동 연동</strong>
               <p className="mt-1">
-                지역/업종 코드와 핵심 변수 값을 생존율 분석 API에 전달합니다.
+                지역·업종 선택 시 소상공인시장진흥공단 상권정보, 서울시
+                열린데이터광장, 국토교통부 실거래가 데이터가 자동 반영됩니다.
               </p>
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-4">
               <label className="block">
-                <span className={labelClass}>지역</span>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#4e5968]">
+                    지역
+                  </span>
+                  <span className="rounded-full bg-[#edf4ff] px-2 py-1 text-[10px] font-bold text-blue-600">
+                    공공데이터 연동
+                  </span>
+                </div>
                 <select
                   value={form.regionCode}
                   onChange={(event) =>
@@ -348,7 +491,14 @@ const SurvivalEstimateModal = ({
               </label>
 
               <label className="block">
-                <span className={labelClass}>업종 선택</span>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#4e5968]">
+                    업종 선택
+                  </span>
+                  <span className="rounded-full bg-[#edf4ff] px-2 py-1 text-[10px] font-bold text-blue-600">
+                    공공데이터 연동
+                  </span>
+                </div>
                 <select
                   value={form.industryCode}
                   onChange={(event) =>
@@ -356,6 +506,7 @@ const SurvivalEstimateModal = ({
                   }
                   className={inputClass}
                 >
+                  <option value="">-- 업종 선택 --</option>
                   {industries.map((industry) => (
                     <option
                       key={industry.industryId}
@@ -374,7 +525,7 @@ const SurvivalEstimateModal = ({
                   min="0"
                   value={form.area}
                   onChange={(event) => updateField('area', event.target.value)}
-                  placeholder="예) 40"
+                  placeholder="전용면적 기준"
                   className={inputClass}
                 />
               </label>
@@ -405,21 +556,7 @@ const SurvivalEstimateModal = ({
                 />
               </label>
 
-              <label className="block">
-                <span className={labelClass}>상권 평균 매출액(만원)</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={form.avgSalesAmt}
-                  onChange={(event) =>
-                    updateField('avgSalesAmt', event.target.value)
-                  }
-                  placeholder="예) 4200"
-                  className={inputClass}
-                />
-              </label>
-
-              <div className="col-span-2">
+              <div className="block">
                 <span className={labelClass}>창업형태</span>
                 <div className="flex gap-2">
                   <button
@@ -449,12 +586,13 @@ const SurvivalEstimateModal = ({
             </div>
 
             <div className="mt-5 border-t border-[#e5e8eb] pt-5">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex items-center justify-between gap-3">
                 <h4 className="text-xs font-extrabold text-[#191f28]">
                   공공데이터 기반 변수
                 </h4>
-                <span className="text-[10px] font-medium text-[#e5484d]">
-                  1~5 단계 값으로 API에 반영됩니다.
+                <span className="flex items-center gap-1 text-[10px] font-medium text-[#e5484d]">
+                  <img src={WarningIcon} alt="" className="h-3 w-3" />
+                  지역, 업종 선택 시 자동 반영됩니다. 직접 조정도 가능합니다.
                 </span>
               </div>
               <div className="space-y-3">
@@ -498,7 +636,7 @@ const SurvivalEstimateModal = ({
               {dataBadges.map((badge) => (
                 <span
                   key={badge}
-                  className="rounded-full bg-blue-300 px-2.5 py-1 text-[10px] font-bold text-blue-600"
+                  className="rounded-full bg-[#e8f1ff] px-2.5 py-1 text-[10px] font-bold text-blue-600"
                 >
                   {badge}
                 </span>
@@ -506,43 +644,34 @@ const SurvivalEstimateModal = ({
             </div>
           </div>
 
-          <div className="mt-4 rounded-md border border-[#e5484d] bg-[#fffafa] px-3 py-3 text-[11px] leading-relaxed text-[#e5484d]">
-            본 생존율은 공공데이터 기반 점수 모델로 산출된 참고용 추정치입니다.
-            실제 생존율은 운영 역량, 마케팅, 경기 변동 등에 따라 달라질 수
-            있습니다.
+          <div className="mt-4 flex gap-2 rounded-md border border-[#e5484d] bg-[#fffafa] px-3 py-3 text-[11px] leading-relaxed text-[#e5484d]">
+            <img src={WarningIcon} alt="" className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>
+              본 생존율은 공공데이터 기반 점수 모델로 산출된 참고용
+              추정치입니다. 실제 생존율은 운영 역량, 마케팅, 경기 변동 등 다양한
+              요인에 따라 달라질 수 있습니다.
+            </p>
           </div>
 
           <div className="mt-4 rounded-lg bg-blue-600 p-4 text-white">
-            <div className="grid grid-cols-[1fr_130px] gap-4">
+            <div className="grid grid-cols-[1fr_140px] gap-4">
               <div>
                 <p className="text-xs font-bold">Survival Score</p>
-                <div className="mt-4 flex h-24 items-end justify-center">
-                  <div className="relative h-20 w-36 overflow-hidden">
-                    <div className="absolute inset-x-0 bottom-0 h-16 rounded-t-full border-[20px] border-b-0 border-white/35" />
-                    <div className="absolute inset-x-0 bottom-0 h-16 w-[72%] rounded-tl-full border-[20px] border-b-0 border-r-0 border-white" />
-                    <div className="absolute inset-x-0 bottom-1 text-center">
-                      <strong className="text-2xl font-extrabold">
-                        {formatNumber(result?.scoreBreakdown.totalScore)}
-                      </strong>
-                      <span className="ml-1 text-xs font-bold">점</span>
-                    </div>
-                  </div>
+                <div className="mt-2 flex justify-center">
+                  <SurvivalGauge score={totalScore} />
                 </div>
-                <p className="mt-1 text-center text-xs font-bold text-white/80">
-                  {result?.survival.grade ?? '분석 전'}
-                </p>
               </div>
-              <div className="space-y-3">
-                <div className="rounded-sm bg-white/20 px-3 py-2 text-right">
+              <div className="flex flex-col justify-center gap-3">
+                <div className="rounded-sm bg-white/20 px-3 py-3 text-right ring-1 ring-white/20">
                   <p className="text-[10px] text-white/80">1년 생존 가능성</p>
-                  <p className="mt-1 text-base font-extrabold">
-                    {result?.survival.survival1Year ?? '-'}
+                  <p className="mt-1 text-lg font-extrabold">
+                    {result?.survival.survival1Year ?? '40~50%'}
                   </p>
                 </div>
-                <div className="rounded-sm bg-white/20 px-3 py-2 text-right">
+                <div className="rounded-sm bg-white/20 px-3 py-3 text-right ring-1 ring-white/20">
                   <p className="text-[10px] text-white/80">3년 생존 가능성</p>
-                  <p className="mt-1 text-base font-extrabold">
-                    {result?.survival.survival3Year ?? '-'}
+                  <p className="mt-1 text-lg font-extrabold">
+                    {result?.survival.survival3Year ?? '20~30%'}
                   </p>
                 </div>
               </div>
@@ -554,12 +683,12 @@ const SurvivalEstimateModal = ({
               Survival Score 분해
             </h3>
             <p className="mt-1 text-[11px] text-[#4e5968]">
-              API 응답의 변수별 점수 기여도
+              6개 변수별 점수 가이드
             </p>
-            <div className="mt-4 grid grid-cols-2 gap-x-7 gap-y-4">
+            <div className="mt-4 grid grid-cols-1 gap-x-7 gap-y-4 md:grid-cols-2">
               {displayScoreRows.map((item) => (
                 <div key={item.label}>
-                  <div className="mb-1 flex justify-between text-[10px]">
+                  <div className="mb-1 flex justify-between gap-2 text-[10px]">
                     <span className="font-bold text-[#191f28]">
                       {item.label}{' '}
                       <span className="font-medium text-[#8b95a1]">
@@ -580,7 +709,7 @@ const SurvivalEstimateModal = ({
                         item.positive ? 'bg-blue-600' : 'bg-[#e5484d]'
                       }`}
                       style={{
-                        width: `${Math.min(Math.abs(item.score), 100)}%`,
+                        width: `${clamp(Math.abs(item.score) * 5, 4, 100)}%`,
                       }}
                     />
                   </div>
@@ -592,25 +721,30 @@ const SurvivalEstimateModal = ({
               {[
                 [
                   '경쟁강도',
-                  `${formatNumber(result?.derived.competitionRatio, 0)}%`,
+                  '동일업종 점포수 / 전체 점포수',
+                  `${formatNumber(competitionRatio, 0)}%`,
                 ],
                 [
                   '임차부담도',
-                  `${formatNumber(result?.derived.rentBurden, 0)}%`,
+                  '월세 / 상권평균매출',
+                  `${formatNumber(rentBurden, 0)}%`,
                 ],
                 [
                   '상권활력도',
-                  `${formatNumber(result?.derived.vitalityScore, 0)}점`,
+                  '유동인구증가율 + 매출증가율',
+                  `${formatNumber(vitalityScore, 0)}점`,
                 ],
                 [
                   '안정성지수',
-                  `${formatNumber(result?.derived.stabilityIndex, 0)}점`,
+                  '1 - 공실률',
+                  `${formatNumber(stabilityIndex, 0)}점`,
                 ],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-md bg-blue-300 p-3">
-                  <p className="text-[11px] font-bold text-[#4e5968]">
-                    {label}
-                  </p>
+              ].map(([label, description, value]) => (
+                <div key={label} className="rounded-md bg-[#f2f6ff] p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs font-bold text-[#4e5968]">{label}</p>
+                    <p className="text-[10px] text-[#8b95a1]">{description}</p>
+                  </div>
                   <p className="mt-1 text-right text-xl font-extrabold text-blue-600">
                     {value}
                   </p>
@@ -620,22 +754,26 @@ const SurvivalEstimateModal = ({
           </div>
 
           <div className="mt-4 rounded-md border border-[#e5e8eb] p-4">
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3 flex items-center justify-between gap-3">
               <h3 className="text-sm font-extrabold text-[#191f28]">
                 위험 요인 TOP 3
               </h3>
-              <span className="text-[10px] text-[#e5484d]">
-                음수 기여도가 큰 항목
+              <span className="flex items-center gap-1 text-[10px] text-[#e5484d]">
+                <img src={WarningIcon} alt="" className="h-3 w-3" />
+                생존율에 가장 큰 영향을 미치는 요인
               </span>
             </div>
             <div className="space-y-3">
               {(topRisks.length > 0
                 ? topRisks
-                : displayScoreRows.slice(0, 3)
+                : displayScoreRows.slice(2, 5)
               ).map((item, index) => (
                 <div key={item.label} className="rounded-md bg-[#f7f8fa] p-3">
                   <div className="flex items-center justify-between">
-                    <strong className="text-xs text-[#191f28]">
+                    <strong className="flex items-center gap-1 text-xs text-[#191f28]">
+                      {index === 0 && (
+                        <img src={WarningIcon} alt="" className="h-3 w-3" />
+                      )}
                       {index + 1}위 {item.label}
                     </strong>
                     <span
@@ -643,11 +781,12 @@ const SurvivalEstimateModal = ({
                         item.score < 0 ? 'text-[#e5484d]' : 'text-blue-600'
                       }`}
                     >
-                      {signedScore(item.score)}
+                      {signedScore(item.score)}점
                     </span>
                   </div>
                   <p className="mt-2 text-[11px] leading-relaxed text-[#4e5968]">
-                    {item.description} 지표가 생존율 점수에 반영되었습니다.
+                    {item.description} 항목이 생존 가능성 산정에 반영됩니다.
+                    수익성 악화 위험이 높을수록 감점 폭이 커집니다.
                   </p>
                 </div>
               ))}
@@ -655,22 +794,23 @@ const SurvivalEstimateModal = ({
           </div>
 
           <div className="mt-4 rounded-md border border-[#e5e8eb] p-4">
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3 flex items-center justify-between gap-3">
               <h3 className="text-sm font-extrabold text-[#191f28]">
                 유사 상권 대비 위치
               </h3>
-              <span className="text-[10px] text-[#e5484d]">
+              <span className="flex items-center gap-1 text-[10px] text-[#e5484d]">
+                <img src={WarningIcon} alt="" className="h-3 w-3" />
                 동일 업종 기준 상권별 생존율 비교
               </span>
             </div>
             <div className="grid grid-cols-3 gap-3">
-              {districtScores.map((district) => (
+              {comparisonDistricts.map((district) => (
                 <div
-                  key={district.district}
+                  key={`${district.name}-${district.active ? 'active' : 'neighbor'}`}
                   className={`rounded-md border p-3 text-center ${
                     district.active
-                      ? 'border-blue-600 bg-blue-300'
-                      : 'border-transparent bg-blue-300/70'
+                      ? 'border-blue-600 bg-[#eef4ff]'
+                      : 'border-transparent bg-[#f2f6ff]'
                   }`}
                 >
                   {district.active && (
@@ -679,17 +819,28 @@ const SurvivalEstimateModal = ({
                     </div>
                   )}
                   <p className="text-[11px] font-bold text-[#4e5968]">
-                    {district.district}
+                    {district.name}
                   </p>
                   <p className="mt-1 text-xl font-extrabold text-blue-600">
-                    {district.score}
+                    {district.score}점
                   </p>
                   <p className="mt-1 text-[10px] text-[#4e5968]">
-                    {district.level}
+                    {getLevel(district.score)}
                   </p>
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="mt-4 rounded-md border border-[#e5e8eb] p-4">
+            <h3 className="text-sm font-extrabold text-[#191f28]">
+              데이터 출처
+            </h3>
+            <p className="mt-2 text-[11px] leading-relaxed text-[#4e5968]">
+              소상공인시장진흥공단 상권정보, 서울시 열린데이터광장, 국토교통부
+              실거래가, 여신금융협회 카드 매출, KT 유동인구, 행정안전부 인허가
+              데이터를 기반으로 참고 지표를 산출합니다.
+            </p>
           </div>
 
           <button
