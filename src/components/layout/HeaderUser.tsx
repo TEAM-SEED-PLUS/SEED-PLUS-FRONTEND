@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import SEEDPLUS from '@/assets/SEEDPLUS.png';
+import SEEDPLUS from '@/assets/SEED+ LOGO.svg';
 import { useAuth } from '@/auth';
 
 type UserNav = 'home' | 'feed' | 'store';
