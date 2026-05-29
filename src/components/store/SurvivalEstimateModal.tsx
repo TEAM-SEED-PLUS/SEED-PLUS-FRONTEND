@@ -258,7 +258,7 @@ const SurvivalGauge = ({ score }: { score: number }) => {
         {formatNumber(score)}
       </text>
       <text
-        x="132"
+        x="125"
         y="86"
         fill="white"
         fontSize="16"
