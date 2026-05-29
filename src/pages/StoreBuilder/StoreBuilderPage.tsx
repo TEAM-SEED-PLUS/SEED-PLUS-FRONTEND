@@ -125,7 +125,11 @@ const StoreBuilderPage = () => {
       </main>
 
       {isRevenueModalOpen && (
-        <RevenueEstimateModal onClose={() => setIsRevenueModalOpen(false)} />
+        <RevenueEstimateModal
+          industries={industries}
+          districts={districts}
+          onClose={() => setIsRevenueModalOpen(false)}
+        />
       )}
 
       {isCreateStoreModalOpen && (
@@ -138,7 +142,11 @@ const StoreBuilderPage = () => {
       )}
 
       {isSurvivalModalOpen && (
-        <SurvivalEstimateModal onClose={() => setIsSurvivalModalOpen(false)} />
+        <SurvivalEstimateModal
+          industries={industries}
+          districts={districts}
+          onClose={() => setIsSurvivalModalOpen(false)}
+        />
       )}
 
       {isAreaFilterOpen && (

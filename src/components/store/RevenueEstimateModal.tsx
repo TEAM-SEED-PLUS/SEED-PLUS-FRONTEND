@@ -1,15 +1,113 @@
-import { SEOUL_DISTRICTS } from './storeDistricts';
+import { useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
+import {
+  calculateProfitAnalysis,
+  getApiErrorMessage,
+  type IndustryResponse,
+  type ProfitAnalysisResponse,
+  type RegionResponse,
+} from '@/api';
 
 interface RevenueEstimateModalProps {
+  industries: IndustryResponse[];
+  districts: RegionResponse[];
   onClose: () => void;
 }
+
+type RevenueForm = {
+  storeName: string;
+  staff: string;
+  industryCode: string;
+  regionCode: string;
+  area: string;
+  invest: string;
+  rent: string;
+  premium: string;
+};
+
+const initialForm: RevenueForm = {
+  storeName: '',
+  staff: '2',
+  industryCode: '',
+  regionCode: '',
+  area: '',
+  invest: '',
+  rent: '',
+  premium: '',
+};
 
 const inputClass =
   'h-11 w-full rounded-md border border-[#d8dde5] bg-white px-3 text-sm text-[#191f28] outline-none placeholder:text-[#8b95a1] focus:border-blue-600';
 
 const labelClass = 'mb-2 block text-sm font-medium text-[#333d4b]';
+const toNumber = (value: string) => Number(value.trim());
+const formatNumber = (value?: number, digits = 0) =>
+  value === undefined || Number.isNaN(value)
+    ? '-'
+    : value.toLocaleString('ko-KR', {
+        maximumFractionDigits: digits,
+        minimumFractionDigits: digits,
+      });
 
-const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
+const RevenueEstimateModal = ({
+  industries,
+  districts,
+  onClose,
+}: RevenueEstimateModalProps) => {
+  const [form, setForm] = useState<RevenueForm>(initialForm);
+  const [result, setResult] = useState<ProfitAnalysisResponse | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    setForm((current) => ({
+      ...current,
+      industryCode: current.industryCode || industries[0]?.industryCode || '',
+      regionCode: current.regionCode || districts[0]?.code || '',
+    }));
+  }, [districts, industries]);
+
+  const updateField = (field: keyof RevenueForm, value: string) => {
+    setErrorMessage('');
+    setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (
+      !form.industryCode ||
+      !form.regionCode ||
+      !form.area ||
+      !form.invest ||
+      !form.rent ||
+      !form.premium ||
+      !form.staff
+    ) {
+      setErrorMessage('수익률 추정에 필요한 값을 모두 입력해주세요.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage('');
+    try {
+      const response = await calculateProfitAnalysis({
+        industryCode: form.industryCode,
+        regionCode: form.regionCode,
+        area: toNumber(form.area),
+        invest: toNumber(form.invest),
+        rent: toNumber(form.rent),
+        premium: toNumber(form.premium),
+        staff: Math.round(toNumber(form.staff)),
+      });
+      setResult(response);
+    } catch (error) {
+      setErrorMessage(getApiErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-x-0 bottom-0 top-14 z-30 flex items-start justify-center overflow-y-auto bg-[#f5f6f8] pt-30 px-8 py-6">
       <section className="relative grid w-full max-w-[1120px] grid-cols-1 gap-8 lg:grid-cols-2">
@@ -32,11 +130,18 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
             </p>
           </div>
 
-          <form className="mt-5 grid grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-2">
+          <form
+            className="mt-5 grid grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-2"
+            onSubmit={handleSubmit}
+          >
             <label className="block">
               <span className={labelClass}>상가명</span>
               <input
                 type="text"
+                value={form.storeName}
+                onChange={(event) =>
+                  updateField('storeName', event.target.value)
+                }
                 placeholder="예) 성수 스페셜티 카페"
                 className={inputClass}
               />
@@ -46,7 +151,9 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
               <span className={labelClass}>예상직원수</span>
               <input
                 type="number"
-                defaultValue={2}
+                min="0"
+                value={form.staff}
+                onChange={(event) => updateField('staff', event.target.value)}
                 placeholder="예) 2"
                 className={inputClass}
               />
@@ -54,20 +161,37 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
 
             <label className="block">
               <span className={labelClass}>업종선택</span>
-              <select defaultValue="음식점" className={inputClass}>
-                <option>음식점</option>
-                <option>카페/음료</option>
-                <option>소매/판매</option>
-                <option>미용/뷰티</option>
-                <option>헬스/스포츠</option>
+              <select
+                value={form.industryCode}
+                onChange={(event) =>
+                  updateField('industryCode', event.target.value)
+                }
+                className={inputClass}
+              >
+                {industries.map((industry) => (
+                  <option
+                    key={industry.industryId}
+                    value={industry.industryCode}
+                  >
+                    {industry.name}
+                  </option>
+                ))}
               </select>
             </label>
 
             <label className="block">
               <span className={labelClass}>지역선택</span>
-              <select defaultValue="강남구" className={inputClass}>
-                {SEOUL_DISTRICTS.map((district) => (
-                  <option key={district}>{district}</option>
+              <select
+                value={form.regionCode}
+                onChange={(event) =>
+                  updateField('regionCode', event.target.value)
+                }
+                className={inputClass}
+              >
+                {districts.map((district) => (
+                  <option key={district.regionId} value={district.code}>
+                    {district.sigungu}
+                  </option>
                 ))}
               </select>
             </label>
@@ -76,6 +200,9 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
               <span className={labelClass}>면적(m²)</span>
               <input
                 type="number"
+                min="0"
+                value={form.area}
+                onChange={(event) => updateField('area', event.target.value)}
                 placeholder="예) 50"
                 className={inputClass}
               />
@@ -85,6 +212,9 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
               <span className={labelClass}>초기투자금(만원)</span>
               <input
                 type="number"
+                min="0"
+                value={form.invest}
+                onChange={(event) => updateField('invest', event.target.value)}
                 placeholder="예) 5000"
                 className={inputClass}
               />
@@ -94,6 +224,9 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
               <span className={labelClass}>월 임대료(만원)</span>
               <input
                 type="number"
+                min="0"
+                value={form.rent}
+                onChange={(event) => updateField('rent', event.target.value)}
                 placeholder="예) 300"
                 className={inputClass}
               />
@@ -103,16 +236,26 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
               <span className={labelClass}>권리금(만원)</span>
               <input
                 type="number"
+                min="0"
+                value={form.premium}
+                onChange={(event) => updateField('premium', event.target.value)}
                 placeholder="예) 3000"
                 className={inputClass}
               />
             </label>
 
+            {errorMessage && (
+              <p className="text-sm font-medium text-[#e5484d] md:col-span-2">
+                {errorMessage}
+              </p>
+            )}
+
             <button
-              type="button"
-              className="mt-1 h-12 rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700 md:col-span-2"
+              type="submit"
+              disabled={isSubmitting}
+              className="mt-1 h-12 rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5] md:col-span-2"
             >
-              수익률 추정
+              {isSubmitting ? '수익률 추정 중...' : '수익률 추정'}
             </button>
           </form>
         </div>
@@ -133,7 +276,7 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
             <p className="text-lg font-bold">나의 예상 월 매출은?</p>
             <div className="mt-5 flex items-end gap-2">
               <strong className="text-3xl font-extrabold tracking-tight">
-                5,200
+                {formatNumber(result?.result.monthlyRev)}
               </strong>
               <span className="mb-1 text-sm font-bold">만원</span>
             </div>
@@ -141,26 +284,36 @@ const RevenueEstimateModal = ({ onClose }: RevenueEstimateModalProps) => {
             <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="rounded-md border border-white/25 bg-white/15 p-3">
                 <p className="text-xs text-white/80">직원 2명 인건비</p>
-                <p className="mt-2 text-xl font-extrabold">500만원 반영</p>
+                <p className="mt-2 text-xl font-extrabold">
+                  {formatNumber(result?.result.staffCost)}만원 반영
+                </p>
               </div>
               <div className="rounded-md border border-white/25 bg-white/15 p-3">
                 <p className="text-xs text-white/80">업종 평균 대비</p>
-                <p className="mt-2 text-xl font-extrabold">30% 수준</p>
+                <p className="mt-2 text-xl font-extrabold">
+                  {formatNumber(result?.assumptions.baseProfitRate, 1)}% 기준
+                </p>
               </div>
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="rounded-md border border-white/25 bg-white/15 p-3">
                 <p className="text-xs text-white/80">예상 순이익률</p>
-                <p className="mt-2 text-right text-xl font-extrabold">7%</p>
+                <p className="mt-2 text-right text-xl font-extrabold">
+                  {formatNumber(result?.result.profitRate, 1)}%
+                </p>
               </div>
               <div className="rounded-md border border-white/25 bg-white/15 p-3">
                 <p className="text-xs text-white/80">투자 회수 기간</p>
-                <p className="mt-2 text-right text-xl font-extrabold">19개월</p>
+                <p className="mt-2 text-right text-xl font-extrabold">
+                  {formatNumber(result?.result.paybackMonths, 1)}개월
+                </p>
               </div>
               <div className="rounded-md border border-white/25 bg-white/15 p-3">
                 <p className="text-xs text-white/80">Property Score</p>
-                <p className="mt-2 text-right text-xl font-extrabold">77점</p>
+                <p className="mt-2 text-right text-xl font-extrabold">
+                  {formatNumber(result?.result.propertyScore, 0)}점
+                </p>
               </div>
             </div>
           </div>

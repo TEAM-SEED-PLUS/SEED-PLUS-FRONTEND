@@ -100,7 +100,7 @@ const StoreCard = ({
 
       <div className="mx-5 mt-3 flex items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600">
         <span>Property Score ⓘ</span>
-        <span>{store.score}점</span>
+        <span>{/*{store.score}*/}? 점</span>
       </div>
 
       <div className="flex gap-5 px-5 py-4 text-sm font-medium text-[#4e5968]">
