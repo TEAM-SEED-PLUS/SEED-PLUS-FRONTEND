@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 import {
   clearAuthToken,
+  getAccessToken,
   getMyProfile,
   login as requestLogin,
   logout as requestLogout,
@@ -46,6 +47,25 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       }
     };
 
+    const restoreSession = async () => {
+      const storedToken = getAccessToken();
+
+      if (storedToken) {
+        try {
+          const profile = await getMyProfile(true);
+          if (active) {
+            setUser(profile);
+            setStatus('authenticated');
+          }
+          return storedToken;
+        } catch {
+          clearAuthToken();
+        }
+      }
+
+      return refreshSession();
+    };
+
     setRefreshHandler(refreshSession);
 
     if (mockEnabled && getMockAuthenticated()) {
@@ -56,7 +76,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       };
     }
 
-    void refreshSession();
+    void restoreSession();
 
     return () => {
       active = false;

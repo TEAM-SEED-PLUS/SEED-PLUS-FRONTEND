@@ -1,22 +1,30 @@
-import downChevron from '@/assets/icons/down-chevron.svg';
+import downChevron from '@/assets/icons/down-chevron-icon.svg';
 
-const unavailableFilters = ['예상매출', '수익률', '권리금', '임대료'];
+type StoreRangeFilterKey = 'area' | 'sales' | 'profit' | 'premium' | 'rent';
+
+const filterButtons: { key: StoreRangeFilterKey; baseLabel: string }[] = [
+  { key: 'area', baseLabel: '면적' },
+  { key: 'sales', baseLabel: '예상매출' },
+  { key: 'profit', baseLabel: '수익률' },
+  { key: 'premium', baseLabel: '권리금' },
+  { key: 'rent', baseLabel: '임대료' },
+];
 
 interface StoreToolbarProps {
   industryLabel: string;
   districtLabel: string;
-  areaLabel: string;
+  filterLabels: Record<StoreRangeFilterKey, string>;
   hasAnyFilter: boolean;
-  onOpenAreaFilter: () => void;
+  onOpenRangeFilter: (key: StoreRangeFilterKey) => void;
   onResetFilters: () => void;
 }
 
 const StoreToolbar = ({
   industryLabel,
   districtLabel,
-  areaLabel,
+  filterLabels,
   hasAnyFilter,
-  onOpenAreaFilter,
+  onOpenRangeFilter,
   onResetFilters,
 }: StoreToolbarProps) => {
   return (
@@ -44,29 +52,18 @@ const StoreToolbar = ({
         </span>
       )}
 
-      <button
-        type="button"
-        onClick={onOpenAreaFilter}
-        className={`flex min-w-20 items-center justify-between gap-2 rounded-lg border px-4 py-2.5 text-sm font-bold transition ${
-          areaLabel !== '면적'
-            ? 'border-blue-600 bg-[#edf3ff] text-blue-600'
-            : 'border-[#d8dde5] bg-white text-gray-46 hover:border-blue-600'
-        }`}
-      >
-        {areaLabel}
-        <img src={downChevron} alt="" />
-      </button>
-
-      {unavailableFilters.map((filter) => (
+      {filterButtons.map((filter) => (
         <button
-          key={filter}
+          key={filter.key}
           type="button"
-          disabled
-          title="API 준비 중"
-          aria-label={`${filter} 필터, API 준비 중`}
-          className="flex min-w-20 cursor-not-allowed items-center justify-between gap-2 rounded-lg border border-[#d8dde5] bg-white px-4 py-2.5 text-sm font-bold text-gray-46 opacity-55"
+          onClick={() => onOpenRangeFilter(filter.key)}
+          className={`flex min-w-20 items-center justify-between gap-2 rounded-lg border px-4 py-2.5 text-sm font-bold transition ${
+            filterLabels[filter.key] !== filter.baseLabel
+              ? 'border-blue-600 bg-[#edf3ff] text-blue-600'
+              : 'border-[#d8dde5] bg-white text-gray-46 hover:border-blue-600'
+          }`}
         >
-          {filter}
+          {filterLabels[filter.key]}
           <img src={downChevron} alt="" />
         </button>
       ))}

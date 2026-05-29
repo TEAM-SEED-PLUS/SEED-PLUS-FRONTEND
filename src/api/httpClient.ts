@@ -13,7 +13,17 @@ declare module 'axios' {
   }
 }
 
-let accessToken: string | null = null;
+const accessTokenStorageKey = 'seed_plus_access_token';
+
+const readStoredAccessToken = () => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  return window.sessionStorage.getItem(accessTokenStorageKey);
+};
+
+let accessToken: string | null = readStoredAccessToken();
 let refreshHandler: (() => Promise<string | null>) | null = null;
 let refreshRequest: Promise<string | null> | null = null;
 
@@ -29,6 +39,16 @@ export const apiClient = axios.create({
 
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
+
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  if (token) {
+    window.sessionStorage.setItem(accessTokenStorageKey, token);
+  } else {
+    window.sessionStorage.removeItem(accessTokenStorageKey);
+  }
 };
 
 export const getAccessToken = () => accessToken;

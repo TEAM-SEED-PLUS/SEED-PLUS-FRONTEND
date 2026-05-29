@@ -26,6 +26,8 @@ export type IndustryResponse = {
   children?: IndustryResponse[];
 };
 
+export type IndustryLevel = IndustryResponse['level'];
+
 export type CommercialAreaResponse = {
   commercialAreaId: number;
   name: string;
@@ -39,6 +41,9 @@ export type BuilderStoreSummaryResponse = {
   expectedProfitRate: number;
   investmentPaybackMonths: number;
   propertyScore: number;
+  monthlyRent: number;
+  deposit: number;
+  investmentAmount: number;
   likeCount: number;
   commentCount: number;
   region: RegionResponse;
@@ -87,6 +92,12 @@ export type CreateBuilderStoreRequest = {
   name: string;
   building: {
     address: string;
+    name?: string;
+    floor?: number;
+    totalArea?: number;
+    latitude?: number;
+    longitude?: number;
+    locationComplete?: boolean;
   };
   metrics: {
     area: number;
@@ -97,7 +108,9 @@ export type CreateBuilderStoreRequest = {
     deposit: number;
     investmentAmount: number;
   };
+  description?: string;
   visibilityStatus: 'PUBLIC';
+  imageUrls?: string[];
 };
 
 export const getBuilderStores = async (params: BuilderStoreListParams = {}) => {
@@ -108,17 +121,50 @@ export const getBuilderStores = async (params: BuilderStoreListParams = {}) => {
   return response.data.data;
 };
 
-export const getIndustries = async () => {
+export const getIndustries = async (level: IndustryLevel = 'LARGE') => {
   const response = await apiClient.get<ApiResponse<IndustryResponse[]>>(
     '/api/v1/industries',
-    { params: { level: 'LARGE' } }
+    { params: { level } }
   );
   return response.data.data;
+};
+
+const analysisIndustryCodes = [
+  'G2',
+  'I1',
+  'I2',
+  'L1',
+  'M1',
+  'N1',
+  'P1',
+  'Q1',
+  'R1',
+  'S2',
+];
+
+const analysisIndustryCodeSet = new Set(analysisIndustryCodes);
+
+export const getAnalysisIndustries = async () => {
+  const largeIndustries = await getIndustries('LARGE');
+  return largeIndustries
+    .filter((industry) => analysisIndustryCodeSet.has(industry.industryCode))
+    .sort(
+      (left, right) =>
+        analysisIndustryCodes.indexOf(left.industryCode) -
+        analysisIndustryCodes.indexOf(right.industryCode)
+    );
 };
 
 export const getSeoulDistricts = async () => {
   const response = await apiClient.get<RegionResponse[]>('/api/v1/regions', {
     params: { sido: '서울특별시', codeType: 'SIGUNGU' },
+  });
+  return response.data;
+};
+
+export const getSeoulLegalDongs = async () => {
+  const response = await apiClient.get<RegionResponse[]>('/api/v1/regions', {
+    params: { sido: '서울특별시', codeType: 'LEGAL_DONG' },
   });
   return response.data;
 };

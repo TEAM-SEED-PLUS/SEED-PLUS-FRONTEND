@@ -1,70 +1,91 @@
 import { useState } from 'react';
 
-type AreaFilter = {
+export type RangeFilterValue = {
   label: string;
-  minArea?: number;
-  maxArea?: number;
+  min?: number;
+  max?: number;
 };
 
-interface AreaFilterSheetProps {
-  currentFilter: AreaFilter;
+export type RangeFilterUnit = 'pyeong' | 'squareMeter' | 'manwon' | 'percent';
+
+export type RangeFilterConfig = {
+  id: string;
+  title: string;
+  unit: RangeFilterUnit;
+  presets: RangeFilterValue[];
+  directUnitOptions?: { label: string; value: RangeFilterUnit }[];
+  directLabel?: string;
+  maxWarningValue?: number;
+  maxWarningMessage?: string;
+};
+
+interface RangeFilterSheetProps {
+  config: RangeFilterConfig;
+  currentFilter: RangeFilterValue;
   onClose: () => void;
-  onApply: (filter: AreaFilter) => void;
+  onApply: (filter: RangeFilterValue) => void;
   onReset: () => void;
 }
 
-type Unit = 'pyeong' | 'squareMeter';
-
-const presets: AreaFilter[] = [
-  { label: '전체' },
-  { label: '10평 이하', maxArea: 33 },
-  { label: '10~20평', minArea: 33, maxArea: 66 },
-  { label: '20~30평', minArea: 66, maxArea: 99 },
-  { label: '30~50평', minArea: 99, maxArea: 165 },
-  { label: '50평 이상', minArea: 165 },
-];
-
 const inputClass =
   'h-12 w-full rounded-lg border border-[#d8dde5] px-4 text-sm outline-none placeholder:text-[#8b95a1] focus:border-blue-600';
-const toSquareMeters = (value: number, unit: Unit, isMinimum: boolean) => {
-  if (unit === 'squareMeter') {
+
+const convertValue = (
+  value: number,
+  unit: RangeFilterUnit,
+  isMinimum: boolean
+) => {
+  if (unit !== 'pyeong') {
     return value;
   }
   const converted = value * 3.3058;
   return isMinimum ? Math.floor(converted) : Math.ceil(converted);
 };
-const findPresetFilter = (currentFilter: AreaFilter) =>
+
+const formatUnitLabel = (unit: RangeFilterUnit) => {
+  if (unit === 'pyeong') return '평';
+  if (unit === 'squareMeter') return 'm²';
+  if (unit === 'manwon') return '만원';
+  return '%';
+};
+
+const findPresetFilter = (
+  currentFilter: RangeFilterValue,
+  presets: RangeFilterValue[]
+) =>
   presets.find(
     (preset) =>
-      preset.minArea === currentFilter.minArea &&
-      preset.maxArea === currentFilter.maxArea
+      preset.min === currentFilter.min && preset.max === currentFilter.max
   );
 
-const AreaFilterSheet = ({
+const RangeFilterSheet = ({
+  config,
   currentFilter,
   onClose,
   onApply,
   onReset,
-}: AreaFilterSheetProps) => {
-  const matchingPreset = findPresetFilter(currentFilter);
+}: RangeFilterSheetProps) => {
+  const matchingPreset = findPresetFilter(currentFilter, config.presets);
   const usesPreset = Boolean(matchingPreset);
   const [selectedLabel, setSelectedLabel] = useState(
     matchingPreset?.label ?? '직접 입력'
   );
   const [minimum, setMinimum] = useState(
-    !usesPreset && currentFilter.minArea !== undefined
-      ? String(currentFilter.minArea)
+    !usesPreset && currentFilter.min !== undefined
+      ? String(currentFilter.min)
       : ''
   );
   const [maximum, setMaximum] = useState(
-    !usesPreset && currentFilter.maxArea !== undefined
-      ? String(currentFilter.maxArea)
+    !usesPreset && currentFilter.max !== undefined
+      ? String(currentFilter.max)
       : ''
   );
-  const [unit, setUnit] = useState<Unit>(usesPreset ? 'pyeong' : 'squareMeter');
+  const [unit, setUnit] = useState<RangeFilterUnit>(
+    config.directUnitOptions?.[0]?.value ?? config.unit
+  );
   const [errorMessage, setErrorMessage] = useState('');
 
-  const selectPreset = (preset: AreaFilter) => {
+  const selectPreset = (preset: RangeFilterValue) => {
     setSelectedLabel(preset.label);
     setMinimum('');
     setMaximum('');
@@ -82,7 +103,9 @@ const AreaFilterSheet = ({
 
   const applyFilter = () => {
     if (selectedLabel !== '직접 입력') {
-      const filter = presets.find((preset) => preset.label === selectedLabel);
+      const filter = config.presets.find(
+        (preset) => preset.label === selectedLabel
+      );
       if (filter?.label === '전체') {
         onReset();
         return;
@@ -106,22 +129,33 @@ const AreaFilterSheet = ({
       maximumValue !== undefined &&
       minimumValue > maximumValue
     ) {
-      setErrorMessage('최소 면적은 최대 면적보다 클 수 없습니다.');
+      setErrorMessage('최소값은 최대값보다 클 수 없습니다.');
       return;
     }
 
-    const unitLabel = unit === 'pyeong' ? '평' : 'm²';
+    const warningTarget = Math.max(minimumValue ?? 0, maximumValue ?? 0);
+    if (
+      config.maxWarningValue !== undefined &&
+      warningTarget > config.maxWarningValue
+    ) {
+      setErrorMessage(
+        config.maxWarningMessage ?? `${config.maxWarningValue}을 초과했습니다.`
+      );
+      return;
+    }
+
+    const unitLabel = formatUnitLabel(unit);
     const label = `${minimum || '0'}~${maximum || '이상'}${unitLabel}`;
     onApply({
       label,
-      minArea:
+      min:
         minimumValue === undefined
           ? undefined
-          : toSquareMeters(minimumValue, unit, true),
-      maxArea:
+          : convertValue(minimumValue, unit, true),
+      max:
         maximumValue === undefined
           ? undefined
-          : toSquareMeters(maximumValue, unit, false),
+          : convertValue(maximumValue, unit, false),
     });
   };
 
@@ -129,26 +163,28 @@ const AreaFilterSheet = ({
     <div className="fixed inset-x-0 bottom-0 top-[var(--header-height)] z-30 flex items-end bg-black/20">
       <button
         type="button"
-        aria-label="면적 필터 닫기"
+        aria-label={`${config.title} 닫기`}
         onClick={onClose}
         className="absolute inset-0"
       />
       <section className="relative z-10 w-full rounded-t-2xl bg-white px-5 pb-7 pt-4 shadow-[0_-8px_30px_rgba(25,31,40,0.14)] sm:mx-auto sm:mb-5 sm:max-w-[560px] sm:rounded-2xl">
         <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[#d8dde5] sm:hidden" />
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-extrabold text-[#191f28]">면적 필터</h2>
+          <h2 className="text-lg font-extrabold text-[#191f28]">
+            {config.title}
+          </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="닫기"
             className="h-8 w-8 text-2xl leading-none text-[#4e5968]"
           >
-            x
+            ×
           </button>
         </div>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {presets.map((preset) => (
+          {config.presets.map((preset) => (
             <button
               type="button"
               key={preset.label}
@@ -165,7 +201,9 @@ const AreaFilterSheet = ({
         </div>
 
         <div className="mt-5 border-t border-[#e5e8eb] pt-5">
-          <p className="mb-3 text-sm font-bold text-[#333d4b]">직접 입력</p>
+          <p className="mb-3 text-sm font-bold text-[#333d4b]">
+            {config.directLabel ?? '직접 입력'}
+          </p>
           <div className="flex items-center gap-2">
             <input
               type="number"
@@ -174,7 +212,7 @@ const AreaFilterSheet = ({
               onChange={(event) =>
                 updateDirectValue(setMinimum, event.target.value)
               }
-              placeholder="최소 면적"
+              placeholder="최소값"
               className={inputClass}
             />
             <span className="text-sm text-[#8b95a1]">~</span>
@@ -185,17 +223,24 @@ const AreaFilterSheet = ({
               onChange={(event) =>
                 updateDirectValue(setMaximum, event.target.value)
               }
-              placeholder="최대 면적"
+              placeholder="최대값"
               className={inputClass}
             />
-            <select
-              value={unit}
-              onChange={(event) => setUnit(event.target.value as Unit)}
-              className="h-12 rounded-lg border border-[#d8dde5] px-3 text-sm text-[#333d4b] outline-none focus:border-blue-600"
-            >
-              <option value="pyeong">평</option>
-              <option value="squareMeter">m²</option>
-            </select>
+            {config.directUnitOptions && (
+              <select
+                value={unit}
+                onChange={(event) =>
+                  setUnit(event.target.value as RangeFilterUnit)
+                }
+                className="h-12 rounded-lg border border-[#d8dde5] px-3 text-sm text-[#333d4b] outline-none focus:border-blue-600"
+              >
+                {config.directUnitOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           {errorMessage && (
             <p className="mt-2 text-sm font-medium text-[#e5484d]">
@@ -225,4 +270,4 @@ const AreaFilterSheet = ({
   );
 };
 
-export default AreaFilterSheet;
+export default RangeFilterSheet;
