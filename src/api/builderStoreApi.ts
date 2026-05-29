@@ -26,6 +26,8 @@ export type IndustryResponse = {
   children?: IndustryResponse[];
 };
 
+export type IndustryLevel = IndustryResponse['level'];
+
 export type CommercialAreaResponse = {
   commercialAreaId: number;
   name: string;
@@ -119,12 +121,39 @@ export const getBuilderStores = async (params: BuilderStoreListParams = {}) => {
   return response.data.data;
 };
 
-export const getIndustries = async () => {
+export const getIndustries = async (level: IndustryLevel = 'LARGE') => {
   const response = await apiClient.get<ApiResponse<IndustryResponse[]>>(
     '/api/v1/industries',
-    { params: { level: 'LARGE' } }
+    { params: { level } }
   );
   return response.data.data;
+};
+
+const flattenIndustries = (
+  industries: IndustryResponse[]
+): IndustryResponse[] =>
+  industries.flatMap((industry) => [
+    industry,
+    ...flattenIndustries(industry.children ?? []),
+  ]);
+
+export const getAnalysisIndustries = async () => {
+  try {
+    const smallIndustries = await getIndustries('SMALL');
+    if (smallIndustries.length > 0) {
+      return smallIndustries;
+    }
+  } catch {
+    // Fall back to nested industry children below when the level query is unavailable.
+  }
+
+  const largeIndustries = await getIndustries('LARGE');
+  const nestedSmallIndustries = flattenIndustries(largeIndustries).filter(
+    (industry) => industry.level === 'SMALL'
+  );
+  return nestedSmallIndustries.length > 0
+    ? nestedSmallIndustries
+    : largeIndustries;
 };
 
 export const getSeoulDistricts = async () => {

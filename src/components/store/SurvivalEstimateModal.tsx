@@ -187,8 +187,9 @@ const SurvivalEstimateModal = ({
   useEffect(() => {
     setForm((current) => ({
       ...current,
-      industryCode: current.industryCode || industries[0]?.industryCode || '',
-      regionCode: current.regionCode || districts[0]?.code || '',
+      industryCode:
+        current.industryCode || String(industries[0]?.industryCode ?? ''),
+      regionCode: current.regionCode || String(districts[0]?.code ?? ''),
     }));
   }, [districts, industries]);
 
@@ -308,7 +309,10 @@ const SurvivalEstimateModal = ({
                   className={inputClass}
                 >
                   {districts.map((district) => (
-                    <option key={district.regionId} value={district.code}>
+                    <option
+                      key={district.regionId}
+                      value={String(district.code)}
+                    >
                       {district.sigungu}
                     </option>
                   ))}
@@ -327,7 +331,7 @@ const SurvivalEstimateModal = ({
                   {industries.map((industry) => (
                     <option
                       key={industry.industryId}
-                      value={industry.industryCode}
+                      value={String(industry.industryCode)}
                     >
                       {industry.name}
                     </option>

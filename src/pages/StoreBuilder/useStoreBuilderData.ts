@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   bookmarkBuilderStore,
+  getAnalysisIndustries,
   getBuilderStores,
   getBuilderStoreDetail,
   getIndustries,
@@ -91,6 +92,9 @@ const useStoreBuilderData = (enabled: boolean) => {
     useState<StoreRangeFilters>(defaultRangeFilters);
   const [rawStores, setRawStores] = useState<StoreItem[]>([]);
   const [industries, setIndustries] = useState<IndustryResponse[]>([]);
+  const [analysisIndustries, setAnalysisIndustries] = useState<
+    IndustryResponse[]
+  >([]);
   const [districts, setDistricts] = useState<RegionResponse[]>([]);
   const [totalStores, setTotalStores] = useState(0);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
@@ -108,13 +112,14 @@ const useStoreBuilderData = (enabled: boolean) => {
 
     let active = true;
 
-    Promise.all([getIndustries(), getSeoulDistricts()])
-      .then(([industryList, districtList]) => {
+    Promise.all([getIndustries(), getAnalysisIndustries(), getSeoulDistricts()])
+      .then(([industryList, analysisIndustryList, districtList]) => {
         if (!active) {
           return;
         }
 
         setIndustries(industryList);
+        setAnalysisIndustries(analysisIndustryList);
         setDistricts(
           [...districtList].sort((left, right) =>
             left.sigungu.localeCompare(right.sigungu, 'ko-KR')
@@ -346,6 +351,7 @@ const useStoreBuilderData = (enabled: boolean) => {
   return {
     stores,
     industries,
+    analysisIndustries,
     districts,
     totalStores,
     selectedIndustry,
