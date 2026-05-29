@@ -1,6 +1,7 @@
 import location from '@/assets/icons/location-icon.svg';
 import ruler from '@/assets/icons/ruler-icon.svg';
 import questionMark from '@/assets/icons/questionMark-icon.svg';
+import trophy from '@/assets/icons/trophy-icon.svg';
 
 export interface StoreItem {
   id: number;
@@ -35,11 +36,12 @@ const StoreCard = ({
   onToggleLike,
 }: StoreCardProps) => {
   return (
-    <article className="overflow-hidden rounded-lg border border-[#d8dde5] bg-white">
+    <article className="overflow-hidden rounded-lg border border-[#fff4ee] bg-white">
       <div className="px-5 py-5">
         <div className="mb-5 flex items-center justify-between">
-          <span className="rounded-full bg-[#fff3e0] px-3 py-1 text-xs font-bold text-[#f2992e]">
-            🏆 이달 랭킹 #{store.rank}
+          <span className="flex gap-2 rounded-full bg-[#fff3e0] px-3 py-1 text-xs font-bold text-[#f36f28]">
+            <img src={trophy} alt="트로피 아이콘" />{' '}
+            <span>이달 랭킹 #{store.rank}</span>
           </span>
           <button
             type="button"
