@@ -18,6 +18,11 @@ export interface StoreItem {
   reposts: number;
   saved?: boolean;
   liked?: boolean;
+  areaValue: number;
+  expectedMonthlySalesValue: number;
+  expectedProfitRateValue: number;
+  depositValue: number;
+  monthlyRentValue: number;
 }
 
 interface StoreCardProps {

@@ -39,6 +39,9 @@ export type BuilderStoreSummaryResponse = {
   expectedProfitRate: number;
   investmentPaybackMonths: number;
   propertyScore: number;
+  monthlyRent: number;
+  deposit: number;
+  investmentAmount: number;
   likeCount: number;
   commentCount: number;
   region: RegionResponse;
