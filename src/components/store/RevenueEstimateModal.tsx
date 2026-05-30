@@ -86,6 +86,7 @@ const RevenueEstimateModal = ({
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
+  const [mobileStep, setMobileStep] = useState<'input' | 'result'>('input');
 
   const selectedDistrict = districts.find(
     (district) => String(district.code) === form.regionCode
@@ -148,6 +149,7 @@ const RevenueEstimateModal = ({
           Number(response.result.profitRate.toFixed(1))
         ),
       }));
+      setMobileStep('result');
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error));
     } finally {
@@ -237,7 +239,11 @@ const RevenueEstimateModal = ({
           ×
         </button>
 
-        <div className="rounded-lg border border-[#d8dde5] bg-white p-6">
+        <div
+          className={`rounded-lg border border-[#d8dde5] bg-white p-6 lg:block ${
+            mobileStep === 'result' ? 'hidden' : 'block'
+          }`}
+        >
           <div className="border-b border-[#e5e8eb] pb-4">
             <h2 className="text-xl font-bold text-[#191f28]">
               내 상가 수익률 추정
@@ -411,7 +417,24 @@ const RevenueEstimateModal = ({
           </form>
         </div>
 
-        <div className="rounded-lg border border-[#d8dde5] bg-white p-6">
+        <div
+          className={`rounded-lg border border-[#d8dde5] bg-white p-6 lg:block ${
+            mobileStep === 'input' ? 'hidden' : 'block'
+          }`}
+        >
+          <div className="mb-4 flex items-center justify-between lg:hidden">
+            <h2 className="text-lg font-extrabold text-[#191f28]">
+              수익률 계산 결과
+            </h2>
+            <button
+              type="button"
+              onClick={() => setMobileStep('input')}
+              className="rounded-md bg-blue-600 px-3 py-2 text-xs font-bold text-white"
+            >
+              입력으로 돌아가기
+            </button>
+          </div>
+
           <div className="flex items-start gap-2 rounded-md border border-[#e5484d] bg-[#fffafa] px-3 py-3 text-xs font-medium leading-relaxed text-[#e5484d]">
             <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-[#e5484d] text-[10px]">
               i
