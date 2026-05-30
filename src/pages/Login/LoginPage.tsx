@@ -4,6 +4,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@/api';
 import { useAuth } from '@/auth';
 import { HeaderUser } from '@/components/layout';
+import {
+  normalizePhoneNumber,
+  validatePhoneNumber,
+} from '@/utils/formValidation';
 
 type LoginMethod = 'phone' | 'social';
 
@@ -13,6 +17,7 @@ type LocationState = {
 
 const inputClass =
   'h-12 w-full rounded-sm border border-[#d8dde5] px-4 text-sm outline-none placeholder:text-[#b0b8c1] focus:border-blue-600';
+const errorInputClass = 'border-[#e5484d] focus:border-[#e5484d]';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -20,6 +25,7 @@ const LoginPage = () => {
   const { login } = useAuth();
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,15 +36,22 @@ const LoginPage = () => {
     event.preventDefault();
     setErrorMessage('');
 
-    if (!phoneNumber.trim() || !password) {
-      setErrorMessage('휴대폰 번호와 비밀번호를 입력해주세요.');
+    const nextPhoneError = validatePhoneNumber(phoneNumber);
+    setPhoneError(nextPhoneError);
+
+    if (nextPhoneError) {
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage('필수 입력 항목입니다');
       return;
     }
 
     setIsSubmitting(true);
     try {
       await login({
-        phoneNumber: phoneNumber.replaceAll('-', ''),
+        phoneNumber: normalizePhoneNumber(phoneNumber),
         password,
       });
       navigate('/store-builder');
@@ -66,7 +79,7 @@ const LoginPage = () => {
               점포주 로그인
             </h1>
             <p className="mt-5 text-sm font-medium text-[#4e5968]">
-              내 점포 데이터를 관리하고 스마트하게 운영하세요.
+              내 점포 데이터를 관리하고 스마트하게 운영하세요
             </p>
           </div>
 
@@ -104,10 +117,22 @@ const LoginPage = () => {
                 <input
                   type="tel"
                   value={phoneNumber}
-                  onChange={(event) => setPhoneNumber(event.target.value)}
+                  onChange={(event) => {
+                    setPhoneNumber(event.target.value);
+                    if (phoneError) {
+                      setPhoneError(validatePhoneNumber(event.target.value));
+                    }
+                  }}
+                  onBlur={() => setPhoneError(validatePhoneNumber(phoneNumber))}
                   placeholder="ex) 01012345678"
-                  className={inputClass}
+                  className={`${inputClass} ${phoneError ? errorInputClass : ''}`}
+                  aria-invalid={Boolean(phoneError)}
                 />
+                {phoneError && (
+                  <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                    {phoneError}
+                  </p>
+                )}
               </label>
 
               <label className="mt-4 block">

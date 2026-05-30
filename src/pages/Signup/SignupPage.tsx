@@ -6,11 +6,16 @@ import { useAuth } from '@/auth';
 import LoginTermsModal from '@/components/login/LoginTermsModal';
 import { HeaderUser } from '@/components/layout';
 import SignupOnboarding from '@/components/signup/SignupOnboarding';
+import {
+  normalizePhoneNumber,
+  validatePhoneNumber,
+} from '@/utils/formValidation';
 
 type SignupStage = 'form' | 'terms' | 'onboarding';
 
 const inputClass =
   'h-12 w-full rounded-sm border border-[#d8dde5] px-4 text-sm text-[#191f28] outline-none placeholder:text-[#b0b8c1] focus:border-blue-600';
+const errorInputClass = 'border-[#e5484d] focus:border-[#e5484d]';
 const labelClass = 'mb-2 block text-sm font-medium text-gray-46';
 
 const toApiBirthDate = (value: string) => {
@@ -41,6 +46,7 @@ const SignupPage = () => {
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const [password, setPassword] = useState('');
   const [requiredTerms, setRequiredTerms] = useState({
     personalInfo: false,
@@ -56,6 +62,13 @@ const SignupPage = () => {
   const submitSignup = async () => {
     setErrorMessage('');
     const formattedBirthDate = toApiBirthDate(birthDate);
+    const nextPhoneError = validatePhoneNumber(phoneNumber);
+    setPhoneError(nextPhoneError);
+
+    if (nextPhoneError) {
+      setStage('form');
+      return;
+    }
 
     if (!name.trim() || !phoneNumber.trim() || !password) {
       setErrorMessage('이름, 생년월일, 휴대폰 번호, 비밀번호를 입력해주세요.');
@@ -86,7 +99,7 @@ const SignupPage = () => {
       await signup({
         name: name.trim(),
         birthDate: formattedBirthDate,
-        phoneNumber: phoneNumber.replaceAll('-', ''),
+        phoneNumber: normalizePhoneNumber(phoneNumber),
         password,
       });
       setStage('onboarding');
@@ -174,10 +187,26 @@ const SignupPage = () => {
                       <input
                         type="tel"
                         value={phoneNumber}
-                        onChange={(event) => setPhoneNumber(event.target.value)}
+                        onChange={(event) => {
+                          setPhoneNumber(event.target.value);
+                          if (phoneError) {
+                            setPhoneError(
+                              validatePhoneNumber(event.target.value)
+                            );
+                          }
+                        }}
+                        onBlur={() =>
+                          setPhoneError(validatePhoneNumber(phoneNumber))
+                        }
                         placeholder="ex) 01012345678"
-                        className={inputClass}
+                        className={`${inputClass} ${phoneError ? errorInputClass : ''}`}
+                        aria-invalid={Boolean(phoneError)}
                       />
+                      {phoneError && (
+                        <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                          {phoneError}
+                        </p>
+                      )}
                     </label>
 
                     <label className="mt-4 block">
