@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 import {
   calculateProfitAnalysis,
@@ -75,15 +75,6 @@ const RevenueEstimateModal = ({
   const [result, setResult] = useState<ProfitAnalysisResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-
-  useEffect(() => {
-    setForm((current) => ({
-      ...current,
-      industryCode:
-        current.industryCode || String(industries[0]?.industryCode ?? ''),
-      regionCode: current.regionCode || String(districts[0]?.code ?? ''),
-    }));
-  }, [districts, industries]);
 
   const updateField = (field: keyof RevenueForm, value: string) => {
     setErrorMessage('');
@@ -197,6 +188,9 @@ const RevenueEstimateModal = ({
                 }
                 className={inputClass}
               >
+                <option value="" disabled>
+                  업종을 선택하세요
+                </option>
                 {industries.map((industry) => (
                   <option
                     key={industry.industryId}
@@ -217,6 +211,9 @@ const RevenueEstimateModal = ({
                 }
                 className={inputClass}
               >
+                <option value="" disabled>
+                  지역을 선택하세요
+                </option>
                 {districts.map((district) => (
                   <option key={district.regionId} value={String(district.code)}>
                     {district.sigungu}
