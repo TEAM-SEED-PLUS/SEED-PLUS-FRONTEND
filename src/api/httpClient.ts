@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
+import { getEnv } from '@/utils/env';
 
 declare module 'axios' {
   export interface InternalAxiosRequestConfig {
@@ -26,7 +27,7 @@ const readStoredAccessToken = () => {
 };
 
 const getAppEnv = (): AppEnv => {
-  const appEnv = import.meta.env.VITE_APP_ENV?.trim() || 'development';
+  const appEnv = getEnv('VITE_APP_ENV') || 'development';
 
   if (appEnv !== 'development' && appEnv !== 'production') {
     throw new Error(
@@ -41,8 +42,8 @@ const getApiBaseUrl = () => {
   const appEnv = getAppEnv();
   const apiBaseUrl =
     appEnv === 'production'
-      ? import.meta.env.VITE_PROD_API_BASE_URL?.trim()
-      : import.meta.env.VITE_DEV_API_BASE_URL?.trim();
+      ? getEnv('VITE_PROD_API_BASE_URL')
+      : getEnv('VITE_DEV_API_BASE_URL');
 
   if (!apiBaseUrl) {
     throw new Error(

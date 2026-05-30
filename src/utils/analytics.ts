@@ -1,4 +1,6 @@
-const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim();
+import { getEnv } from '@/utils/env';
+
+const gaMeasurementId = getEnv('VITE_GA_MEASUREMENT_ID');
 
 let isGoogleAnalyticsLoaded = false;
 

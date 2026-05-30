@@ -99,5 +99,6 @@ jobs:
                 ecr_registry=${{ secrets.ECR_REGISTRY }} \
                 ecr_repository=${{ secrets.ECR_REPOSITORY }} \
                 image_tag=${{ steps.resolve-image.outputs.image_tag }} \
-                aws_region=ap-northeast-2" \
+                aws_region=ap-northeast-2 \
+                app_env_content='${{ secrets.ENV_FILE_PROD }}'" \
             playbooks/aws_fe_deploy.yml
