@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
   calculateProfitAnalysis,
@@ -87,6 +87,15 @@ const RevenueEstimateModal = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
   const [mobileStep, setMobileStep] = useState<'input' | 'result'>('input');
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
 
   const selectedDistrict = districts.find(
     (district) => String(district.code) === form.regionCode
