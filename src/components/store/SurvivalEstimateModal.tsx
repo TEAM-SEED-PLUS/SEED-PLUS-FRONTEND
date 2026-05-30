@@ -192,10 +192,10 @@ const VariableSlider = ({
       <div className="mb-4 text-center text-xs font-extrabold text-[#191f28]">
         {label}
       </div>
-      <div className="relative h-7">
-        <div className="absolute left-0 right-0 top-3 h-2 rounded-full bg-[#e5e8eb]" />
+      <div className="relative h-10">
+        <div className="absolute left-0 right-0 top-6 h-2 rounded-full bg-[#e5e8eb]" />
         <div
-          className="absolute left-0 top-3 h-2 rounded-full bg-blue-600"
+          className="absolute left-0 top-6 h-2 rounded-full bg-blue-600"
           style={{ width: left }}
         />
         <input
@@ -204,7 +204,7 @@ const VariableSlider = ({
           max="5"
           value={value}
           onChange={(event) => onChange(Number(event.target.value))}
-          className="absolute inset-x-0 top-0 h-7 cursor-pointer opacity-0"
+          className="absolute inset-x-0 top-3 h-7 cursor-pointer opacity-0"
         />
         <div
           className="absolute top-0 rounded-sm bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white"
@@ -213,11 +213,11 @@ const VariableSlider = ({
           {status}
         </div>
         <div
-          className="absolute top-[7px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
+          className="absolute top-[19px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
           style={{ left: `calc(${left} - 10px)` }}
         />
       </div>
-      <div className="mt-1 flex justify-between text-[10px] font-medium text-[#8b95a1]">
+      <div className="-mt-1 flex justify-between text-[10px] font-medium text-[#8b95a1]">
         <span>하위</span>
         <span>상위</span>
       </div>
