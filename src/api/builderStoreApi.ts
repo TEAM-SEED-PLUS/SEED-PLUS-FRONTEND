@@ -49,6 +49,8 @@ export type BuilderStoreSummaryResponse = {
   region: RegionResponse;
   commercialArea: CommercialAreaResponse;
   industry: IndustryResponse;
+  liked?: boolean;
+  bookmarked?: boolean;
 };
 
 export type BuilderStoreDetailResponse = BuilderStoreSummaryResponse & {
