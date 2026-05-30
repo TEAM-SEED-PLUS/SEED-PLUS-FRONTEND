@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
   calculateSurvivalAnalysis,
@@ -281,15 +281,7 @@ const SurvivalEstimateModal = ({
   const [result, setResult] = useState<SurvivalAnalysisResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-
-  useEffect(() => {
-    setForm((current) => ({
-      ...current,
-      industryCode:
-        current.industryCode || String(industries[0]?.industryCode ?? ''),
-      regionCode: current.regionCode || String(districts[0]?.code ?? ''),
-    }));
-  }, [districts, industries]);
+  const [mobileStep, setMobileStep] = useState<'input' | 'result'>('input');
 
   const selectedDistrict = useMemo(
     () =>
@@ -410,6 +402,7 @@ const SurvivalEstimateModal = ({
         avgSalesAmt: toNumber(form.avgSalesAmt),
       });
       setResult(response);
+      setMobileStep('result');
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error));
     } finally {
@@ -429,7 +422,9 @@ const SurvivalEstimateModal = ({
           ×
         </button>
 
-        <section>
+        <section
+          className={`lg:block ${mobileStep === 'result' ? 'hidden' : 'block'}`}
+        >
           <div className="mb-5">
             <h2 className="text-base font-extrabold text-[#191f28]">
               생존율 계산기
@@ -479,6 +474,9 @@ const SurvivalEstimateModal = ({
                   }
                   className={inputClass}
                 >
+                  <option value="" disabled>
+                    지역을 선택하세요
+                  </option>
                   {districts.map((district) => (
                     <option
                       key={district.regionId}
@@ -506,7 +504,9 @@ const SurvivalEstimateModal = ({
                   }
                   className={inputClass}
                 >
-                  <option value="">-- 업종 선택 --</option>
+                  <option value="" disabled>
+                    업종을 선택하세요
+                  </option>
                   {industries.map((industry) => (
                     <option
                       key={industry.industryId}
@@ -623,7 +623,24 @@ const SurvivalEstimateModal = ({
           </form>
         </section>
 
-        <section className="rounded-lg bg-white p-5 shadow-sm">
+        <section
+          className={`rounded-lg bg-white p-5 shadow-sm lg:block ${
+            mobileStep === 'input' ? 'hidden' : 'block'
+          }`}
+        >
+          <div className="mb-4 flex items-center justify-between lg:hidden">
+            <h2 className="text-lg font-extrabold text-[#191f28]">
+              생존율 계산 결과
+            </h2>
+            <button
+              type="button"
+              onClick={() => setMobileStep('input')}
+              className="rounded-md bg-blue-600 px-3 py-2 text-xs font-bold text-white"
+            >
+              입력으로 돌아가기
+            </button>
+          </div>
+
           <h3 className="text-sm font-extrabold text-[#191f28]">
             데이터 출처 및 API 연동 현황
           </h3>
@@ -845,7 +862,10 @@ const SurvivalEstimateModal = ({
 
           <button
             type="button"
-            onClick={() => setResult(null)}
+            onClick={() => {
+              setResult(null);
+              setMobileStep('input');
+            }}
             className="mt-4 h-11 w-full rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700"
           >
             다시 계산하기
