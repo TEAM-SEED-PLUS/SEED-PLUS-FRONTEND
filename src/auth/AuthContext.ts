@@ -6,11 +6,9 @@ export type AuthStatus = 'loading' | 'authenticated' | 'guest';
 export type AuthContextValue = {
   status: AuthStatus;
   isAuthenticated: boolean;
-  isMockLoginAvailable: boolean;
   user: UserMeResponse | null;
   login: (payload: LoginRequest) => Promise<void>;
   signup: (payload: SignupRequest) => Promise<void>;
-  loginWithMock: () => void;
   logout: () => Promise<void>;
 };
 

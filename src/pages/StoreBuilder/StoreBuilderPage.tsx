@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { HeaderUser } from '@/components/layout';
 import {
-  CreateStoreModal,
   ExpertMatchSidebar,
   MobileStoreSidebar,
   RangeFilterSheet,
@@ -96,7 +95,6 @@ const rangeFilterConfigs = {
 
 const StoreBuilderPage = () => {
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
-  const [isCreateStoreModalOpen, setIsCreateStoreModalOpen] = useState(false);
   const [isSurvivalModalOpen, setIsSurvivalModalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeRangeFilter, setActiveRangeFilter] =
@@ -164,7 +162,7 @@ const StoreBuilderPage = () => {
         isOpen={isMobileSidebarOpen}
         onOpenCreateStore={() => {
           setIsMobileSidebarOpen(false);
-          setIsCreateStoreModalOpen(true);
+          setIsRevenueModalOpen(true);
         }}
         onOpenRevenueCalculator={() => {
           setIsMobileSidebarOpen(false);
@@ -218,7 +216,7 @@ const StoreBuilderPage = () => {
           />
           <button
             type="button"
-            onClick={() => setIsCreateStoreModalOpen(true)}
+            onClick={() => setIsRevenueModalOpen(true)}
             className="hidden rounded-lg bg-blue-600 px-7 py-3 text-sm font-extrabold text-white transition hover:bg-blue-700 md:block"
           >
             내 상가만들기
@@ -247,16 +245,8 @@ const StoreBuilderPage = () => {
           industries={analysisIndustries}
           districts={districts}
           legalDongs={legalDongs}
-          onClose={() => setIsRevenueModalOpen(false)}
-        />
-      )}
-
-      {isCreateStoreModalOpen && (
-        <CreateStoreModal
-          industries={industries}
-          districts={districts}
           onCreated={reloadStores}
-          onClose={() => setIsCreateStoreModalOpen(false)}
+          onClose={() => setIsRevenueModalOpen(false)}
         />
       )}
 

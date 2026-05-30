@@ -13,6 +13,8 @@ declare module 'axios' {
   }
 }
 
+type AppEnv = 'development' | 'production';
+
 const accessTokenStorageKey = 'seed_plus_access_token';
 
 const readStoredAccessToken = () => {
@@ -23,11 +25,39 @@ const readStoredAccessToken = () => {
   return window.sessionStorage.getItem(accessTokenStorageKey);
 };
 
+const getAppEnv = (): AppEnv => {
+  const appEnv = import.meta.env.VITE_APP_ENV?.trim() || 'development';
+
+  if (appEnv !== 'development' && appEnv !== 'production') {
+    throw new Error(
+      `VITE_APP_ENV must be either development or production. Current value: ${appEnv}`
+    );
+  }
+
+  return appEnv;
+};
+
+const getApiBaseUrl = () => {
+  const appEnv = getAppEnv();
+  const apiBaseUrl =
+    appEnv === 'production'
+      ? import.meta.env.VITE_PROD_API_BASE_URL?.trim()
+      : import.meta.env.VITE_DEV_API_BASE_URL?.trim();
+
+  if (!apiBaseUrl) {
+    throw new Error(
+      `${appEnv === 'production' ? 'VITE_PROD_API_BASE_URL' : 'VITE_DEV_API_BASE_URL'} is not configured. Add the API server URL to the environment variables.`
+    );
+  }
+
+  return apiBaseUrl;
+};
+
 let accessToken: string | null = readStoredAccessToken();
 let refreshHandler: (() => Promise<string | null>) | null = null;
 let refreshRequest: Promise<string | null> | null = null;
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+const apiBaseUrl = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
@@ -58,12 +88,6 @@ export const setRefreshHandler = (handler: () => Promise<string | null>) => {
 };
 
 apiClient.interceptors.request.use((config) => {
-  if (!apiBaseUrl) {
-    throw new Error(
-      'VITE_API_BASE_URL이 설정되지 않았습니다. API 서버 주소를 환경변수에 추가해주세요.'
-    );
-  }
-
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }

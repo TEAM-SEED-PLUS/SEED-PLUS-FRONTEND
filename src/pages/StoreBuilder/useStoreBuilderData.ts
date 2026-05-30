@@ -35,13 +35,51 @@ const toStoreItem = (
   score: store.propertyScore,
   likes: store.likeCount,
   reposts: 0,
-  liked: undefined,
+  saved: store.bookmarked,
+  liked: store.liked,
   areaValue: store.area,
   expectedMonthlySalesValue: store.expectedMonthlySales,
   expectedProfitRateValue: store.expectedProfitRate,
   depositValue: store.deposit,
   monthlyRentValue: store.monthlyRent,
 });
+
+const applyStoreInteractionState = async (stores: StoreItem[]) => {
+  const storesMissingInteractionState = stores.filter(
+    (store) => store.liked === undefined || store.saved === undefined
+  );
+
+  if (storesMissingInteractionState.length === 0) {
+    return stores;
+  }
+
+  const details = await Promise.allSettled(
+    storesMissingInteractionState.map((store) =>
+      getBuilderStoreDetail(store.id)
+    )
+  );
+
+  const detailByStoreId = new Map(
+    details
+      .map((detail) => (detail.status === 'fulfilled' ? detail.value : null))
+      .filter((detail) => detail !== null)
+      .map((detail) => [detail.builderStoreId, detail])
+  );
+
+  return stores.map((store) => {
+    const detail = detailByStoreId.get(store.id);
+
+    if (!detail) {
+      return store;
+    }
+
+    return {
+      ...store,
+      liked: detail.liked,
+      saved: detail.bookmarked,
+    };
+  });
+};
 
 export type StoreRangeFilterValue = {
   label: string;
@@ -157,6 +195,8 @@ const useStoreBuilderData = (enabled: boolean) => {
 
     let active = true;
 
+    setIsStoreLoading(true);
+
     getBuilderStores({
       size: 100,
       sort: 'uploadedAt,desc',
@@ -165,12 +205,20 @@ const useStoreBuilderData = (enabled: boolean) => {
       minArea: rangeFilters.area.min,
       maxArea: rangeFilters.area.max,
     })
-      .then((response) => {
+      .then(async (response) => {
         if (!active) {
           return;
         }
 
-        setRawStores(response.content.map(toStoreItem));
+        const nextStores = await applyStoreInteractionState(
+          response.content.map(toStoreItem)
+        );
+
+        if (!active) {
+          return;
+        }
+
+        setRawStores(nextStores);
         setTotalStores(response.pageInfo.totalElements);
       })
       .catch(() => {

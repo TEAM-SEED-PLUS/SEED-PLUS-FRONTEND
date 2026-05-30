@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import {
   calculateSurvivalAnalysis,
@@ -192,10 +192,10 @@ const VariableSlider = ({
       <div className="mb-4 text-center text-xs font-extrabold text-[#191f28]">
         {label}
       </div>
-      <div className="relative h-7">
-        <div className="absolute left-0 right-0 top-3 h-2 rounded-full bg-[#e5e8eb]" />
+      <div className="relative h-10">
+        <div className="absolute left-0 right-0 top-6 h-2 rounded-full bg-[#e5e8eb]" />
         <div
-          className="absolute left-0 top-3 h-2 rounded-full bg-blue-600"
+          className="absolute left-0 top-6 h-2 rounded-full bg-blue-600"
           style={{ width: left }}
         />
         <input
@@ -204,7 +204,7 @@ const VariableSlider = ({
           max="5"
           value={value}
           onChange={(event) => onChange(Number(event.target.value))}
-          className="absolute inset-x-0 top-0 h-7 cursor-pointer opacity-0"
+          className="absolute inset-x-0 top-3 h-7 cursor-pointer opacity-0"
         />
         <div
           className="absolute top-0 rounded-sm bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white"
@@ -213,11 +213,11 @@ const VariableSlider = ({
           {status}
         </div>
         <div
-          className="absolute top-[7px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
+          className="absolute top-[19px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
           style={{ left: `calc(${left} - 10px)` }}
         />
       </div>
-      <div className="mt-1 flex justify-between text-[10px] font-medium text-[#8b95a1]">
+      <div className="-mt-1 flex justify-between text-[10px] font-medium text-[#8b95a1]">
         <span>하위</span>
         <span>상위</span>
       </div>
@@ -281,15 +281,7 @@ const SurvivalEstimateModal = ({
   const [result, setResult] = useState<SurvivalAnalysisResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-
-  useEffect(() => {
-    setForm((current) => ({
-      ...current,
-      industryCode:
-        current.industryCode || String(industries[0]?.industryCode ?? ''),
-      regionCode: current.regionCode || String(districts[0]?.code ?? ''),
-    }));
-  }, [districts, industries]);
+  const [mobileStep, setMobileStep] = useState<'input' | 'result'>('input');
 
   const selectedDistrict = useMemo(
     () =>
@@ -410,6 +402,7 @@ const SurvivalEstimateModal = ({
         avgSalesAmt: toNumber(form.avgSalesAmt),
       });
       setResult(response);
+      setMobileStep('result');
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error));
     } finally {
@@ -429,7 +422,9 @@ const SurvivalEstimateModal = ({
           ×
         </button>
 
-        <section>
+        <section
+          className={`lg:block ${mobileStep === 'result' ? 'hidden' : 'block'}`}
+        >
           <div className="mb-5">
             <h2 className="text-base font-extrabold text-[#191f28]">
               생존율 계산기
@@ -479,6 +474,9 @@ const SurvivalEstimateModal = ({
                   }
                   className={inputClass}
                 >
+                  <option value="" disabled>
+                    지역을 선택하세요
+                  </option>
                   {districts.map((district) => (
                     <option
                       key={district.regionId}
@@ -506,7 +504,9 @@ const SurvivalEstimateModal = ({
                   }
                   className={inputClass}
                 >
-                  <option value="">-- 업종 선택 --</option>
+                  <option value="" disabled>
+                    업종을 선택하세요
+                  </option>
                   {industries.map((industry) => (
                     <option
                       key={industry.industryId}
@@ -623,7 +623,24 @@ const SurvivalEstimateModal = ({
           </form>
         </section>
 
-        <section className="rounded-lg bg-white p-5 shadow-sm">
+        <section
+          className={`rounded-lg bg-white p-5 shadow-sm lg:block ${
+            mobileStep === 'input' ? 'hidden' : 'block'
+          }`}
+        >
+          <div className="mb-4 flex items-center justify-between lg:hidden">
+            <h2 className="text-lg font-extrabold text-[#191f28]">
+              생존율 계산 결과
+            </h2>
+            <button
+              type="button"
+              onClick={() => setMobileStep('input')}
+              className="rounded-md bg-blue-600 px-3 py-2 text-xs font-bold text-white"
+            >
+              입력으로 돌아가기
+            </button>
+          </div>
+
           <h3 className="text-sm font-extrabold text-[#191f28]">
             데이터 출처 및 API 연동 현황
           </h3>
@@ -845,7 +862,10 @@ const SurvivalEstimateModal = ({
 
           <button
             type="button"
-            onClick={() => setResult(null)}
+            onClick={() => {
+              setResult(null);
+              setMobileStep('input');
+            }}
             className="mt-4 h-11 w-full rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700"
           >
             다시 계산하기

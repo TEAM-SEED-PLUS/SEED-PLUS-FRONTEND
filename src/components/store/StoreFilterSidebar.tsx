@@ -60,7 +60,7 @@ const StoreFilterSidebar = ({
                 <button
                   type="button"
                   onClick={() => onSelectIndustry(null)}
-                  className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-xs font-medium ${
+                  className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left text-xs font-medium ${
                     selectedIndustryId === null
                       ? 'bg-blue-300 text-blue-600'
                       : 'text-gray-46 hover:bg-gray-500'
@@ -78,13 +78,13 @@ const StoreFilterSidebar = ({
                     key={industry.industryId}
                     type="button"
                     onClick={() => onSelectIndustry(industry.industryId)}
-                    className={`flex w-full items-start rounded-md px-3 py-2.5 text-xs font-medium ${
+                    className={`flex w-full items-start rounded-md px-3 py-2.5 text-left text-xs font-medium ${
                       selectedIndustryId === industry.industryId
                         ? 'bg-blue-300 text-blue-600'
                         : 'text-gray-46 hover:bg-gray-500'
                     }`}
                   >
-                    <span>{industry.name}</span>
+                    <span className="flex-1 text-left">{industry.name}</span>
                   </button>
                 ))}
               </div>
