@@ -17,7 +17,7 @@ const inputClass =
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, loginWithMock, isMockLoginAvailable } = useAuth();
+  const { login } = useAuth();
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
@@ -47,11 +47,6 @@ const LoginPage = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleMockLogin = () => {
-    loginWithMock();
-    navigate('/store-builder');
   };
 
   const tabClass = (method: LoginMethod) =>
@@ -151,15 +146,6 @@ const LoginPage = () => {
           )}
 
           <div className="mt-10 space-y-1.5 text-center text-sm font-medium">
-            {isMockLoginAvailable && (
-              <button
-                type="button"
-                onClick={handleMockLogin}
-                className="text-gray-46 transition-colors hover:text-blue-600"
-              >
-                앱 없이 로그인하기
-              </button>
-            )}
             <div className="text-gray-46">
               아직 회원이 아니신가요?{' '}
               <button

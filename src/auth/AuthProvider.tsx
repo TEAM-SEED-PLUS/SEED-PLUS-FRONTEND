@@ -10,12 +10,6 @@ import {
   setRefreshHandler,
   signup as requestSignup,
 } from '@/api';
-import {
-  clearMockAuthenticated,
-  getMockAuthenticated,
-  isMockAuthEnabled,
-  setMockAuthenticated,
-} from '@/utils/auth';
 import { AuthContext } from './AuthContext';
 import type { AuthContextValue, AuthStatus } from './AuthContext';
 import type { UserMeResponse } from '@/api';
@@ -23,7 +17,6 @@ import type { UserMeResponse } from '@/api';
 const AuthProvider = ({ children }: PropsWithChildren) => {
   const [status, setStatus] = useState<AuthStatus>('loading');
   const [user, setUser] = useState<UserMeResponse | null>(null);
-  const mockEnabled = isMockAuthEnabled();
 
   useEffect(() => {
     let active = true;
@@ -68,32 +61,22 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
 
     setRefreshHandler(refreshSession);
 
-    if (mockEnabled && getMockAuthenticated()) {
-      setUser(null);
-      setStatus('authenticated');
-      return () => {
-        active = false;
-      };
-    }
-
     void restoreSession();
 
     return () => {
       active = false;
     };
-  }, [mockEnabled]);
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       status,
       isAuthenticated: status === 'authenticated',
-      isMockLoginAvailable: mockEnabled,
       user,
       login: async (payload) => {
         try {
           await requestLogin(payload);
           const profile = await getMyProfile();
-          clearMockAuthenticated();
           setUser(profile);
           setStatus('authenticated');
         } catch (error) {
@@ -106,29 +89,17 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       signup: async (payload) => {
         await requestSignup(payload);
       },
-      loginWithMock: () => {
-        if (!mockEnabled) {
-          return;
-        }
-
-        setMockAuthenticated(true);
-        setUser(null);
-        setStatus('authenticated');
-      },
       logout: async () => {
         try {
-          if (!getMockAuthenticated()) {
-            await requestLogout();
-          }
+          await requestLogout();
         } finally {
           clearAuthToken();
-          clearMockAuthenticated();
           setUser(null);
           setStatus('guest');
         }
       },
     }),
-    [mockEnabled, status, user]
+    [status, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
