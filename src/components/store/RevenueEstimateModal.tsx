@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import {
   calculateProfitAnalysis,
+  createBuilderStore,
   getApiErrorMessage,
   type IndustryResponse,
   type ProfitAnalysisResponse,
@@ -13,6 +14,7 @@ interface RevenueEstimateModalProps {
   districts: RegionResponse[];
   legalDongs: RegionResponse[];
   onClose: () => void;
+  onCreated: () => void;
 }
 
 type RevenueForm = {
@@ -21,6 +23,8 @@ type RevenueForm = {
   industryCode: string;
   regionCode: string;
   area: string;
+  expectedMonthlySales: string;
+  expectedProfitRate: string;
   invest: string;
   rent: string;
   premium: string;
@@ -32,16 +36,20 @@ const initialForm: RevenueForm = {
   industryCode: '',
   regionCode: '',
   area: '',
+  expectedMonthlySales: '',
+  expectedProfitRate: '',
   invest: '',
   rent: '',
   premium: '',
 };
 
+const FIXED_COMMERCIAL_AREA_ID = 1;
 const inputClass =
   'h-11 w-full rounded-md border border-[#d8dde5] bg-white px-3 text-sm text-[#191f28] outline-none placeholder:text-[#8b95a1] focus:border-blue-600';
-
 const labelClass = 'mb-2 block text-sm font-medium text-[#333d4b]';
+
 const toNumber = (value: string) => Number(value.trim());
+const toWon = (value: number) => Math.round(value * 10000);
 const formatNumber = (value?: number, digits = 0) =>
   value === undefined || Number.isNaN(value)
     ? '-'
@@ -70,14 +78,25 @@ const RevenueEstimateModal = ({
   districts,
   legalDongs,
   onClose,
+  onCreated,
 }: RevenueEstimateModalProps) => {
   const [form, setForm] = useState<RevenueForm>(initialForm);
   const [result, setResult] = useState<ProfitAnalysisResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [saveMessage, setSaveMessage] = useState('');
+
+  const selectedDistrict = districts.find(
+    (district) => String(district.code) === form.regionCode
+  );
+  const selectedIndustry = industries.find(
+    (industry) => String(industry.industryCode) === form.industryCode
+  );
 
   const updateField = (field: keyof RevenueForm, value: string) => {
     setErrorMessage('');
+    setSaveMessage('');
     setForm((current) => ({ ...current, [field]: value }));
   };
 
@@ -104,7 +123,7 @@ const RevenueEstimateModal = ({
     );
 
     if (!legalDongCode) {
-      setErrorMessage('선택한 구에 해당하는 동 코드를 찾을 수 없습니다.');
+      setErrorMessage('선택한 구에 해당하는 법정동 코드를 찾을 수 없습니다.');
       return;
     }
 
@@ -120,7 +139,15 @@ const RevenueEstimateModal = ({
         premium: toNumber(form.premium),
         staff: Math.round(toNumber(form.staff)),
       });
+
       setResult(response);
+      setForm((current) => ({
+        ...current,
+        expectedMonthlySales: String(Math.round(response.result.monthlyRev)),
+        expectedProfitRate: String(
+          Number(response.result.profitRate.toFixed(1))
+        ),
+      }));
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error));
     } finally {
@@ -128,8 +155,78 @@ const RevenueEstimateModal = ({
     }
   };
 
+  const handleSaveStore = async () => {
+    setErrorMessage('');
+    setSaveMessage('');
+
+    if (
+      !form.storeName.trim() ||
+      !selectedIndustry ||
+      !selectedDistrict ||
+      !form.area ||
+      !form.expectedMonthlySales ||
+      !form.expectedProfitRate ||
+      !form.invest ||
+      !form.rent ||
+      !form.premium
+    ) {
+      setSaveMessage('상가명과 저장에 필요한 값을 모두 입력해주세요.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const expectedMonthlySales =
+        result?.result.monthlyRev ?? toNumber(form.expectedMonthlySales);
+      const expectedProfitRate =
+        result?.result.profitRate ?? toNumber(form.expectedProfitRate);
+      const investmentPaybackMonths =
+        result?.result.paybackMonths ??
+        Math.max(
+          1,
+          Math.round(
+            (toNumber(form.invest) + toNumber(form.premium)) /
+              Math.max(expectedMonthlySales, 1)
+          )
+        );
+
+      await createBuilderStore({
+        regionId: selectedDistrict.regionId,
+        commercialAreaId: FIXED_COMMERCIAL_AREA_ID,
+        industryId: selectedIndustry.industryId,
+        name: form.storeName.trim(),
+        building: {
+          address: `${selectedDistrict.sido} ${selectedDistrict.sigungu}`,
+          name: 'Seed Building',
+          floor: 15,
+          totalArea: toNumber(form.area),
+          locationComplete: true,
+        },
+        metrics: {
+          area: toNumber(form.area),
+          expectedMonthlySales: toWon(expectedMonthlySales),
+          expectedProfitRate,
+          investmentAmount: toWon(toNumber(form.invest)),
+          investmentPaybackMonths: Math.round(investmentPaybackMonths),
+          monthlyRent: toWon(toNumber(form.rent)),
+          deposit: toWon(toNumber(form.premium)),
+        },
+        description: '수익률 추정 계산기로 생성한 가상 점포',
+        visibilityStatus: 'PUBLIC',
+        imageUrls: [],
+      });
+
+      onCreated();
+      onClose();
+    } catch (error) {
+      setSaveMessage(getApiErrorMessage(error));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div className="fixed inset-x-0 bottom-0 top-14 z-30 flex items-start justify-center overflow-y-auto bg-[#f5f6f8] pt-30 px-8 py-6">
+    <div className="scrollbar-hide fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-white/75 px-8 py-6 pt-[calc(var(--header-height)+24px)] backdrop-blur-[1px]">
       <section className="relative grid w-full max-w-[1120px] grid-cols-1 gap-8 lg:grid-cols-2">
         <button
           type="button"
@@ -168,7 +265,7 @@ const RevenueEstimateModal = ({
             </label>
 
             <label className="block">
-              <span className={labelClass}>예상직원수</span>
+              <span className={labelClass}>예상 직원 수(명)</span>
               <input
                 type="number"
                 min="0"
@@ -180,7 +277,7 @@ const RevenueEstimateModal = ({
             </label>
 
             <label className="block">
-              <span className={labelClass}>업종선택</span>
+              <span className={labelClass}>업종 선택</span>
               <select
                 value={form.industryCode}
                 onChange={(event) =>
@@ -203,7 +300,7 @@ const RevenueEstimateModal = ({
             </label>
 
             <label className="block">
-              <span className={labelClass}>지역선택</span>
+              <span className={labelClass}>지역 선택</span>
               <select
                 value={form.regionCode}
                 onChange={(event) =>
@@ -235,7 +332,35 @@ const RevenueEstimateModal = ({
             </label>
 
             <label className="block">
-              <span className={labelClass}>초기투자금(만원)</span>
+              <span className={labelClass}>예상 매출(만원)</span>
+              <input
+                type="number"
+                min="0"
+                value={form.expectedMonthlySales}
+                onChange={(event) =>
+                  updateField('expectedMonthlySales', event.target.value)
+                }
+                placeholder="계산 후 자동 입력 또는 직접 입력"
+                className={inputClass}
+              />
+            </label>
+
+            <label className="block">
+              <span className={labelClass}>수익률(%)</span>
+              <input
+                type="number"
+                min="0"
+                value={form.expectedProfitRate}
+                onChange={(event) =>
+                  updateField('expectedProfitRate', event.target.value)
+                }
+                placeholder="계산 후 자동 입력 또는 직접 입력"
+                className={inputClass}
+              />
+            </label>
+
+            <label className="block">
+              <span className={labelClass}>초기 투자금(만원)</span>
               <input
                 type="number"
                 min="0"
@@ -293,8 +418,8 @@ const RevenueEstimateModal = ({
             </span>
             <p>
               본 추정치는 서울시 상권 데이터, 카드 매출 데이터, 국토교통부
-              실거래가를 기반으로 산출된 참고용 수치입니다. 실제 수익은 운영
-              역량, 시장 상황에 따라 달라질 수 있습니다.
+              실거래가를 기반으로 산출한 참고 수치입니다. 실제 수익은 운영 역량,
+              시장 상황에 따라 달라질 수 있습니다.
             </p>
           </div>
 
@@ -309,7 +434,9 @@ const RevenueEstimateModal = ({
 
             <div className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="rounded-md border border-white/25 bg-white/15 p-3">
-                <p className="text-xs text-white/80">직원 2명 인건비</p>
+                <p className="text-xs text-white/80">
+                  직원 {form.staff || '-'}명 인건비
+                </p>
                 <p className="mt-2 text-xl font-extrabold">
                   {formatNumber(result?.result.staffCost)}만원 반영
                 </p>
@@ -344,12 +471,19 @@ const RevenueEstimateModal = ({
             </div>
           </div>
 
+          {saveMessage && (
+            <p className="mt-3 text-sm font-medium text-[#e5484d]">
+              {saveMessage}
+            </p>
+          )}
+
           <button
             type="button"
-            disabled
-            className="disabled:cursor-not-allowed disabled:bg-gray-300 mt-4 h-12 w-full rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700"
+            onClick={handleSaveStore}
+            disabled={isSaving}
+            className="mt-4 h-12 w-full rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
           >
-            내 상가 목록에 저장하기
+            {isSaving ? '저장 중...' : '내 상가 목록에 저장하기'}
           </button>
         </div>
       </section>
