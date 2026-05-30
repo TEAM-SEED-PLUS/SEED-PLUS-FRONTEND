@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
+import { GoogleAnalyticsTracker } from '@/components/analytics';
 import {
   FeedPage,
   LoginPage,
@@ -10,6 +11,7 @@ import {
 const Router = () => {
   return (
     <BrowserRouter>
+      <GoogleAnalyticsTracker />
       <Routes>
         <Route path="/" element={<Navigate to="/store-builder" replace />} />
         <Route path="/feed" element={<FeedPage />} />
