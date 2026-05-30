@@ -113,7 +113,7 @@ const HeaderUser = ({ activeNav = 'store', onMenuClick }: HeaderUserProps) => {
         </div>
       </div>
 
-      <div className="grid h-full grid-cols-[44px_1fr_auto] items-center px-2 md:hidden">
+      <div className="relative flex h-full items-center justify-between px-2 md:hidden">
         <button
           type="button"
           onClick={onMenuClick}
@@ -125,7 +125,7 @@ const HeaderUser = ({ activeNav = 'store', onMenuClick }: HeaderUserProps) => {
 
         <Link
           to="/store-builder"
-          className="flex items-center justify-center"
+          className="absolute left-1/2 flex -translate-x-1/2 items-center justify-center"
           aria-label="SEED+ 홈"
         >
           <img src={SEEDPLUS} alt="SEED+" className="h-5" />
