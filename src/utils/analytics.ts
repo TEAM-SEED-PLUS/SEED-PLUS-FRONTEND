@@ -17,9 +17,9 @@ export const loadGoogleAnalytics = () => {
   }
 
   window.dataLayer = window.dataLayer ?? [];
-  window.gtag = (...args: unknown[]) => {
-    window.dataLayer?.push(args);
-  };
+  // GA4 requires Arguments object, not a plain array
+  // eslint-disable-next-line prefer-rest-params
+  window.gtag = function () { window.dataLayer!.push(arguments); };
 
   const script = document.createElement('script');
   script.async = true;
@@ -27,6 +27,7 @@ export const loadGoogleAnalytics = () => {
   document.head.appendChild(script);
 
   window.gtag('js', new Date());
+  window.gtag('config', gaMeasurementId);
   isGoogleAnalyticsLoaded = true;
 };
 
