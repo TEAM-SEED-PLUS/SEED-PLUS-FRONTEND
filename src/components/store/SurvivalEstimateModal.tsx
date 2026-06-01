@@ -48,11 +48,11 @@ const initialForm: SurvivalForm = {
   area: '',
   rent: '',
   deposit: '',
-  avgSales: 4,
-  salesGrowth: 3,
-  density: 4,
+  avgSales: 2,
+  salesGrowth: 2,
+  density: 2,
   vacancy: 2,
-  traffic: 4,
+  traffic: 2,
   churn: 2,
   startupType: 'new',
   avgSalesAmt: '4200',
@@ -184,15 +184,23 @@ const VariableSlider = ({
   value: number;
   onChange: (value: number) => void;
 }) => {
-  const left = `${(value / 5) * 100}%`;
-  const status = value <= 2 ? '낮음' : value >= 4 ? '높음' : '보통';
+  const clampedValue = clamp(value, 1, 3);
+  const left = `${((clampedValue - 1) / 2) * 100}%`;
+  const status =
+    clampedValue === 1 ? '낮음' : clampedValue === 2 ? '보통' : '높음';
+  const statusOffset = clampedValue === 1 ? 0 : clampedValue === 3 ? 32 : 18;
+  const thumbOffset = clampedValue === 1 ? 0 : clampedValue === 3 ? 20 : 10;
+  const statusPosition =
+    clampedValue === 3
+      ? { right: 0 }
+      : { left: `calc(${left} - ${statusOffset}px)` };
 
   return (
     <div className="rounded-md bg-[#f7f8fa] px-5 py-4">
       <div className="mb-4 text-center text-xs font-extrabold text-[#191f28]">
         {label}
       </div>
-      <div className="relative h-10">
+      <div className="relative h-12 w-full">
         <div className="absolute left-0 right-0 top-6 h-2 rounded-full bg-[#e5e8eb]" />
         <div
           className="absolute left-0 top-6 h-2 rounded-full bg-blue-600"
@@ -201,25 +209,22 @@ const VariableSlider = ({
         <input
           type="range"
           min="1"
-          max="5"
-          value={value}
+          max="3"
+          step="1"
+          value={clampedValue}
           onChange={(event) => onChange(Number(event.target.value))}
           className="absolute inset-x-0 top-3 h-7 cursor-pointer opacity-0"
         />
         <div
-          className="absolute top-0 rounded-sm bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white"
-          style={{ left: `calc(${left} - 18px)` }}
+          className="absolute -top-1 min-w-9 whitespace-nowrap rounded-sm bg-blue-600 px-2 py-0.5 text-center text-[10px] font-bold text-white"
+          style={statusPosition}
         >
           {status}
         </div>
         <div
           className="absolute top-[19px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
-          style={{ left: `calc(${left} - 10px)` }}
+          style={{ left: `calc(${left} - ${thumbOffset}px)` }}
         />
-      </div>
-      <div className="-mt-1 flex justify-between text-[10px] font-medium text-[#8b95a1]">
-        <span>하위</span>
-        <span>상위</span>
       </div>
     </div>
   );
@@ -590,10 +595,10 @@ const SurvivalEstimateModal = ({
                 <h4 className="text-xs font-extrabold text-[#191f28]">
                   공공데이터 기반 변수
                 </h4>
-                <span className="flex items-center gap-1 text-[10px] font-medium text-[#e5484d]">
+                {/* <span className="flex items-center gap-1 text-[10px] font-medium text-[#e5484d]">
                   <img src={WarningIcon} alt="" className="h-3 w-3" />
                   지역, 업종 선택 시 자동 반영됩니다. 직접 조정도 가능합니다.
-                </span>
+                </span> */}
               </div>
               <div className="space-y-3">
                 {variableFactors.map((factor) => (
