@@ -595,10 +595,10 @@ const SurvivalEstimateModal = ({
                 <h4 className="text-xs font-extrabold text-[#191f28]">
                   공공데이터 기반 변수
                 </h4>
-                <span className="flex items-center gap-1 text-[10px] font-medium text-[#e5484d]">
+                {/* <span className="flex items-center gap-1 text-[10px] font-medium text-[#e5484d]">
                   <img src={WarningIcon} alt="" className="h-3 w-3" />
                   지역, 업종 선택 시 자동 반영됩니다. 직접 조정도 가능합니다.
-                </span>
+                </span> */}
               </div>
               <div className="space-y-3">
                 {variableFactors.map((factor) => (
