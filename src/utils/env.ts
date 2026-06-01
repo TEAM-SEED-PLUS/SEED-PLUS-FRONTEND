@@ -13,5 +13,7 @@ declare global {
 // Reads from window.__ENV__ (runtime, injected by docker-entrypoint.sh in deployed containers)
 // and falls back to import.meta.env (build-time, used in local dev via .env files).
 export function getEnv(key: RuntimeEnvKey): string | undefined {
-  return window.__ENV__?.[key]?.trim() || import.meta.env[key]?.trim() || undefined;
+  return (
+    window.__ENV__?.[key]?.trim() || import.meta.env[key]?.trim() || undefined
+  );
 }
