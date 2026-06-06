@@ -234,7 +234,7 @@ const SurvivalGauge = ({ score }: { score: number }) => {
   const percent = clamp(score, 0, 100);
 
   return (
-    <svg viewBox="0 0 190 112" className="h-[112px] w-[190px]">
+    <svg viewBox="0 0 190 112" className="h-auto w-full max-w-[190px] shrink">
       <path
         d="M 35 88 A 60 60 0 0 1 155 88"
         fill="none"
@@ -676,23 +676,23 @@ const SurvivalEstimateModal = ({
           </div>
 
           <div className="mt-4 rounded-lg bg-blue-600 p-4 text-white">
-            <div className="grid grid-cols-[1fr_140px] gap-4">
-              <div>
+            <div className="grid grid-cols-[minmax(0,1fr)_minmax(96px,120px)] gap-3 sm:grid-cols-[1fr_140px] sm:gap-4">
+              <div className="min-w-0">
                 <p className="text-xs font-bold">Survival Score</p>
-                <div className="mt-2 flex justify-center">
+                <div className="mt-2 flex justify-center overflow-hidden px-1">
                   <SurvivalGauge score={totalScore} />
                 </div>
               </div>
-              <div className="flex flex-col justify-center gap-3">
-                <div className="rounded-sm bg-white/20 px-3 py-3 text-right ring-1 ring-white/20">
+              <div className="flex min-w-0 flex-col justify-center gap-3">
+                <div className="rounded-sm bg-white/20 px-2 py-3 text-right ring-1 ring-white/20 sm:px-3">
                   <p className="text-[10px] text-white/80">1년 생존 가능성</p>
-                  <p className="mt-1 text-lg font-extrabold">
+                  <p className="mt-1 whitespace-nowrap text-base font-extrabold sm:text-lg">
                     {result?.survival.survival1Year ?? '40~50%'}
                   </p>
                 </div>
-                <div className="rounded-sm bg-white/20 px-3 py-3 text-right ring-1 ring-white/20">
+                <div className="rounded-sm bg-white/20 px-2 py-3 text-right ring-1 ring-white/20 sm:px-3">
                   <p className="text-[10px] text-white/80">3년 생존 가능성</p>
-                  <p className="mt-1 text-lg font-extrabold">
+                  <p className="mt-1 whitespace-nowrap text-base font-extrabold sm:text-lg">
                     {result?.survival.survival3Year ?? '20~30%'}
                   </p>
                 </div>
