@@ -6,6 +6,7 @@ import { useAuth } from '@/auth';
 import LoginTermsModal from '@/components/login/LoginTermsModal';
 import { HeaderUser } from '@/components/layout';
 import SignupOnboarding from '@/components/signup/SignupOnboarding';
+import { useDocumentTitle } from '@/hooks';
 import {
   normalizePhoneNumber,
   validatePhoneNumber,
@@ -42,6 +43,7 @@ const toApiBirthDate = (value: string) => {
 const SignupPage = () => {
   const navigate = useNavigate();
   const { signup } = useAuth();
+  useDocumentTitle('회원가입');
   const [stage, setStage] = useState<SignupStage>('form');
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('');

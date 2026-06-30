@@ -12,6 +12,7 @@ import {
   SurvivalEstimateModal,
 } from '@/components/store';
 import { useAuth } from '@/auth';
+import { useDocumentTitle } from '@/hooks';
 import useStoreBuilderData from './useStoreBuilderData';
 import type { StoreRangeFilterKey } from './useStoreBuilderData';
 
@@ -99,6 +100,7 @@ const StoreBuilderPage = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeRangeFilter, setActiveRangeFilter] =
     useState<StoreRangeFilterKey | null>(null);
+  useDocumentTitle('상가 분석');
   const { isAuthenticated, status } = useAuth();
   const {
     stores,

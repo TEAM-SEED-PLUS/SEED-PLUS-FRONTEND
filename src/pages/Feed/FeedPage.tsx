@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CommunityFeed, FeedSidebar, FeedTabs } from '@/components/feed';
 import { HeaderUser } from '@/components/layout';
+import { useDocumentTitle } from '@/hooks';
 import NewsFeed from '@/components/ui/NewsFeed';
 import type { NewsItem } from '@/types/types';
 
@@ -41,6 +42,7 @@ const news: NewsItem[] = [
 
 const FeedPage = () => {
   const [activeTab, setActiveTab] = useState<'news' | 'community'>('news');
+  useDocumentTitle('창업 피드');
 
   return (
     <div className="min-h-screen bg-gray-500">
