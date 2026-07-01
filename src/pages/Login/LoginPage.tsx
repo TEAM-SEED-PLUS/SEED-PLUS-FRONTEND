@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@/api';
 import { useAuth } from '@/auth';
 import { HeaderUser } from '@/components/layout';
+import { useDocumentTitle } from '@/hooks';
 import {
   normalizePhoneNumber,
   validatePhoneNumber,
@@ -23,6 +24,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  useDocumentTitle('로그인');
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
