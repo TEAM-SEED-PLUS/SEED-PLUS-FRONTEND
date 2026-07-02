@@ -63,7 +63,7 @@ const MenuIcon = () => (
   </svg>
 );
 
-const HeaderUser = ({ activeNav = 'store', onMenuClick }: HeaderUserProps) => {
+const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
   const navigate = useNavigate();
   const { isAuthenticated, logout } = useAuth();
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);

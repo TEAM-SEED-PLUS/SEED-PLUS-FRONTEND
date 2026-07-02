@@ -171,7 +171,7 @@ const MyPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-500">
-      <HeaderUser activeNav="store" />
+      <HeaderUser />
 
       {/* Desktop */}
       <main className="mx-auto hidden min-h-[calc(100vh-var(--header-height))] max-w-[1500px] gap-6 px-8 pb-12 pt-[calc(var(--header-height)+32px)] lg:flex">
