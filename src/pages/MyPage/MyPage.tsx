@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth';
-import { HeaderUser } from '@/components/layout';
+import { HeaderUser, LogoutConfirmModal } from '@/components/layout';
 import {
   AccountActions,
   ActivityPostCard,
@@ -131,6 +131,7 @@ const MyPage = () => {
   const [activeCategory, setActiveCategory] = useState(0);
   const [mobileView, setMobileView] = useState<MobileView>('overview');
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
   useEffect(() => {
     document.title = '마이페이지 | SEED+';
@@ -151,7 +152,8 @@ const MyPage = () => {
   const name = user?.name ?? '회원';
   const initial = name.charAt(0);
 
-  const handleLogout = async () => {
+  const confirmLogout = async () => {
+    setIsLogoutConfirmOpen(false);
     await logout();
     navigate('/login');
   };
@@ -172,7 +174,7 @@ const MyPage = () => {
       <HeaderUser activeNav="store" />
 
       {/* Desktop */}
-      <main className="mx-auto hidden max-w-[1500px] gap-6 px-8 pb-12 pt-[calc(var(--header-height)+32px)] lg:flex">
+      <main className="mx-auto hidden min-h-[calc(100vh-var(--header-height))] max-w-[1500px] gap-6 px-8 pb-12 pt-[calc(var(--header-height)+32px)] lg:flex">
         <div className="min-w-0 flex-1">
           <section>
             <SectionHeading
@@ -204,11 +206,12 @@ const MyPage = () => {
           </section>
         </div>
 
-        <aside className="flex w-[330px] shrink-0 flex-col gap-5">
+        <aside className="flex w-[330px] shrink-0 flex-col gap-5 self-stretch">
           {profileCard()}
           <NotificationSettings />
           <AccountActions
-            onLogout={handleLogout}
+            className="mt-auto"
+            onLogout={() => setIsLogoutConfirmOpen(true)}
             onWithdraw={() => setIsWithdrawOpen(true)}
           />
         </aside>
@@ -297,12 +300,19 @@ const MyPage = () => {
             <NotificationSettings className="mt-10" />
             <AccountActions
               className="mt-6"
-              onLogout={handleLogout}
+              onLogout={() => setIsLogoutConfirmOpen(true)}
               onWithdraw={() => setIsWithdrawOpen(true)}
             />
           </>
         )}
       </main>
+
+      {isLogoutConfirmOpen && (
+        <LogoutConfirmModal
+          onConfirm={confirmLogout}
+          onCancel={() => setIsLogoutConfirmOpen(false)}
+        />
+      )}
 
       {isWithdrawOpen && (
         <div

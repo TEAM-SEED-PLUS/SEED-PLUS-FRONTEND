@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SEEDPLUS from '@/assets/Logo/SEED+ LOGO.svg';
 import { useAuth } from '@/auth';
+import LogoutConfirmModal from './LogoutConfirmModal';
 
 type UserNav = 'home' | 'feed' | 'store';
 
@@ -192,30 +193,10 @@ const HeaderUser = ({ activeNav = 'store', onMenuClick }: HeaderUserProps) => {
         </div>
       </div>
       {isLogoutConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-5">
-          <section className="w-full max-w-[360px] rounded-lg bg-white p-6 shadow-[0_18px_60px_rgba(25,31,40,0.18)]">
-            <h2 className="text-lg font-extrabold text-[#191f28]">로그아웃</h2>
-            <p className="mt-3 text-sm font-medium text-[#4e5968]">
-              정말 로그아웃 하시겠습니까?
-            </p>
-            <div className="mt-6 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setIsLogoutConfirmOpen(false)}
-                className="h-11 rounded-md border border-[#d8dde5] text-sm font-bold text-[#4e5968] transition hover:bg-gray-500"
-              >
-                취소
-              </button>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="h-11 rounded-md bg-blue-600 text-sm font-bold text-white transition hover:bg-blue-700"
-              >
-                로그아웃
-              </button>
-            </div>
-          </section>
-        </div>
+        <LogoutConfirmModal
+          onConfirm={handleLogout}
+          onCancel={() => setIsLogoutConfirmOpen(false)}
+        />
       )}
     </header>
   );
