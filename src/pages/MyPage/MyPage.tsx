@@ -12,77 +12,12 @@ import {
 import type { ActivityPost } from '@/components/mypage';
 import { StoreGrid } from '@/components/store';
 import type { StoreItem } from '@/components/store';
+import useSavedStores from './useSavedStores';
 
 const categories = [
   '내가 설정한 카테고리 이름 1',
   '내가 설정한 카테고리 이름 2',
   '내가 설정한 카테고리 이름 3',
-];
-
-const initialSavedStores: StoreItem[] = [
-  {
-    id: 1,
-    rank: 1,
-    name: '강남 파스타 레스토랑',
-    category: '음식점',
-    district: '강남구 역삼동',
-    area: '65m²',
-    sales: '4,600만원',
-    payback: '22개월',
-    profit: '20%',
-    score: 96,
-    likes: 14,
-    reposts: 3,
-    saved: true,
-    liked: false,
-    areaValue: 65,
-    expectedMonthlySalesValue: 4600,
-    expectedProfitRateValue: 20,
-    depositValue: 5000,
-    monthlyRentValue: 300,
-  },
-  {
-    id: 2,
-    rank: 2,
-    name: '성수 카페',
-    category: '카페/음료',
-    district: '강남구 역삼동',
-    area: '65m²',
-    sales: '4,600만원',
-    payback: '22개월',
-    profit: '20%',
-    score: 96,
-    likes: 14,
-    reposts: 3,
-    saved: true,
-    liked: false,
-    areaValue: 65,
-    expectedMonthlySalesValue: 4600,
-    expectedProfitRateValue: 20,
-    depositValue: 5000,
-    monthlyRentValue: 300,
-  },
-  {
-    id: 3,
-    rank: 1,
-    name: '홍대 네일아트샵',
-    category: '미용/뷰티',
-    district: '강남구 역삼동',
-    area: '65m²',
-    sales: '4,600만원',
-    payback: '22개월',
-    profit: '20%',
-    score: 96,
-    likes: 14,
-    reposts: 3,
-    saved: true,
-    liked: false,
-    areaValue: 65,
-    expectedMonthlySalesValue: 4600,
-    expectedProfitRateValue: 20,
-    depositValue: 5000,
-    monthlyRentValue: 300,
-  },
 ];
 
 const activityPosts: ActivityPost[] = [
@@ -151,38 +86,25 @@ const MyPage = () => {
   const [mobileView, setMobileView] = useState<MobileView>('overview');
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
-  const [savedStores, setSavedStores] =
-    useState<StoreItem[]>(initialSavedStores);
-
-  const handleToggleBookmark = (target: StoreItem) =>
-    setSavedStores((prev) =>
-      prev.map((store) =>
-        store.id === target.id ? { ...store, saved: !store.saved } : store
-      )
-    );
-
-  const handleToggleLike = (target: StoreItem) =>
-    setSavedStores((prev) =>
-      prev.map((store) =>
-        store.id === target.id
-          ? {
-              ...store,
-              liked: !store.liked,
-              likes: store.liked ? store.likes - 1 : store.likes + 1,
-            }
-          : store
-      )
-    );
+  const {
+    stores: savedStores,
+    isLoading: isSavedLoading,
+    errorMessage: savedError,
+    pendingBookmarkIds,
+    pendingLikeIds,
+    toggleBookmark,
+    toggleLike,
+  } = useSavedStores(isAuthenticated);
 
   const renderSavedStores = (stores: StoreItem[]) => (
     <StoreGrid
       stores={stores}
-      isLoading={false}
-      errorMessage=""
-      pendingBookmarkIds={[]}
-      onToggleBookmark={handleToggleBookmark}
-      pendingLikeIds={[]}
-      onToggleLike={handleToggleLike}
+      isLoading={isSavedLoading}
+      errorMessage={savedError}
+      pendingBookmarkIds={pendingBookmarkIds}
+      onToggleBookmark={toggleBookmark}
+      pendingLikeIds={pendingLikeIds}
+      onToggleLike={toggleLike}
     />
   );
 

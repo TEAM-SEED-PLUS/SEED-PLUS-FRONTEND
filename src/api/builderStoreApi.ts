@@ -123,6 +123,21 @@ export const getBuilderStores = async (params: BuilderStoreListParams = {}) => {
   return response.data.data;
 };
 
+// 마이페이지 '저장한 상가 리스트' = 내가 북마크한 상가 목록.
+// TODO(BE): 2026-07-02 기준 '내 북마크 목록' 전용 엔드포인트 미구현.
+//   요청 스펙(제안): GET /api/v1/users/me/bookmarks?page&size&sort
+//   응답: ApiResponse<BuilderStoreListResponse> (content=BuilderStoreSummaryResponse[], 항목은 bookmarked=true)
+//   엔드포인트 확정되면 아래 경로만 교체.
+export const getMyBookmarkedStores = async (
+  params: BuilderStoreListParams = {}
+) => {
+  const response = await apiClient.get<ApiResponse<BuilderStoreListResponse>>(
+    '/api/v1/users/me/bookmarks',
+    { params }
+  );
+  return response.data.data;
+};
+
 export const getIndustries = async (level: IndustryLevel = 'LARGE') => {
   const response = await apiClient.get<ApiResponse<IndustryResponse[]>>(
     '/api/v1/industries',

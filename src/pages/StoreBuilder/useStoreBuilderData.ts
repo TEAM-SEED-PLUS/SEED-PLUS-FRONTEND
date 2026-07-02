@@ -19,7 +19,7 @@ import type { StoreItem } from '@/components/store/StoreCard';
 const toManwonLabel = (amount: number) =>
   `${Math.round(amount / 10000).toLocaleString('ko-KR')}만원`;
 
-const toStoreItem = (
+export const toStoreItem = (
   store: BuilderStoreSummaryResponse,
   index: number
 ): StoreItem => ({
