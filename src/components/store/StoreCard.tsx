@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import location from '@/assets/icons/location-icon.svg';
 import ruler from '@/assets/icons/ruler-icon.svg';
 import questionMark from '@/assets/icons/questionMark-icon.svg';
@@ -40,6 +41,8 @@ const StoreCard = ({
   isLikePending,
   onToggleLike,
 }: StoreCardProps) => {
+  const [isScoreExpanded, setIsScoreExpanded] = useState(false);
+
   return (
     <article className="overflow-hidden rounded-lg border border-[#fff4ee] bg-white">
       <div className="px-5 py-5">
@@ -114,12 +117,30 @@ const StoreCard = ({
         </div>
       </div>
 
-      <div className="mx-5 mt-3 flex items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600">
-        <span className="flex gap-2">
-          Property Score
-          <img src={questionMark} alt="질문 아이콘" />
-        </span>
-        <span>{/*{store.score}*/}? 점</span>
+      <div className="mx-5 mt-3">
+        <button
+          type="button"
+          onClick={() => setIsScoreExpanded((prev) => !prev)}
+          aria-expanded={isScoreExpanded}
+          className="flex w-full items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600 transition hover:brightness-95"
+        >
+          <span className="flex items-center gap-2">
+            🌱 SEEDing the Property Score
+          </span>
+          <span className="text-xs font-bold">
+            {isScoreExpanded ? '접기' : '펼치기'}
+          </span>
+        </button>
+
+        {isScoreExpanded && (
+          <div className="mt-2 flex items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600">
+            <span className="flex gap-2">
+              Property Score
+              <img src={questionMark} alt="질문 아이콘" />
+            </span>
+            <span>{/*{store.score}*/}? 점</span>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-5 px-5 py-4 text-sm font-medium text-[#4e5968]">
