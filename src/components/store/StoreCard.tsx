@@ -133,9 +133,9 @@ const StoreCard = ({
               type="button"
               onClick={() => setIsScoreInfoOpen(true)}
               aria-label="Property Score 안내"
-              className="flex h-4 w-4 items-center justify-center rounded-full border border-blue-600 text-[10px] leading-none transition hover:bg-blue-600 hover:text-white"
+              className="flex items-center transition hover:opacity-70"
             >
-              ?
+              <img src={questionMark} alt="질문 아이콘" />
             </button>
           </span>
           <button
