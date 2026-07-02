@@ -42,6 +42,7 @@ const StoreCard = ({
   onToggleLike,
 }: StoreCardProps) => {
   const [isScoreExpanded, setIsScoreExpanded] = useState(false);
+  const [isScoreInfoOpen, setIsScoreInfoOpen] = useState(false);
 
   return (
     <article className="overflow-hidden rounded-lg border border-[#fff4ee] bg-white">
@@ -118,19 +119,34 @@ const StoreCard = ({
       </div>
 
       <div className="mx-5 mt-3">
-        <button
-          type="button"
-          onClick={() => setIsScoreExpanded((prev) => !prev)}
-          aria-expanded={isScoreExpanded}
-          className="flex w-full items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600 transition hover:brightness-95"
-        >
+        <div className="flex items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600">
           <span className="flex items-center gap-2">
-            🌱 SEEDing the Property Score
+            <button
+              type="button"
+              onClick={() => setIsScoreExpanded((prev) => !prev)}
+              aria-expanded={isScoreExpanded}
+              className="flex items-center gap-2 transition hover:brightness-95"
+            >
+              🌱 SEEDing the Property Score
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsScoreInfoOpen(true)}
+              aria-label="Property Score 안내"
+              className="flex h-4 w-4 items-center justify-center rounded-full border border-blue-600 text-[10px] leading-none transition hover:bg-blue-600 hover:text-white"
+            >
+              ?
+            </button>
           </span>
-          <span className="text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => setIsScoreExpanded((prev) => !prev)}
+            aria-expanded={isScoreExpanded}
+            className="text-xs font-bold transition hover:brightness-95"
+          >
             {isScoreExpanded ? '접기' : '펼치기'}
-          </span>
-        </button>
+          </button>
+        </div>
 
         {isScoreExpanded && (
           <div className="mt-2 flex items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600">
@@ -161,6 +177,37 @@ const StoreCard = ({
         </button>
         {store.reposts > 0 && <span>↻ {store.reposts}</span>}
       </div>
+
+      {isScoreInfoOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Property Score 안내"
+          onClick={() => setIsScoreInfoOpen(false)}
+        >
+          <div
+            className="w-full max-w-[400px] rounded-lg bg-white px-6 py-6 shadow-[0_18px_60px_rgba(25,31,40,0.18)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3 className="text-base font-extrabold text-[#191f28]">
+              Property Score 안내
+            </h3>
+            <p className="mt-3 text-sm font-medium leading-relaxed text-[#4e5968]">
+              Property Score은 우리 SEED+ 사용자분들에게 더 정확한 정보를
+              제공하기 위해 지속적으로 고도화하고 있습니다. 추후 고도화가 완료가
+              되면 기재하겠습니다. 앞으로의 SEED+를 기대해주세요!
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsScoreInfoOpen(false)}
+              className="mt-5 h-11 w-full rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </article>
   );
 };
