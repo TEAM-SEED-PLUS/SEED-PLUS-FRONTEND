@@ -3,6 +3,7 @@ import { GoogleAnalyticsTracker } from '@/components/analytics';
 import {
   FeedPage,
   LoginPage,
+  MyPage,
   NotFoundPage,
   SignupPage,
   StoreBuilderPage,
@@ -18,6 +19,7 @@ const Router = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/store-builder" element={<StoreBuilderPage />} />
+        <Route path="/mypage" element={<MyPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
