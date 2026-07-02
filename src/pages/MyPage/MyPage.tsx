@@ -8,9 +8,10 @@ import {
   CategoryTabs,
   NotificationSettings,
   ProfileSummaryCard,
-  SavedStoreCard,
 } from '@/components/mypage';
-import type { ActivityPost, SavedStore } from '@/components/mypage';
+import type { ActivityPost } from '@/components/mypage';
+import { StoreGrid } from '@/components/store';
+import type { StoreItem } from '@/components/store';
 
 const categories = [
   '내가 설정한 카테고리 이름 1',
@@ -18,7 +19,7 @@ const categories = [
   '내가 설정한 카테고리 이름 3',
 ];
 
-const savedStores: SavedStore[] = [
+const initialSavedStores: StoreItem[] = [
   {
     id: 1,
     rank: 1,
@@ -31,8 +32,14 @@ const savedStores: SavedStore[] = [
     profit: '20%',
     score: 96,
     likes: 14,
-    comments: 34,
-    shares: 3,
+    reposts: 3,
+    saved: true,
+    liked: false,
+    areaValue: 65,
+    expectedMonthlySalesValue: 4600,
+    expectedProfitRateValue: 20,
+    depositValue: 5000,
+    monthlyRentValue: 300,
   },
   {
     id: 2,
@@ -46,8 +53,14 @@ const savedStores: SavedStore[] = [
     profit: '20%',
     score: 96,
     likes: 14,
-    comments: 34,
-    shares: 3,
+    reposts: 3,
+    saved: true,
+    liked: false,
+    areaValue: 65,
+    expectedMonthlySalesValue: 4600,
+    expectedProfitRateValue: 20,
+    depositValue: 5000,
+    monthlyRentValue: 300,
   },
   {
     id: 3,
@@ -61,8 +74,14 @@ const savedStores: SavedStore[] = [
     profit: '20%',
     score: 96,
     likes: 14,
-    comments: 34,
-    shares: 3,
+    reposts: 3,
+    saved: true,
+    liked: false,
+    areaValue: 65,
+    expectedMonthlySalesValue: 4600,
+    expectedProfitRateValue: 20,
+    depositValue: 5000,
+    monthlyRentValue: 300,
   },
 ];
 
@@ -132,6 +151,40 @@ const MyPage = () => {
   const [mobileView, setMobileView] = useState<MobileView>('overview');
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [savedStores, setSavedStores] =
+    useState<StoreItem[]>(initialSavedStores);
+
+  const handleToggleBookmark = (target: StoreItem) =>
+    setSavedStores((prev) =>
+      prev.map((store) =>
+        store.id === target.id ? { ...store, saved: !store.saved } : store
+      )
+    );
+
+  const handleToggleLike = (target: StoreItem) =>
+    setSavedStores((prev) =>
+      prev.map((store) =>
+        store.id === target.id
+          ? {
+              ...store,
+              liked: !store.liked,
+              likes: store.liked ? store.likes - 1 : store.likes + 1,
+            }
+          : store
+      )
+    );
+
+  const renderSavedStores = (stores: StoreItem[]) => (
+    <StoreGrid
+      stores={stores}
+      isLoading={false}
+      errorMessage=""
+      pendingBookmarkIds={[]}
+      onToggleBookmark={handleToggleBookmark}
+      pendingLikeIds={[]}
+      onToggleLike={handleToggleLike}
+    />
+  );
 
   useEffect(() => {
     document.title = '마이페이지 | SEED+';
@@ -186,11 +239,7 @@ const MyPage = () => {
               activeIndex={activeCategory}
               onSelect={setActiveCategory}
             />
-            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {savedStores.map((store) => (
-                <SavedStoreCard key={store.id} store={store} />
-              ))}
-            </div>
+            <div className="mt-5">{renderSavedStores(savedStores)}</div>
           </section>
 
           <section className="mt-12">
@@ -242,11 +291,7 @@ const MyPage = () => {
               onSelect={setActiveCategory}
               className="mb-5"
             />
-            <div className="space-y-4">
-              {savedStores.map((store) => (
-                <SavedStoreCard key={store.id} store={store} />
-              ))}
-            </div>
+            {renderSavedStores(savedStores)}
           </section>
         ) : mobileView === 'posts' ? (
           <section>
@@ -284,7 +329,7 @@ const MyPage = () => {
                 onSelect={setActiveCategory}
                 className="mb-5"
               />
-              {savedStores[0] && <SavedStoreCard store={savedStores[0]} />}
+              {renderSavedStores(savedStores.slice(0, 1))}
             </section>
 
             <section className="mt-10">

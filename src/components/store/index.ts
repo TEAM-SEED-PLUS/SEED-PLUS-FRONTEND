@@ -5,6 +5,8 @@ export { default as MobileStoreSidebar } from './MobileStoreSidebar';
 export { default as RangeFilterSheet } from './RangeFilterSheet';
 export { default as RevenueEstimateModal } from './RevenueEstimateModal';
 export { default as StoreFilterSidebar } from './StoreFilterSidebar';
+export { default as StoreCard } from './StoreCard';
+export type { StoreItem } from './StoreCard';
 export { default as StoreGrid } from './StoreGrid';
 export { default as StoreToolbar } from './StoreToolbar';
 export { default as SurvivalEstimateModal } from './SurvivalEstimateModal';
