@@ -30,6 +30,22 @@ const SearchIcon = () => (
   </svg>
 );
 
+const PersonIcon = () => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    className="h-5 w-5"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6" />
+  </svg>
+);
+
 const MenuIcon = () => (
   <svg
     aria-hidden="true"
@@ -109,6 +125,15 @@ const HeaderUser = ({ activeNav = 'store', onMenuClick }: HeaderUserProps) => {
             />
             <SearchIcon />
           </label>
+          {isAuthenticated && (
+            <Link
+              to="/mypage"
+              aria-label="마이페이지"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-[#4e5968] transition hover:bg-gray-500 hover:text-blue-600"
+            >
+              <PersonIcon />
+            </Link>
+          )}
           {authControl}
         </div>
       </div>
@@ -139,6 +164,15 @@ const HeaderUser = ({ activeNav = 'store', onMenuClick }: HeaderUserProps) => {
           >
             <SearchIcon />
           </button>
+          {isAuthenticated && (
+            <Link
+              to="/mypage"
+              aria-label="마이페이지"
+              className="flex h-10 w-10 items-center justify-center rounded-md text-[#4e5968] transition hover:bg-gray-500"
+            >
+              <PersonIcon />
+            </Link>
+          )}
           {isAuthenticated ? (
             <button
               type="button"
