@@ -154,7 +154,7 @@ const formatNumber = (value?: number, digits = 0) =>
         maximumFractionDigits: digits,
         minimumFractionDigits: digits,
       });
-const signedScore = (value: number) => `${value > 0 ? '+' : ''}${value}`;
+const signedScore = (value: number) => `${value >= 0 ? '+' : ''}${value}`;
 const getLevel = (score: number) => {
   if (score >= 90) return '높음';
   if (score >= 70) return '보통';
@@ -202,31 +202,35 @@ const VariableSlider = ({
       <div className="mb-4 text-center text-xs font-extrabold text-[#191f28]">
         {label}
       </div>
-      <div className="relative h-12 w-full">
-        <div className="absolute left-0 right-0 top-6 h-2 rounded-full bg-[#e5e8eb]" />
-        <div
-          className="absolute left-0 top-6 h-2 rounded-full bg-blue-600"
-          style={{ width: left }}
-        />
-        <input
-          type="range"
-          min="1"
-          max="3"
-          step="1"
-          value={clampedValue}
-          onChange={(event) => onChange(Number(event.target.value))}
-          className="absolute inset-x-0 top-3 h-7 cursor-pointer opacity-0"
-        />
-        <div
-          className="absolute -top-1 min-w-9 whitespace-nowrap rounded-sm bg-blue-600 px-2 py-0.5 text-center text-[10px] font-bold text-white"
-          style={statusPosition}
-        >
-          {status}
+      <div className="flex items-center gap-3">
+        <span className="text-[11px] text-[#4e5968]">하위</span>
+        <div className="relative h-12 min-w-0 flex-1">
+          <div className="absolute left-0 right-0 top-6 h-2 rounded-full bg-[#e5e8eb]" />
+          <div
+            className="absolute left-0 top-6 h-2 rounded-full bg-blue-600"
+            style={{ width: left }}
+          />
+          <input
+            type="range"
+            min="1"
+            max="3"
+            step="1"
+            value={clampedValue}
+            onChange={(event) => onChange(Number(event.target.value))}
+            className="absolute inset-x-0 top-3 h-7 cursor-pointer opacity-0"
+          />
+          <div
+            className="absolute -top-1 min-w-9 whitespace-nowrap rounded-sm bg-blue-600 px-2 py-0.5 text-center text-[10px] font-bold text-white"
+            style={statusPosition}
+          >
+            {status}
+          </div>
+          <div
+            className="absolute top-[19px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
+            style={{ left: `calc(${left} - ${thumbOffset}px)` }}
+          />
         </div>
-        <div
-          className="absolute top-[19px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
-          style={{ left: `calc(${left} - ${thumbOffset}px)` }}
-        />
+        <span className="text-[11px] text-[#4e5968]">상위</span>
       </div>
     </div>
   );
@@ -623,10 +627,10 @@ const SurvivalEstimateModal = ({
                 <h4 className="text-xs font-extrabold text-[#191f28]">
                   공공데이터 기반 변수
                 </h4>
-                {/* <span className="flex items-center gap-1 text-[10px] font-medium text-[#e5484d]">
+                <span className="flex items-center gap-1 text-[10px] font-medium text-[#e5484d]">
                   <img src={WarningIcon} alt="" className="h-3 w-3" />
                   지역, 업종 선택 시 자동 반영됩니다. 직접 조정도 가능합니다.
-                </span> */}
+                </span>
               </div>
               <div className="space-y-3">
                 {variableFactors.map((factor) => (
@@ -733,35 +737,35 @@ const SurvivalEstimateModal = ({
               Survival Score 분해
             </h3>
             <p className="mt-1 text-[11px] text-[#4e5968]">
-              6개 변수별 점수 가이드
+              6개 변수별 점수 기여도
             </p>
             <div className="mt-4 grid grid-cols-1 gap-x-7 gap-y-4 md:grid-cols-2">
               {displayScoreRows.map((item) => (
                 <div key={item.label}>
-                  <div className="mb-1 flex justify-between gap-2 text-[10px]">
-                    <span className="font-bold text-[#191f28]">
-                      {item.label}{' '}
-                      <span className="font-medium text-[#8b95a1]">
-                        {item.description}
-                      </span>
+                  <p className="mb-1 text-[10px] font-bold text-[#191f28]">
+                    {item.label}{' '}
+                    <span className="font-medium text-[#8b95a1]">
+                      {item.description}
                     </span>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 min-w-0 flex-1 rounded-full bg-[#e5e8eb]">
+                      <div
+                        className={`h-2 rounded-full ${
+                          item.positive ? 'bg-blue-600' : 'bg-[#e5484d]'
+                        }`}
+                        style={{
+                          width: `${clamp(Math.abs(item.score) * 5, 4, 100)}%`,
+                        }}
+                      />
+                    </div>
                     <span
-                      className={
+                      className={`text-[10px] ${
                         item.positive ? 'text-blue-600' : 'text-[#e5484d]'
-                      }
+                      }`}
                     >
                       {signedScore(item.score)}
                     </span>
-                  </div>
-                  <div className="h-2 rounded-full bg-[#e5e8eb]">
-                    <div
-                      className={`h-2 rounded-full ${
-                        item.positive ? 'bg-blue-600' : 'bg-[#e5484d]'
-                      }`}
-                      style={{
-                        width: `${clamp(Math.abs(item.score) * 5, 4, 100)}%`,
-                      }}
-                    />
                   </div>
                 </div>
               ))}
@@ -856,17 +860,6 @@ const SurvivalEstimateModal = ({
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="mt-4 rounded-md border border-[#e5e8eb] p-4">
-            <h3 className="text-sm font-extrabold text-[#191f28]">
-              데이터 출처
-            </h3>
-            <p className="mt-2 text-[11px] leading-relaxed text-[#4e5968]">
-              소상공인시장진흥공단 상권정보, 서울시 열린데이터광장, 국토교통부
-              실거래가, 여신금융협회 카드 매출, KT 유동인구, 행정안전부 인허가
-              데이터를 기반으로 참고 지표를 산출합니다.
-            </p>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2">
