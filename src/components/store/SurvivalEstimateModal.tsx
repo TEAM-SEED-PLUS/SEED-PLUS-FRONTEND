@@ -50,12 +50,12 @@ const initialForm: SurvivalForm = {
   area: '',
   rent: '',
   deposit: '',
-  avgSales: 2,
-  salesGrowth: 2,
-  density: 2,
-  vacancy: 2,
-  traffic: 2,
-  churn: 2,
+  avgSales: 3,
+  salesGrowth: 3,
+  density: 3,
+  vacancy: 3,
+  traffic: 3,
+  churn: 3,
   startupType: 'new',
   avgSalesAmt: '4200',
 };
@@ -177,6 +177,8 @@ const getRepresentativeLegalDongCode = (
   );
 };
 
+const sliderStatusLabels = ['매우 낮음', '낮음', '보통', '높음', '매우 높음'];
+
 const VariableSlider = ({
   label,
   value,
@@ -186,16 +188,10 @@ const VariableSlider = ({
   value: number;
   onChange: (value: number) => void;
 }) => {
-  const clampedValue = clamp(value, 1, 3);
-  const left = `${((clampedValue - 1) / 2) * 100}%`;
-  const status =
-    clampedValue === 1 ? '낮음' : clampedValue === 2 ? '보통' : '높음';
-  const statusOffset = clampedValue === 1 ? 0 : clampedValue === 3 ? 32 : 18;
-  const thumbOffset = clampedValue === 1 ? 0 : clampedValue === 3 ? 20 : 10;
-  const statusPosition =
-    clampedValue === 3
-      ? { right: 0 }
-      : { left: `calc(${left} - ${statusOffset}px)` };
+  const clampedValue = clamp(value, 1, 5);
+  const ratio = (clampedValue - 1) / 4;
+  const left = `${ratio * 100}%`;
+  const status = sliderStatusLabels[clampedValue - 1];
 
   return (
     <div className="rounded-md bg-[#f7f8fa] px-5 py-4">
@@ -213,21 +209,21 @@ const VariableSlider = ({
           <input
             type="range"
             min="1"
-            max="3"
+            max="5"
             step="1"
             value={clampedValue}
             onChange={(event) => onChange(Number(event.target.value))}
             className="absolute inset-x-0 top-3 h-7 cursor-pointer opacity-0"
           />
           <div
-            className="absolute -top-1 min-w-9 whitespace-nowrap rounded-sm bg-blue-600 px-2 py-0.5 text-center text-[10px] font-bold text-white"
-            style={statusPosition}
+            className="absolute -top-1 whitespace-nowrap rounded-sm bg-blue-600 px-2 py-0.5 text-center text-[10px] font-bold text-white"
+            style={{ left, transform: `translateX(-${ratio * 100}%)` }}
           >
             {status}
           </div>
           <div
             className="absolute top-[19px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
-            style={{ left: `calc(${left} - ${thumbOffset}px)` }}
+            style={{ left: `calc(${left} - ${ratio * 20}px)` }}
           />
         </div>
         <span className="text-[11px] text-[#4e5968]">상위</span>
@@ -243,9 +239,9 @@ const gaugeSegments = [
   { path: 'M 127.2 37.3 A 60 60 0 0 1 155 88', from: 68, to: 101 },
 ];
 
-export const SurvivalGauge = ({ score }: { score: number }) => {
-  const percent = clamp(score, 0, 100);
-  const needleAngle = (percent / 100) * 180 - 90;
+export const SurvivalGauge = ({ score }: { score: number | null }) => {
+  const percent = score === null ? null : clamp(score, 0, 100);
+  const needleAngle = percent === null ? 0 : (percent / 100) * 180 - 90;
 
   return (
     <svg viewBox="0 0 190 122" className="h-auto w-full max-w-[190px] shrink">
@@ -255,7 +251,7 @@ export const SurvivalGauge = ({ score }: { score: number }) => {
           d={segment.path}
           fill="none"
           stroke={
-            percent >= segment.from && percent < segment.to
+            percent !== null && percent >= segment.from && percent < segment.to
               ? 'rgba(255,255,255,0.95)'
               : 'rgba(255,255,255,0.45)'
           }
@@ -263,11 +259,13 @@ export const SurvivalGauge = ({ score }: { score: number }) => {
           strokeWidth="24"
         />
       ))}
-      <path
-        d="M 95 50 L 91.5 82 A 3.5 3.5 0 1 0 98.5 82 Z"
-        fill="white"
-        transform={`rotate(${needleAngle} 95 88)`}
-      />
+      {percent !== null && (
+        <path
+          d="M 95 50 L 91.5 82 A 3.5 3.5 0 1 0 98.5 82 Z"
+          fill="white"
+          transform={`rotate(${needleAngle} 95 88)`}
+        />
+      )}
       <text
         x="102"
         y="116"
@@ -276,7 +274,7 @@ export const SurvivalGauge = ({ score }: { score: number }) => {
         fontWeight="800"
         textAnchor="end"
       >
-        {formatNumber(score)}
+        {percent === null ? '?' : formatNumber(percent)}
       </text>
       <text x="110" y="116" fill="white" fontSize="16" fontWeight="700">
         점
@@ -296,6 +294,10 @@ const SurvivalEstimateModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [mobileStep, setMobileStep] = useState<'input' | 'result'>('input');
+  const [isStale, setIsStale] = useState(false);
+  const [pdfNotice, setPdfNotice] = useState('');
+
+  const hasResult = result !== null;
 
   const selectedDistrict = useMemo(
     () =>
@@ -305,8 +307,21 @@ const SurvivalEstimateModal = ({
 
   const updateField = (field: keyof SurvivalForm, value: string | number) => {
     setErrorMessage('');
+    setPdfNotice('');
+    if (result) {
+      setIsStale(true);
+    }
     setForm((current) => ({ ...current, [field]: value }));
   };
+
+  const isFormComplete = Boolean(
+    form.regionCode &&
+    form.industryCode &&
+    form.area &&
+    form.rent &&
+    form.deposit &&
+    form.avgSalesAmt
+  );
 
   const displayScoreRows = useMemo(
     () =>
@@ -333,30 +348,64 @@ const SurvivalEstimateModal = ({
   const stabilityIndex = result?.derived.stabilityIndex ?? 75;
 
   const resolvedTopRisks =
-    topRisks.length > 0 ? topRisks : displayScoreRows.slice(2, 5);
+    hasResult && topRisks.length > 0 ? topRisks : displayScoreRows.slice(2, 5);
 
   const metricCards: [string, string, string][] = [
     [
       '경쟁강도',
       '동일업종 점포수 / 전체 점포수',
-      `${formatNumber(competitionRatio, 0)}%`,
+      hasResult ? `${formatNumber(competitionRatio, 0)}%` : '?',
     ],
-    ['임차부담도', '월세 / 상권평균매출', `${formatNumber(rentBurden, 0)}%`],
+    [
+      '임차부담도',
+      '월세 / 상권평균매출',
+      hasResult ? `${formatNumber(rentBurden, 0)}%` : '?',
+    ],
     [
       '상권활력도',
       '유동인구증가율 + 매출증가율',
-      `${formatNumber(vitalityScore, 0)}점`,
+      hasResult ? `${formatNumber(vitalityScore, 0)}점` : '?',
     ],
-    ['안정성지수', '1 - 공실률', `${formatNumber(stabilityIndex, 0)}점`],
+    [
+      '안정성지수',
+      '1 - 공실률',
+      hasResult ? `${formatNumber(stabilityIndex, 0)}점` : '?',
+    ],
+  ];
+
+  const selectedIndustryName = industries.find(
+    (industry) => String(industry.industryCode) === form.industryCode
+  )?.name;
+
+  const inputSummary: [string, string][] = [
+    ['지역', selectedDistrict?.sigungu ?? '-'],
+    ['업종', selectedIndustryName ?? '-'],
+    ['면적', form.area ? `${form.area}m²` : '-'],
+    ['월 임대료', form.rent ? `${form.rent}만원` : '-'],
+    ['보증금', form.deposit ? `${form.deposit}만원` : '-'],
+    ['창업형태', form.startupType === 'new' ? '신규 창업' : '양수 창업'],
   ];
 
   const pdfReportRef = useRef<HTMLDivElement>(null);
+  const today = new Date();
+  const reportDateStamp = `${today.getFullYear()}${String(
+    today.getMonth() + 1
+  ).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
   const printPdfReport = useReactToPrint({
     contentRef: pdfReportRef,
-    documentTitle: 'SEED+ 생존율 리포트',
+    documentTitle: `SEEDplus_생존율리포트_${selectedDistrict?.sigungu ?? '미지정'}_${reportDateStamp}`,
     pageStyle:
       '@page { size: A4; margin: 0; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
   });
+
+  const handlePdfClick = () => {
+    if (!hasResult) {
+      setPdfNotice('계산을 먼저 완료해주세요.');
+      return;
+    }
+    setPdfNotice('');
+    printPdfReport();
+  };
 
   const comparisonDistricts = useMemo(() => {
     if (districts.length === 0) {
@@ -442,6 +491,7 @@ const SurvivalEstimateModal = ({
         avgSalesAmt: toNumber(form.avgSalesAmt),
       });
       setResult(response);
+      setIsStale(false);
       setMobileStep('result');
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error));
@@ -655,7 +705,7 @@ const SurvivalEstimateModal = ({
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isFormComplete}
               className="mt-5 h-11 w-full rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
             >
               {isSubmitting ? '생존율 계산 중...' : '생존율 계산하기'}
@@ -710,25 +760,32 @@ const SurvivalEstimateModal = ({
             </p>
           </div>
 
+          {hasResult && isStale && (
+            <div className="mt-4 rounded-md border border-[#f5c518] bg-[#fff8e1] px-3 py-2 text-[11px] font-bold text-[#8a6d00]">
+              재계산 필요 — 입력값이 변경되었습니다. [생존율 계산하기]를 다시
+              눌러주세요.
+            </div>
+          )}
+
           <div className="mt-4 rounded-lg bg-blue-600 p-4 text-white">
             <div className="grid grid-cols-[minmax(0,1fr)_minmax(96px,120px)] gap-3 sm:grid-cols-[1fr_140px] sm:gap-4">
               <div className="min-w-0">
                 <p className="text-xs font-bold">Survival Score</p>
                 <div className="mt-2 flex justify-center overflow-hidden px-1">
-                  <SurvivalGauge score={totalScore} />
+                  <SurvivalGauge score={hasResult ? totalScore : null} />
                 </div>
               </div>
               <div className="flex min-w-0 flex-col justify-center gap-3">
                 <div className="rounded-sm bg-white/20 px-2 py-3 text-right ring-1 ring-white/20 sm:px-3">
                   <p className="text-[10px] text-white/80">1년 생존 가능성</p>
                   <p className="mt-1 whitespace-nowrap text-base font-extrabold sm:text-lg">
-                    {result?.survival.survival1Year ?? '40~50%'}
+                    {result?.survival.survival1Year ?? '?'}
                   </p>
                 </div>
                 <div className="rounded-sm bg-white/20 px-2 py-3 text-right ring-1 ring-white/20 sm:px-3">
                   <p className="text-[10px] text-white/80">3년 생존 가능성</p>
                   <p className="mt-1 whitespace-nowrap text-base font-extrabold sm:text-lg">
-                    {result?.survival.survival3Year ?? '20~30%'}
+                    {result?.survival.survival3Year ?? '?'}
                   </p>
                 </div>
               </div>
@@ -753,21 +810,27 @@ const SurvivalEstimateModal = ({
                   </p>
                   <div className="flex items-center gap-2">
                     <div className="h-2 min-w-0 flex-1 rounded-full bg-[#e5e8eb]">
-                      <div
-                        className={`h-2 rounded-full ${
-                          item.positive ? 'bg-blue-600' : 'bg-[#e5484d]'
-                        }`}
-                        style={{
-                          width: `${clamp(Math.abs(item.score) * 5, 4, 100)}%`,
-                        }}
-                      />
+                      {hasResult && (
+                        <div
+                          className={`h-2 rounded-full ${
+                            item.positive ? 'bg-blue-600' : 'bg-[#e5484d]'
+                          }`}
+                          style={{
+                            width: `${clamp(Math.abs(item.score) * 5, 4, 100)}%`,
+                          }}
+                        />
+                      )}
                     </div>
                     <span
                       className={`text-[10px] ${
-                        item.positive ? 'text-blue-600' : 'text-[#e5484d]'
+                        !hasResult
+                          ? 'text-[#8b95a1]'
+                          : item.positive
+                            ? 'text-blue-600'
+                            : 'text-[#e5484d]'
                       }`}
                     >
-                      {signedScore(item.score)}
+                      {hasResult ? signedScore(item.score) : '?'}
                     </span>
                   </div>
                 </div>
@@ -804,22 +867,27 @@ const SurvivalEstimateModal = ({
                 <div key={item.label} className="rounded-md bg-[#f7f8fa] p-3">
                   <div className="flex items-center justify-between">
                     <strong className="flex items-center gap-1 text-xs text-[#191f28]">
-                      {index === 0 && (
+                      {hasResult && index === 0 && (
                         <img src={WarningIcon} alt="" className="h-3 w-3" />
                       )}
-                      {index + 1}위 {item.label}
+                      {index + 1}위 {hasResult ? item.label : '?'}
                     </strong>
                     <span
                       className={`text-lg font-extrabold ${
-                        item.score < 0 ? 'text-[#e5484d]' : 'text-blue-600'
+                        !hasResult
+                          ? 'text-[#8b95a1]'
+                          : item.score < 0
+                            ? 'text-[#e5484d]'
+                            : 'text-blue-600'
                       }`}
                     >
-                      {signedScore(item.score)}점
+                      {hasResult ? `${signedScore(item.score)}점` : '?점'}
                     </span>
                   </div>
                   <p className="mt-2 text-[11px] leading-relaxed text-[#4e5968]">
-                    {item.description} 항목이 생존 가능성 산정에 반영됩니다.
-                    수익성 악화 위험이 높을수록 감점 폭이 커집니다.
+                    {hasResult
+                      ? `${item.description} 항목이 생존 가능성 산정에 반영됩니다. 수익성 악화 위험이 높을수록 감점 폭이 커집니다.`
+                      : '생존율 계산 후 위험 요인이 표시됩니다.'}
                   </p>
                 </div>
               ))}
@@ -855,10 +923,10 @@ const SurvivalEstimateModal = ({
                     {district.name}
                   </p>
                   <p className="mt-1 text-xl font-extrabold text-blue-600">
-                    {district.score}점
+                    {hasResult ? `${district.score}점` : '?점'}
                   </p>
                   <p className="mt-1 text-[10px] text-[#4e5968]">
-                    {getLevel(district.score)}
+                    {hasResult ? getLevel(district.score) : '?'}
                   </p>
                 </div>
               ))}
@@ -870,21 +938,29 @@ const SurvivalEstimateModal = ({
               type="button"
               onClick={() => {
                 setResult(null);
+                setIsStale(false);
+                setPdfNotice('');
                 setMobileStep('input');
               }}
-              className="h-11 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700"
+              className="h-11 rounded-md border border-blue-600 bg-white text-sm font-extrabold text-blue-600 transition hover:bg-[#e8f1ff]"
             >
               다시 계산하기
             </button>
             <button
               type="button"
-              disabled={!result}
-              onClick={() => printPdfReport()}
-              className="h-11 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
+              onClick={handlePdfClick}
+              className={`h-11 rounded-md text-sm font-extrabold text-white transition ${
+                hasResult ? 'bg-blue-600 hover:bg-blue-700' : 'bg-[#b0c4f5]'
+              }`}
             >
               PDF로 출력하기
             </button>
           </div>
+          {pdfNotice && (
+            <p className="mt-2 text-right text-xs font-bold text-[#e5484d]">
+              {pdfNotice}
+            </p>
+          )}
         </section>
       </section>
 
@@ -892,9 +968,10 @@ const SurvivalEstimateModal = ({
         <SurvivalPdfReport
           ref={pdfReportRef}
           dataBadges={dataBadges}
+          inputSummary={inputSummary}
           totalScore={totalScore}
-          survival1Year={result?.survival.survival1Year ?? '40~50%'}
-          survival3Year={result?.survival.survival3Year ?? '20~30%'}
+          survival1Year={result?.survival.survival1Year ?? '?'}
+          survival3Year={result?.survival.survival3Year ?? '?'}
           scoreRows={displayScoreRows}
           topRisks={resolvedTopRisks}
           comparisonDistricts={comparisonDistricts}

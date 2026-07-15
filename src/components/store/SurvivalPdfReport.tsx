@@ -18,6 +18,7 @@ export type PdfComparisonDistrict = {
 interface SurvivalPdfReportProps {
   ref: Ref<HTMLDivElement>;
   dataBadges: string[];
+  inputSummary: [string, string][];
   totalScore: number;
   survival1Year: string;
   survival3Year: string;
@@ -42,6 +43,7 @@ const getLevel = (score: number) => {
 const SurvivalPdfReport = ({
   ref,
   dataBadges,
+  inputSummary,
   totalScore,
   survival1Year,
   survival3Year,
@@ -86,6 +88,15 @@ const SurvivalPdfReport = ({
           달라질 수 있습니다. 소상공인시장진흥공단
           상권분석서비스(sg.sbiz.or.kr)와 함께 활용하시길 권장합니다.
         </p>
+      </div>
+
+      <div className="mt-3 flex rounded-xl bg-[#f7f8fa] px-4 py-2">
+        {inputSummary.map(([label, value]) => (
+          <div key={label} className="min-w-0 flex-1">
+            <p className="text-[11px] text-[#9ca1a9]">{label}</p>
+            <p className="truncate text-[13px] font-semibold">{value}</p>
+          </div>
+        ))}
       </div>
 
       <div className="mt-3 grid grid-cols-[321px_1fr] gap-5">
