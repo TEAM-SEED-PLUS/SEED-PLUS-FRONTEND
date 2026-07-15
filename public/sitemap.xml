@@ -5,6 +5,14 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://www.seedplusai.com/store-builder</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.seedplusai.com/feed</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.seedplusai.com/login</loc>
     <priority>0.5</priority>
   </url>
