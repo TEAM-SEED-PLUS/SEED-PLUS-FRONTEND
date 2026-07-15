@@ -3,18 +3,15 @@ import iconProfile from '@/assets/landing/icon-profile.svg';
 const reviews = [
   {
     name: '김나연',
-    store: '강남 파스타 레스토랑',
     content: '막막했던 창업 계획을 구체적으로 잡을 수 있었어요.',
   },
   {
     name: '이수진',
-    store: '강남 파스타 레스토랑',
     content:
       '계산기를 이용하여 정확한 수치를 알 수 있어서 정말 유용했습니다. 또한, 전문가들을 직접 매칭받을 수 있어서 도움되었습니다.',
   },
   {
     name: '최나린',
-    store: '강남 파스타 레스토랑',
     content: 'AI 분석 결과가 정확해서 시장 파악과 창업에 큰 도움이 됐습니다.',
   },
 ];
@@ -46,9 +43,6 @@ const ReviewSection = () => {
               </div>
               <p className="pt-4 text-[15px] leading-relaxed text-[#191f28]">
                 {review.content}
-              </p>
-              <p className="pt-3 text-xs text-[#191f28]">
-                가게이름 : {review.store}
               </p>
             </article>
           ))}
