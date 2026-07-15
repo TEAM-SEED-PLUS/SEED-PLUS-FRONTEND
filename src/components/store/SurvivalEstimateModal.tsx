@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import {
   calculateSurvivalAnalysis,
   getApiErrorMessage,
@@ -8,6 +9,7 @@ import {
   type SurvivalAnalysisResponse,
 } from '@/api';
 import WarningIcon from '@/assets/icons/warning-icon.svg';
+import SurvivalPdfReport from './SurvivalPdfReport';
 
 interface SurvivalEstimateModalProps {
   industries: IndustryResponse[];
@@ -230,7 +232,7 @@ const VariableSlider = ({
   );
 };
 
-const SurvivalGauge = ({ score }: { score: number }) => {
+export const SurvivalGauge = ({ score }: { score: number }) => {
   const percent = clamp(score, 0, 100);
 
   return (
@@ -322,6 +324,32 @@ const SurvivalEstimateModal = ({
   const rentBurden = result?.derived.rentBurden ?? 53;
   const vitalityScore = result?.derived.vitalityScore ?? 88;
   const stabilityIndex = result?.derived.stabilityIndex ?? 75;
+
+  const resolvedTopRisks =
+    topRisks.length > 0 ? topRisks : displayScoreRows.slice(2, 5);
+
+  const metricCards: [string, string, string][] = [
+    [
+      '경쟁강도',
+      '동일업종 점포수 / 전체 점포수',
+      `${formatNumber(competitionRatio, 0)}%`,
+    ],
+    ['임차부담도', '월세 / 상권평균매출', `${formatNumber(rentBurden, 0)}%`],
+    [
+      '상권활력도',
+      '유동인구증가율 + 매출증가율',
+      `${formatNumber(vitalityScore, 0)}점`,
+    ],
+    ['안정성지수', '1 - 공실률', `${formatNumber(stabilityIndex, 0)}점`],
+  ];
+
+  const pdfReportRef = useRef<HTMLDivElement>(null);
+  const printPdfReport = useReactToPrint({
+    contentRef: pdfReportRef,
+    documentTitle: 'SEED+ 생존율 리포트',
+    pageStyle:
+      '@page { size: A4; margin: 0; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
+  });
 
   const comparisonDistricts = useMemo(() => {
     if (districts.length === 0) {
@@ -740,28 +768,7 @@ const SurvivalEstimateModal = ({
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-3">
-              {[
-                [
-                  '경쟁강도',
-                  '동일업종 점포수 / 전체 점포수',
-                  `${formatNumber(competitionRatio, 0)}%`,
-                ],
-                [
-                  '임차부담도',
-                  '월세 / 상권평균매출',
-                  `${formatNumber(rentBurden, 0)}%`,
-                ],
-                [
-                  '상권활력도',
-                  '유동인구증가율 + 매출증가율',
-                  `${formatNumber(vitalityScore, 0)}점`,
-                ],
-                [
-                  '안정성지수',
-                  '1 - 공실률',
-                  `${formatNumber(stabilityIndex, 0)}점`,
-                ],
-              ].map(([label, description, value]) => (
+              {metricCards.map(([label, description, value]) => (
                 <div key={label} className="rounded-md bg-[#f2f6ff] p-3">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-xs font-bold text-[#4e5968]">{label}</p>
@@ -786,10 +793,7 @@ const SurvivalEstimateModal = ({
               </span>
             </div>
             <div className="space-y-3">
-              {(topRisks.length > 0
-                ? topRisks
-                : displayScoreRows.slice(2, 5)
-              ).map((item, index) => (
+              {resolvedTopRisks.map((item, index) => (
                 <div key={item.label} className="rounded-md bg-[#f7f8fa] p-3">
                   <div className="flex items-center justify-between">
                     <strong className="flex items-center gap-1 text-xs text-[#191f28]">
@@ -865,18 +869,42 @@ const SurvivalEstimateModal = ({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              setResult(null);
-              setMobileStep('input');
-            }}
-            className="mt-4 h-11 w-full rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700"
-          >
-            다시 계산하기
-          </button>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setResult(null);
+                setMobileStep('input');
+              }}
+              className="h-11 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700"
+            >
+              다시 계산하기
+            </button>
+            <button
+              type="button"
+              disabled={!result}
+              onClick={() => printPdfReport()}
+              className="h-11 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
+            >
+              PDF로 출력하기
+            </button>
+          </div>
         </section>
       </section>
+
+      <div aria-hidden className="fixed top-0 -left-[9999px]">
+        <SurvivalPdfReport
+          ref={pdfReportRef}
+          dataBadges={dataBadges}
+          totalScore={totalScore}
+          survival1Year={result?.survival.survival1Year ?? '40~50%'}
+          survival3Year={result?.survival.survival3Year ?? '20~30%'}
+          scoreRows={displayScoreRows}
+          topRisks={resolvedTopRisks}
+          comparisonDistricts={comparisonDistricts}
+          metricCards={metricCards}
+        />
+      </div>
     </div>
   );
 };
