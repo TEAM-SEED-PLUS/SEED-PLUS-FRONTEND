@@ -236,46 +236,49 @@ const VariableSlider = ({
   );
 };
 
+// 시안(Figma 404:609)의 게이지: 3분할 호 + 점수 구간 강조 + 점수를 가리키는 바늘
+const gaugeSegments = [
+  { path: 'M 35 88 A 60 60 0 0 1 62.8 37.3', from: 0, to: 34 },
+  { path: 'M 66.1 35.4 A 60 60 0 0 1 123.9 35.4', from: 34, to: 68 },
+  { path: 'M 127.2 37.3 A 60 60 0 0 1 155 88', from: 68, to: 101 },
+];
+
 export const SurvivalGauge = ({ score }: { score: number }) => {
   const percent = clamp(score, 0, 100);
+  const needleAngle = (percent / 100) * 180 - 90;
 
   return (
-    <svg viewBox="0 0 190 112" className="h-auto w-full max-w-[190px] shrink">
+    <svg viewBox="0 0 190 122" className="h-auto w-full max-w-[190px] shrink">
+      {gaugeSegments.map((segment) => (
+        <path
+          key={segment.path}
+          d={segment.path}
+          fill="none"
+          stroke={
+            percent >= segment.from && percent < segment.to
+              ? 'rgba(255,255,255,0.95)'
+              : 'rgba(255,255,255,0.45)'
+          }
+          strokeLinecap="butt"
+          strokeWidth="24"
+        />
+      ))}
       <path
-        d="M 35 88 A 60 60 0 0 1 155 88"
-        fill="none"
-        pathLength={100}
-        stroke="rgba(255,255,255,0.35)"
-        strokeLinecap="butt"
-        strokeWidth="24"
-      />
-      <path
-        d="M 35 88 A 60 60 0 0 1 155 88"
-        fill="none"
-        pathLength={100}
-        stroke="rgba(255,255,255,0.9)"
-        strokeDasharray={`${percent} 100`}
-        strokeLinecap="butt"
-        strokeWidth="24"
+        d="M 95 50 L 91.5 82 A 3.5 3.5 0 1 0 98.5 82 Z"
+        fill="white"
+        transform={`rotate(${needleAngle} 95 88)`}
       />
       <text
-        x="95"
-        y="86"
+        x="102"
+        y="116"
         fill="white"
-        fontSize="30"
+        fontSize="34"
         fontWeight="800"
-        textAnchor="middle"
+        textAnchor="end"
       >
         {formatNumber(score)}
       </text>
-      <text
-        x="125"
-        y="86"
-        fill="white"
-        fontSize="16"
-        fontWeight="700"
-        textAnchor="middle"
-      >
+      <text x="110" y="116" fill="white" fontSize="16" fontWeight="700">
         점
       </text>
     </svg>
