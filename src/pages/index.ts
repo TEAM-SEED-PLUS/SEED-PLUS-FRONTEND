@@ -1,4 +1,5 @@
 export { default as FeedPage } from './Feed/FeedPage';
+export { default as LandingPage } from './Landing/LandingPage';
 export { default as LoginPage } from './Login/LoginPage';
 export { default as MyPage } from './MyPage/MyPage';
 export { default as NotFoundPage } from './NotFoundPage';
