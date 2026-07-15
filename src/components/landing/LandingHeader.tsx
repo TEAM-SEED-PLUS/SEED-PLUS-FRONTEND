@@ -12,7 +12,14 @@ const LandingHeader = () => {
     <header className="sticky top-0 z-50 h-[88px] w-full border-b border-[#f2f4f6] bg-white">
       <div className="mx-auto flex h-full w-full max-w-[1420px] items-center justify-between px-6">
         <div className="flex items-center gap-12">
-          <Link to="/" aria-label="SEED+ 홈">
+          <Link
+            to="/"
+            aria-label="SEED+ 홈"
+            onClick={(event) => {
+              event.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          >
             <img src={logoHeader} alt="SEED+" className="h-10 w-auto" />
           </Link>
           <nav className="hidden items-center gap-12 md:flex">
