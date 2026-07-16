@@ -19,6 +19,7 @@ interface SurvivalEstimateModalProps {
 }
 
 type SurvivalForm = {
+  storeName: string;
   regionCode: string;
   industryCode: string;
   area: string;
@@ -45,6 +46,7 @@ type ScoreField =
   | 's8_startupTypeBonus';
 
 const initialForm: SurvivalForm = {
+  storeName: '',
   regionCode: '',
   industryCode: '',
   area: '',
@@ -315,6 +317,7 @@ const SurvivalEstimateModal = ({
   };
 
   const isFormComplete = Boolean(
+    form.storeName.trim() &&
     form.regionCode &&
     form.industryCode &&
     form.area &&
@@ -378,6 +381,7 @@ const SurvivalEstimateModal = ({
   )?.name;
 
   const inputSummary: [string, string][] = [
+    ['상가명', form.storeName.trim() || '-'],
     ['지역', selectedDistrict?.sigungu ?? '-'],
     ['업종', selectedIndustryName ?? '-'],
     ['면적', form.area ? `${form.area}m²` : '-'],
@@ -393,7 +397,7 @@ const SurvivalEstimateModal = ({
   ).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
   const printPdfReport = useReactToPrint({
     contentRef: pdfReportRef,
-    documentTitle: `SEEDplus_생존율리포트_${selectedDistrict?.sigungu ?? '미지정'}_${reportDateStamp}`,
+    documentTitle: `SEEDplus_생존율리포트_${form.storeName.trim() || '미지정'}_${reportDateStamp}`,
     pageStyle:
       '@page { size: A4; margin: 0; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
   });
@@ -450,6 +454,7 @@ const SurvivalEstimateModal = ({
     event.preventDefault();
 
     if (
+      !form.storeName.trim() ||
       !form.regionCode ||
       !form.industryCode ||
       !form.area ||
@@ -548,6 +553,19 @@ const SurvivalEstimateModal = ({
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-4">
+              <label className="col-span-2 block">
+                <span className={labelClass}>상가명</span>
+                <input
+                  type="text"
+                  value={form.storeName}
+                  onChange={(event) =>
+                    updateField('storeName', event.target.value)
+                  }
+                  placeholder="예) 세드분식 강남점"
+                  className={inputClass}
+                />
+              </label>
+
               <label className="block">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-[11px] font-bold text-[#4e5968]">
