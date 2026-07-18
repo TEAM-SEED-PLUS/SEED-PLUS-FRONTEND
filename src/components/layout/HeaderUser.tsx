@@ -102,30 +102,33 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
         </Link>
 
         <nav className="flex flex-1 items-center gap-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.id}
-              to={item.to}
-              className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                activeNav === item.id
-                  ? 'text-blue-600'
-                  : 'text-gray-46 hover:bg-gray-500'
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {isAuthenticated &&
+            navItems.map((item) => (
+              <Link
+                key={item.id}
+                to={item.to}
+                className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
+                  activeNav === item.id
+                    ? 'text-blue-600'
+                    : 'text-gray-46 hover:bg-gray-500'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
         </nav>
 
         <div className="flex items-center gap-3">
-          <label className="flex h-9 w-64 items-center gap-2 rounded-full border border-[#e5e8eb] bg-gray-500 px-4 text-sm text-[#6b7684]">
-            <input
-              type="text"
-              className="w-full bg-transparent outline-none placeholder:text-[#b0b8c1]"
-              placeholder="검색어를 입력하세요"
-            />
-            <SearchIcon />
-          </label>
+          {isAuthenticated && (
+            <label className="flex h-9 w-64 items-center gap-2 rounded-full border border-[#e5e8eb] bg-gray-500 px-4 text-sm text-[#6b7684]">
+              <input
+                type="text"
+                className="w-full bg-transparent outline-none placeholder:text-[#b0b8c1]"
+                placeholder="검색어를 입력하세요"
+              />
+              <SearchIcon />
+            </label>
+          )}
           {isAuthenticated && (
             <Link
               to="/mypage"
@@ -158,13 +161,15 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
         </Link>
 
         <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label="검색"
-            className="flex h-10 w-10 items-center justify-center rounded-md text-[#4e5968] transition hover:bg-gray-500"
-          >
-            <SearchIcon />
-          </button>
+          {isAuthenticated && (
+            <button
+              type="button"
+              aria-label="검색"
+              className="flex h-10 w-10 items-center justify-center rounded-md text-[#4e5968] transition hover:bg-gray-500"
+            >
+              <SearchIcon />
+            </button>
+          )}
           {isAuthenticated && (
             <Link
               to="/mypage"
