@@ -261,18 +261,18 @@ const SignupPage = () => {
 
                   <div className="mt-5 grid grid-cols-2 gap-4">
                     <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="h-14 rounded-md bg-blue-600 text-base font-extrabold text-white transition-colors hover:bg-[#1f6fe5] disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
-                    >
-                      {isSubmitting ? '처리 중...' : '가입하기'}
-                    </button>
-                    <button
                       type="button"
                       onClick={() => navigate('/login')}
                       className="h-14 rounded-md bg-[#dfe3eb] text-base font-extrabold text-white transition-colors hover:bg-[#cdd3dd]"
                     >
                       가입취소
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="h-14 rounded-md bg-blue-600 text-base font-extrabold text-white transition-colors hover:bg-[#1f6fe5] disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
+                    >
+                      {isSubmitting ? '처리 중...' : '가입하기'}
                     </button>
                   </div>
                 </form>
