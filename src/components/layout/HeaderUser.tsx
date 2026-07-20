@@ -66,6 +66,7 @@ const MenuIcon = () => (
 const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
   const navigate = useNavigate();
   const { isAuthenticated, logout } = useAuth();
+  const logoTarget = isAuthenticated ? '/store-builder' : '/';
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -97,7 +98,7 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
   return (
     <header className="fixed left-0 top-0 z-30 h-[var(--header-height)] w-full border-b border-[#e5e8eb] bg-white">
       <div className="hidden h-full items-center justify-between px-5 md:flex">
-        <Link to="/store-builder" className="flex w-[88px] items-center">
+        <Link to={logoTarget} className="flex w-[88px] items-center">
           <img src={SEEDPLUS} alt="SEED+" className="h-6" />
         </Link>
 
@@ -153,7 +154,7 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
         </button>
 
         <Link
-          to="/store-builder"
+          to={logoTarget}
           className="absolute left-1/2 flex -translate-x-1/2 items-center justify-center"
           aria-label="SEED+ 홈"
         >
