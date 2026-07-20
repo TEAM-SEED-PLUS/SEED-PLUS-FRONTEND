@@ -7,6 +7,7 @@ import { HeaderUser } from '@/components/layout';
 import { useDocumentTitle } from '@/hooks';
 import {
   normalizePhoneNumber,
+  validatePassword,
   validatePhoneNumber,
 } from '@/utils/formValidation';
 
@@ -29,6 +30,7 @@ const LoginPage = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const signupComplete = (location.state as LocationState | null)
@@ -39,14 +41,11 @@ const LoginPage = () => {
     setErrorMessage('');
 
     const nextPhoneError = validatePhoneNumber(phoneNumber);
+    const nextPasswordError = validatePassword(password);
     setPhoneError(nextPhoneError);
+    setPasswordError(nextPasswordError);
 
-    if (nextPhoneError) {
-      return;
-    }
-
-    if (!password) {
-      setErrorMessage('필수 입력 항목입니다');
+    if (nextPhoneError || nextPasswordError) {
       return;
     }
 
@@ -144,10 +143,22 @@ const LoginPage = () => {
                 <input
                   type="password"
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    if (passwordError) {
+                      setPasswordError(validatePassword(event.target.value));
+                    }
+                  }}
+                  onBlur={() => setPasswordError(validatePassword(password))}
                   placeholder="비밀번호를 입력해주세요."
-                  className={inputClass}
+                  className={`${inputClass} ${passwordError ? errorInputClass : ''}`}
+                  aria-invalid={Boolean(passwordError)}
                 />
+                {passwordError && (
+                  <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                    {passwordError}
+                  </p>
+                )}
               </label>
 
               {errorMessage && (

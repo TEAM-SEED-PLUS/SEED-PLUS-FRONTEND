@@ -9,6 +9,9 @@ import SignupTermsModal from '@/components/signup/SignupTermsModal';
 import { useDocumentTitle } from '@/hooks';
 import {
   normalizePhoneNumber,
+  validateBirthDate,
+  validateName,
+  validatePassword,
   validatePhoneNumber,
 } from '@/utils/formValidation';
 
@@ -46,10 +49,13 @@ const SignupPage = () => {
   useDocumentTitle('회원가입');
   const [stage, setStage] = useState<SignupStage>('form');
   const [name, setName] = useState('');
+  const [nameError, setNameError] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [birthDateError, setBirthDateError] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [requiredTerms, setRequiredTerms] = useState({
     personalInfo: false,
     thirdParty: false,
@@ -64,31 +70,33 @@ const SignupPage = () => {
 
   const submitSignup = async () => {
     setErrorMessage('');
-    const formattedBirthDate = toApiBirthDate(birthDate);
+
+    const nextNameError = validateName(name);
+    const nextBirthDateError = validateBirthDate(birthDate);
     const nextPhoneError = validatePhoneNumber(phoneNumber);
+    const nextPasswordError = validatePassword(password);
+    setNameError(nextNameError);
+    setBirthDateError(nextBirthDateError);
     setPhoneError(nextPhoneError);
+    setPasswordError(nextPasswordError);
 
-    if (nextPhoneError) {
-      return;
-    }
-
-    if (!name.trim() || !phoneNumber.trim() || !password) {
-      setErrorMessage('이름, 생년월일, 휴대폰 번호, 비밀번호를 입력해주세요.');
-      return;
-    }
-
-    if (!formattedBirthDate) {
-      setErrorMessage('생년월일은 YYYYMMDD 형식으로 정확히 입력해주세요.');
-      return;
-    }
-
-    if (password.length < 8 || password.length > 72) {
-      setErrorMessage('비밀번호는 8자 이상 72자 이하로 입력해주세요.');
+    if (
+      nextNameError ||
+      nextBirthDateError ||
+      nextPhoneError ||
+      nextPasswordError
+    ) {
       return;
     }
 
     if (!requiredTerms.personalInfo || !requiredTerms.thirdParty) {
       setErrorMessage('필수 약관에 모두 동의해주세요.');
+      return;
+    }
+
+    const formattedBirthDate = toApiBirthDate(birthDate);
+    if (!formattedBirthDate) {
+      setBirthDateError('존재하지 않는 날짜입니다. 생년월일을 확인해주세요');
       return;
     }
 
@@ -151,10 +159,22 @@ const SignupPage = () => {
                     <input
                       type="text"
                       value={name}
-                      onChange={(event) => setName(event.target.value)}
+                      onChange={(event) => {
+                        setName(event.target.value);
+                        if (nameError) {
+                          setNameError(validateName(event.target.value));
+                        }
+                      }}
+                      onBlur={() => setNameError(validateName(name))}
                       placeholder="이름을 입력해주세요."
-                      className={inputClass}
+                      className={`${inputClass} ${nameError ? errorInputClass : ''}`}
+                      aria-invalid={Boolean(nameError)}
                     />
+                    {nameError && (
+                      <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                        {nameError}
+                      </p>
+                    )}
                   </label>
 
                   <label className="mt-4 block">
@@ -163,10 +183,26 @@ const SignupPage = () => {
                       type="text"
                       inputMode="numeric"
                       value={birthDate}
-                      onChange={(event) => setBirthDate(event.target.value)}
+                      onChange={(event) => {
+                        setBirthDate(event.target.value);
+                        if (birthDateError) {
+                          setBirthDateError(
+                            validateBirthDate(event.target.value)
+                          );
+                        }
+                      }}
+                      onBlur={() =>
+                        setBirthDateError(validateBirthDate(birthDate))
+                      }
                       placeholder="ex) 19900101"
-                      className={inputClass}
+                      className={`${inputClass} ${birthDateError ? errorInputClass : ''}`}
+                      aria-invalid={Boolean(birthDateError)}
                     />
+                    {birthDateError && (
+                      <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                        {birthDateError}
+                      </p>
+                    )}
                   </label>
 
                   <label className="mt-4 block">
@@ -201,10 +237,26 @@ const SignupPage = () => {
                     <input
                       type="password"
                       value={password}
-                      onChange={(event) => setPassword(event.target.value)}
+                      onChange={(event) => {
+                        setPassword(event.target.value);
+                        if (passwordError) {
+                          setPasswordError(
+                            validatePassword(event.target.value)
+                          );
+                        }
+                      }}
+                      onBlur={() =>
+                        setPasswordError(validatePassword(password))
+                      }
                       placeholder="8자 이상 입력해주세요."
-                      className={inputClass}
+                      className={`${inputClass} ${passwordError ? errorInputClass : ''}`}
+                      aria-invalid={Boolean(passwordError)}
                     />
+                    {passwordError && (
+                      <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                        {passwordError}
+                      </p>
+                    )}
                   </label>
 
                   <div className="mt-5 space-y-3 text-sm text-[#191f28]">
