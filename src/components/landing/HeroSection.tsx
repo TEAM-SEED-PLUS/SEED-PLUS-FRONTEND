@@ -20,9 +20,9 @@ const HeroSection = () => {
             도장을 찍다.
           </h1>
           <p className="mt-10 text-lg leading-[28.8px] font-semibold text-[#606060] md:text-[21px]">
-            AI 기반 상권 분석부터 수익률, 생존율 예측,
+            AI 기반 상권 분석부터
             <br />
-            전문가 연결까지.
+            수익률, 생존율 예측, 전문가 연결까지
           </p>
           <p className="mt-4 text-lg leading-[28.8px] font-semibold text-[#606060] md:text-[21px]">
             점포형 창업 의사결정을 위한 올인원 창업 플랫폼
