@@ -16,13 +16,12 @@ const UsageSection = () => {
           SEED+는 이렇게 작동합니다
         </h2>
         <p className="mt-3 text-center text-lg leading-[30px] font-medium text-black md:text-xl">
-          실거래 데이터와 AI 분석자료를 활용해
+          실거래 데이터와 AI 분석자료를 바탕으로
           <br />
-          <strong className="font-bold">
-            &quot;전문적인 창업 컨설턴트형 중개사&quot;
-          </strong>
+          <strong className="font-bold">전문적인 창업 컨설턴트형 중개사</strong>
+          <span>로</span>
           <br />
-          이미지 형성이 가능합니다.
+          차별화된 브랜드 이미지를 만들 수 있습니다.
         </p>
         <div className="mt-[70px] flex flex-col items-center justify-center gap-10 md:flex-row md:gap-[60px]">
           {steps.map((step, index) => (
