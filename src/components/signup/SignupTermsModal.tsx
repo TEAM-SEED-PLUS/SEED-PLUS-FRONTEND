@@ -1,28 +1,67 @@
-type RequiredTerms = {
-  personalInfo: boolean;
+import type { TermsBlock } from './signupTermsContent';
+import {
+  signupTermsDocuments,
+  TERMS_EFFECTIVE_DATE,
+} from './signupTermsContent';
+
+export type TermsAgreement = {
+  service: boolean;
+  privacy: boolean;
   thirdParty: boolean;
 };
 
 interface SignupTermsModalProps {
-  requiredTerms: RequiredTerms;
-  onChangeTerms: (terms: RequiredTerms) => void;
+  agreement: TermsAgreement;
+  onChangeAgreement: (agreement: TermsAgreement) => void;
   onClose: () => void;
 }
 
-const termText =
-  '서비스 이용 및 점포주 인증을 위해 필요한 약관 내용을 확인해주세요. 수집된 정보는 인증과 데이터 분석 목적 범위 안에서만 활용됩니다.';
+const TermsBlockView = ({ block }: { block: TermsBlock }) => {
+  if (block.kind === 'heading') {
+    return (
+      <p className="mt-3 text-[13px] font-bold text-[#191f28] first:mt-0">
+        {block.text}
+      </p>
+    );
+  }
+
+  if (block.kind === 'paragraph') {
+    return <p className="mt-1 leading-relaxed">{block.text}</p>;
+  }
+
+  return (
+    <div className="mt-2 space-y-2">
+      {block.rows.map((row, rowIndex) => (
+        <div
+          key={rowIndex}
+          className="rounded-sm border border-[#e5e8eb] bg-white p-2"
+        >
+          {row.map((field) => (
+            <div key={field.label} className="flex gap-1.5 py-0.5">
+              <span className="shrink-0 font-semibold text-[#4e5968]">
+                {field.label}
+              </span>
+              <span className="text-[#8b95a1]">{field.value}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const SignupTermsModal = ({
-  requiredTerms,
-  onChangeTerms,
+  agreement,
+  onChangeAgreement,
   onClose,
 }: SignupTermsModalProps) => {
-  const isAllRequiredChecked =
-    requiredTerms.personalInfo && requiredTerms.thirdParty;
+  const isAllChecked =
+    agreement.service && agreement.privacy && agreement.thirdParty;
 
-  const handleAllRequiredChange = (checked: boolean) => {
-    onChangeTerms({
-      personalInfo: checked,
+  const setAll = (checked: boolean) => {
+    onChangeAgreement({
+      service: checked,
+      privacy: checked,
       thirdParty: checked,
     });
   };
@@ -36,7 +75,7 @@ const SignupTermsModal = ({
       onClick={onClose}
     >
       <section
-        className="max-h-[85vh] w-full max-w-[480px] overflow-y-auto rounded-lg bg-white p-6 shadow-[0_18px_60px_rgba(25,31,40,0.18)]"
+        className="flex max-h-[85vh] w-full max-w-[520px] flex-col rounded-lg bg-white p-6 shadow-[0_18px_60px_rgba(25,31,40,0.18)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -50,63 +89,53 @@ const SignupTermsModal = ({
             ×
           </button>
         </div>
+        <p className="mt-1 text-xs text-[#8b95a1]">
+          시행일 {TERMS_EFFECTIVE_DATE}
+        </p>
 
-        <div className="mt-4 space-y-3">
-          <div className="rounded-sm border border-[#d8dde5] px-4 py-5 text-sm leading-relaxed text-[#8b95a1]">
-            <p>{termText}</p>
-          </div>
-
-          <label className="flex items-center gap-2 text-sm text-[#191f28]">
-            <input
-              type="checkbox"
-              checked={requiredTerms.personalInfo}
-              onChange={(event) =>
-                onChangeTerms({
-                  ...requiredTerms,
-                  personalInfo: event.target.checked,
-                })
-              }
-              className="h-4 w-4 rounded border-[#d8dde5] accent-blue-600"
-            />
-            <span>개인정보 수집·이용 동의 (점포주 인증)</span>
-          </label>
-
-          <div className="rounded-sm border border-[#d8dde5] px-4 py-5 text-sm leading-relaxed text-[#8b95a1]">
-            <p>{termText}</p>
-          </div>
-
-          <label className="flex items-center gap-2 text-sm text-[#191f28]">
-            <input
-              type="checkbox"
-              checked={requiredTerms.thirdParty}
-              onChange={(event) =>
-                onChangeTerms({
-                  ...requiredTerms,
-                  thirdParty: event.target.checked,
-                })
-              }
-              className="h-4 w-4 rounded border-[#d8dde5] accent-blue-600"
-            />
-            <span>개인정보 제3자 제공 동의 (데이터 분석)</span>
-          </label>
-
-          <label className="flex items-center gap-2 pt-2 text-sm font-extrabold text-[#191f28]">
-            <input
-              type="checkbox"
-              checked={isAllRequiredChecked}
-              onChange={(event) =>
-                handleAllRequiredChange(event.target.checked)
-              }
-              className="h-4 w-4 rounded border-[#d8dde5] accent-blue-600"
-            />
-            필수 약관에 모두 동의
-          </label>
+        <div className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+          {signupTermsDocuments.map((doc) => (
+            <div
+              key={doc.id}
+              className="rounded-md border border-[#e5e8eb] bg-[#fafbfc]"
+            >
+              <label className="flex items-center gap-2 border-b border-[#e5e8eb] px-3 py-2.5 text-sm font-bold text-[#191f28]">
+                <input
+                  type="checkbox"
+                  checked={agreement[doc.id]}
+                  onChange={(event) =>
+                    onChangeAgreement({
+                      ...agreement,
+                      [doc.id]: event.target.checked,
+                    })
+                  }
+                  className="h-4 w-4 rounded border-[#d8dde5] accent-blue-600"
+                />
+                {doc.checkboxLabel}
+              </label>
+              <div className="max-h-[180px] overflow-y-auto px-3 py-3 text-[11px] text-[#4e5968]">
+                {doc.blocks.map((block, index) => (
+                  <TermsBlockView key={index} block={block} />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
+
+        <label className="mt-4 flex items-center gap-2 border-t border-[#e5e8eb] pt-4 text-sm font-extrabold text-[#191f28]">
+          <input
+            type="checkbox"
+            checked={isAllChecked}
+            onChange={(event) => setAll(event.target.checked)}
+            className="h-4 w-4 rounded border-[#d8dde5] accent-blue-600"
+          />
+          전체 동의 (선택 항목 포함)
+        </label>
 
         <button
           type="button"
           onClick={onClose}
-          className="mt-5 h-12 w-full rounded-md bg-blue-600 text-base font-extrabold text-white transition-colors hover:bg-[#1f6fe5]"
+          className="mt-4 h-12 w-full shrink-0 rounded-md bg-blue-600 text-base font-extrabold text-white transition-colors hover:bg-[#1f6fe5]"
         >
           확인
         </button>

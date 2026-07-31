@@ -6,6 +6,8 @@ import { useAuth } from '@/auth';
 import { HeaderUser } from '@/components/layout';
 import SignupOnboarding from '@/components/signup/SignupOnboarding';
 import SignupTermsModal from '@/components/signup/SignupTermsModal';
+import type { TermsAgreement } from '@/components/signup/SignupTermsModal';
+import { signupTermsDocuments } from '@/components/signup/signupTermsContent';
 import { useDocumentTitle } from '@/hooks';
 import {
   normalizePhoneNumber,
@@ -56,8 +58,9 @@ const SignupPage = () => {
   const [phoneError, setPhoneError] = useState('');
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [requiredTerms, setRequiredTerms] = useState({
-    personalInfo: false,
+  const [termsAgreement, setTermsAgreement] = useState<TermsAgreement>({
+    service: false,
+    privacy: false,
     thirdParty: false,
   });
   const [isTermsOpen, setIsTermsOpen] = useState(false);
@@ -89,8 +92,10 @@ const SignupPage = () => {
       return;
     }
 
-    if (!requiredTerms.personalInfo || !requiredTerms.thirdParty) {
-      setErrorMessage('필수 약관에 모두 동의해주세요.');
+    if (!termsAgreement.service || !termsAgreement.privacy) {
+      setErrorMessage(
+        '필수 약관(이용약관, 개인정보 수집·이용)에 동의해주세요.'
+      );
       return;
     }
 
@@ -260,49 +265,29 @@ const SignupPage = () => {
                   </label>
 
                   <div className="mt-5 space-y-3 text-sm text-[#191f28]">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={requiredTerms.personalInfo}
-                        onChange={(event) =>
-                          setRequiredTerms((previous) => ({
-                            ...previous,
-                            personalInfo: event.target.checked,
-                          }))
-                        }
-                        className="h-4 w-4 rounded border-[#d8dde5] accent-blue-600"
-                      />
-                      <span>개인정보 수집·이용 동의 (점포주 인증)</span>
-                      <button
-                        type="button"
-                        onClick={() => setIsTermsOpen(true)}
-                        className="font-bold text-blue-600"
-                      >
-                        내용보기
-                      </button>
-                    </label>
-
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={requiredTerms.thirdParty}
-                        onChange={(event) =>
-                          setRequiredTerms((previous) => ({
-                            ...previous,
-                            thirdParty: event.target.checked,
-                          }))
-                        }
-                        className="h-4 w-4 rounded border-[#d8dde5] accent-blue-600"
-                      />
-                      <span>개인정보 제3자 제공 동의 (데이터 분석)</span>
-                      <button
-                        type="button"
-                        onClick={() => setIsTermsOpen(true)}
-                        className="font-bold text-blue-600"
-                      >
-                        내용보기
-                      </button>
-                    </label>
+                    {signupTermsDocuments.map((doc) => (
+                      <label key={doc.id} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={termsAgreement[doc.id]}
+                          onChange={(event) =>
+                            setTermsAgreement((previous) => ({
+                              ...previous,
+                              [doc.id]: event.target.checked,
+                            }))
+                          }
+                          className="h-4 w-4 rounded border-[#d8dde5] accent-blue-600"
+                        />
+                        <span className="flex-1">{doc.checkboxLabel}</span>
+                        <button
+                          type="button"
+                          onClick={() => setIsTermsOpen(true)}
+                          className="shrink-0 font-bold text-blue-600"
+                        >
+                          내용보기
+                        </button>
+                      </label>
+                    ))}
                   </div>
 
                   {errorMessage && (
@@ -335,8 +320,8 @@ const SignupPage = () => {
       </main>
       {isTermsOpen && (
         <SignupTermsModal
-          requiredTerms={requiredTerms}
-          onChangeTerms={setRequiredTerms}
+          agreement={termsAgreement}
+          onChangeAgreement={setTermsAgreement}
           onClose={() => setIsTermsOpen(false)}
         />
       )}
