@@ -8,6 +8,8 @@ interface StoreGridProps {
   onToggleBookmark: (store: StoreItem) => void;
   pendingLikeIds: number[];
   onToggleLike: (store: StoreItem) => void;
+  /** 최신화 시각 표기 여부 (마이페이지 저장 목록에서만 사용) */
+  showUpdatedAt?: boolean;
 }
 
 const StoreGrid = ({
@@ -18,6 +20,7 @@ const StoreGrid = ({
   onToggleBookmark,
   pendingLikeIds,
   onToggleLike,
+  showUpdatedAt = false,
 }: StoreGridProps) => {
   if (isLoading) {
     return (
@@ -53,6 +56,7 @@ const StoreGrid = ({
           onToggleBookmark={onToggleBookmark}
           isLikePending={pendingLikeIds.includes(store.id)}
           onToggleLike={onToggleLike}
+          showUpdatedAt={showUpdatedAt}
         />
       ))}
     </div>

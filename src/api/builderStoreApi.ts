@@ -51,6 +51,7 @@ export type BuilderStoreSummaryResponse = {
   industry: IndustryResponse;
   liked?: boolean;
   bookmarked?: boolean;
+  uploadedAt?: string;
 };
 
 export type BuilderStoreDetailResponse = BuilderStoreSummaryResponse & {

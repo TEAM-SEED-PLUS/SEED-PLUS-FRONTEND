@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatUpdatedAt } from '@/utils/formatUpdatedAt';
 import location from '@/assets/icons/location-icon.svg';
 import ruler from '@/assets/icons/ruler-icon.svg';
 import questionMark from '@/assets/icons/questionMark-icon.svg';
@@ -24,6 +25,7 @@ export interface StoreItem {
   expectedProfitRateValue: number;
   depositValue: number;
   monthlyRentValue: number;
+  uploadedAt?: string;
 }
 
 interface StoreCardProps {
@@ -32,6 +34,8 @@ interface StoreCardProps {
   onToggleBookmark: (store: StoreItem) => void;
   isLikePending: boolean;
   onToggleLike: (store: StoreItem) => void;
+  /** 최신화 시각 표기 여부 (마이페이지 저장 목록에서만 사용) */
+  showUpdatedAt?: boolean;
 }
 
 const StoreCard = ({
@@ -40,9 +44,11 @@ const StoreCard = ({
   onToggleBookmark,
   isLikePending,
   onToggleLike,
+  showUpdatedAt = false,
 }: StoreCardProps) => {
   const [isScoreExpanded, setIsScoreExpanded] = useState(false);
   const [isScoreInfoOpen, setIsScoreInfoOpen] = useState(false);
+  const updatedAtLabel = showUpdatedAt ? formatUpdatedAt(store.uploadedAt) : '';
 
   return (
     <article className="overflow-hidden rounded-lg border border-[#fff4ee] bg-white">
@@ -95,6 +101,12 @@ const StoreCard = ({
             {store.area}
           </span>
         </div>
+
+        {updatedAtLabel && (
+          <p className="mt-3 inline-block rounded-md bg-gray-500 px-2 py-1 text-[11px] font-medium text-gray-46">
+            {updatedAtLabel}
+          </p>
+        )}
       </div>
 
       <div className="mx-5 grid grid-cols-3 gap-2 text-center">
