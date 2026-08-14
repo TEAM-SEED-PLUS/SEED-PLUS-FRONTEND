@@ -42,6 +42,7 @@ export const toStoreItem = (
   expectedProfitRateValue: store.expectedProfitRate,
   depositValue: store.deposit,
   monthlyRentValue: store.monthlyRent,
+  uploadedAt: store.uploadedAt,
 });
 
 const applyStoreInteractionState = async (stores: StoreItem[]) => {

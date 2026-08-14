@@ -105,6 +105,7 @@ const MyPage = () => {
       onToggleBookmark={toggleBookmark}
       pendingLikeIds={pendingLikeIds}
       onToggleLike={toggleLike}
+      showUpdatedAt
     />
   );
 
