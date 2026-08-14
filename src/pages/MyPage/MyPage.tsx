@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth';
-import { HeaderUser, LogoutConfirmModal } from '@/components/layout';
+import { HeaderUser } from '@/components/layout';
 import {
-  AccountActions,
   ActivityPostCard,
   CategoryTabs,
-  NotificationSettings,
   ProfileSummaryCard,
 } from '@/components/mypage';
 import type { ActivityPost } from '@/components/mypage';
@@ -81,11 +79,9 @@ const SectionHeading = ({
 
 const MyPage = () => {
   const navigate = useNavigate();
-  const { user, status, isAuthenticated, logout } = useAuth();
+  const { user, status, isAuthenticated } = useAuth();
   const [activeCategory, setActiveCategory] = useState(0);
   const [mobileView, setMobileView] = useState<MobileView>('overview');
-  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
-  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const {
     stores: savedStores,
     isLoading: isSavedLoading,
@@ -127,12 +123,6 @@ const MyPage = () => {
   const name = user?.name ?? '회원';
   const initial = name.charAt(0);
 
-  const confirmLogout = async () => {
-    setIsLogoutConfirmOpen(false);
-    await logout();
-    navigate('/login');
-  };
-
   const profileCard = (className?: string) => (
     <ProfileSummaryCard
       name={name}
@@ -141,6 +131,7 @@ const MyPage = () => {
       postCount={4}
       activityScore={96}
       className={className}
+      onSettingsClick={() => navigate('/mypage/settings')}
     />
   );
 
@@ -179,12 +170,6 @@ const MyPage = () => {
 
         <aside className="flex w-[330px] shrink-0 flex-col gap-5 self-stretch">
           {profileCard()}
-          <NotificationSettings />
-          <AccountActions
-            className="mt-auto"
-            onLogout={() => setIsLogoutConfirmOpen(true)}
-            onWithdraw={() => setIsWithdrawOpen(true)}
-          />
         </aside>
       </main>
 
@@ -263,50 +248,9 @@ const MyPage = () => {
               />
               {activityPosts[0] && <ActivityPostCard post={activityPosts[0]} />}
             </section>
-
-            <NotificationSettings className="mt-10" />
-            <AccountActions
-              className="mt-6"
-              onLogout={() => setIsLogoutConfirmOpen(true)}
-              onWithdraw={() => setIsWithdrawOpen(true)}
-            />
           </>
         )}
       </main>
-
-      {isLogoutConfirmOpen && (
-        <LogoutConfirmModal
-          onConfirm={confirmLogout}
-          onCancel={() => setIsLogoutConfirmOpen(false)}
-        />
-      )}
-
-      {isWithdrawOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-5"
-          role="dialog"
-          aria-modal="true"
-          aria-label="회원탈퇴"
-          onClick={() => setIsWithdrawOpen(false)}
-        >
-          <section
-            className="w-full max-w-[360px] rounded-lg bg-white p-6 shadow-[0_18px_60px_rgba(25,31,40,0.18)]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h2 className="text-lg font-extrabold text-[#191f28]">회원탈퇴</h2>
-            <p className="mt-3 text-sm font-medium leading-relaxed text-[#4e5968]">
-              회원탈퇴 기능은 현재 준비 중입니다. 곧 제공될 예정입니다.
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsWithdrawOpen(false)}
-              className="mt-6 h-11 w-full rounded-md bg-blue-600 text-sm font-bold text-white transition hover:bg-blue-700"
-            >
-              확인
-            </button>
-          </section>
-        </div>
-      )}
     </div>
   );
 };

@@ -5,7 +5,24 @@ interface ProfileSummaryCardProps {
   postCount: number;
   activityScore: number;
   className?: string;
+  onSettingsClick?: () => void;
 }
+
+const SettingsIcon = () => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    className="h-5 w-5"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+  </svg>
+);
 
 const ProfileSummaryCard = ({
   name,
@@ -14,6 +31,7 @@ const ProfileSummaryCard = ({
   postCount,
   activityScore,
   className = '',
+  onSettingsClick,
 }: ProfileSummaryCardProps) => {
   const stats = [
     { label: '저장 상가', value: `${savedCount}` },
@@ -23,8 +41,18 @@ const ProfileSummaryCard = ({
 
   return (
     <section
-      className={`rounded-2xl bg-gradient-to-br from-blue-600 to-[#1b64da] px-6 py-6 text-white ${className}`}
+      className={`relative rounded-2xl bg-gradient-to-br from-blue-600 to-[#1b64da] px-6 py-6 text-white ${className}`}
     >
+      {onSettingsClick && (
+        <button
+          type="button"
+          onClick={onSettingsClick}
+          aria-label="설정"
+          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-white/80 transition hover:bg-white/20 hover:text-white"
+        >
+          <SettingsIcon />
+        </button>
+      )}
       <div className="flex items-center gap-4">
         <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/20 text-xl font-extrabold">
           {initial}
