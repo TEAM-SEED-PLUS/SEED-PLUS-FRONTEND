@@ -5,6 +5,7 @@ import {
   LandingPage,
   LoginPage,
   MyPage,
+  MyPageSettings,
   NotFoundPage,
   SignupPage,
   StoreBuilderPage,
@@ -21,6 +22,7 @@ const Router = () => {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/store-builder" element={<StoreBuilderPage />} />
         <Route path="/mypage" element={<MyPage />} />
+        <Route path="/mypage/settings" element={<MyPageSettings />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
