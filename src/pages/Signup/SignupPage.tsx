@@ -3,16 +3,21 @@ import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@/api';
 import { useAuth } from '@/auth';
-import LoginTermsModal from '@/components/login/LoginTermsModal';
 import { HeaderUser } from '@/components/layout';
 import SignupOnboarding from '@/components/signup/SignupOnboarding';
+import SignupTermsModal from '@/components/signup/SignupTermsModal';
+import type { TermsAgreement } from '@/components/signup/SignupTermsModal';
+import { signupTermsDocuments } from '@/components/signup/signupTermsContent';
 import { useDocumentTitle } from '@/hooks';
 import {
   normalizePhoneNumber,
+  validateBirthDate,
+  validateName,
+  validatePassword,
   validatePhoneNumber,
 } from '@/utils/formValidation';
 
-type SignupStage = 'form' | 'terms' | 'onboarding';
+type SignupStage = 'form' | 'onboarding';
 
 const inputClass =
   'h-12 w-full rounded-sm border border-[#d8dde5] px-4 text-sm text-[#191f28] outline-none placeholder:text-[#b0b8c1] focus:border-blue-600';
@@ -46,14 +51,19 @@ const SignupPage = () => {
   useDocumentTitle('회원가입');
   const [stage, setStage] = useState<SignupStage>('form');
   const [name, setName] = useState('');
+  const [nameError, setNameError] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [birthDateError, setBirthDateError] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [password, setPassword] = useState('');
-  const [requiredTerms, setRequiredTerms] = useState({
-    personalInfo: false,
+  const [passwordError, setPasswordError] = useState('');
+  const [termsAgreement, setTermsAgreement] = useState<TermsAgreement>({
+    service: false,
+    privacy: false,
     thirdParty: false,
   });
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,36 +73,35 @@ const SignupPage = () => {
 
   const submitSignup = async () => {
     setErrorMessage('');
-    const formattedBirthDate = toApiBirthDate(birthDate);
+
+    const nextNameError = validateName(name);
+    const nextBirthDateError = validateBirthDate(birthDate);
     const nextPhoneError = validatePhoneNumber(phoneNumber);
+    const nextPasswordError = validatePassword(password);
+    setNameError(nextNameError);
+    setBirthDateError(nextBirthDateError);
     setPhoneError(nextPhoneError);
+    setPasswordError(nextPasswordError);
 
-    if (nextPhoneError) {
-      setStage('form');
+    if (
+      nextNameError ||
+      nextBirthDateError ||
+      nextPhoneError ||
+      nextPasswordError
+    ) {
       return;
     }
 
-    if (!name.trim() || !phoneNumber.trim() || !password) {
-      setErrorMessage('이름, 생년월일, 휴대폰 번호, 비밀번호를 입력해주세요.');
-      setStage('form');
+    if (!termsAgreement.service || !termsAgreement.privacy) {
+      setErrorMessage(
+        '필수 약관(이용약관, 개인정보 수집·이용)에 동의해주세요.'
+      );
       return;
     }
 
+    const formattedBirthDate = toApiBirthDate(birthDate);
     if (!formattedBirthDate) {
-      setErrorMessage('생년월일은 YYYYMMDD 형식으로 정확히 입력해주세요.');
-      setStage('form');
-      return;
-    }
-
-    if (password.length < 8 || password.length > 72) {
-      setErrorMessage('비밀번호는 8자 이상 72자 이하로 입력해주세요.');
-      setStage('form');
-      return;
-    }
-
-    if (!requiredTerms.personalInfo || !requiredTerms.thirdParty) {
-      setErrorMessage('필수 약관에 모두 동의해주세요.');
-      setStage('terms');
+      setBirthDateError('존재하지 않는 날짜입니다. 생년월일을 확인해주세요');
       return;
     }
 
@@ -107,7 +116,6 @@ const SignupPage = () => {
       setStage('onboarding');
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error));
-      setStage('form');
     } finally {
       setIsSubmitting(false);
     }
@@ -140,158 +148,183 @@ const SignupPage = () => {
                 </p>
               </div>
 
-              {stage === 'terms' ? (
-                <LoginTermsModal
-                  requiredTerms={requiredTerms}
-                  onChangeTerms={setRequiredTerms}
-                  onSubmit={() => void submitSignup()}
-                  submitLabel="가입하기"
-                  isSubmitting={isSubmitting}
-                  errorMessage={errorMessage}
-                />
-              ) : (
-                <>
-                  <div className="mt-8 grid grid-cols-2 text-center text-sm font-medium text-[#191f28]">
-                    <div className="border-b-2 border-blue-600 pb-3">
-                      휴대폰 번호로 가입
-                    </div>
-                    <div className="border-b border-[#e5e8eb] pb-3 text-[#8b95a1]">
-                      소셜계정으로 가입
-                    </div>
+              <>
+                <div className="mt-8 grid grid-cols-2 text-center text-sm font-medium text-[#191f28]">
+                  <div className="border-b-2 border-blue-600 pb-3">
+                    휴대폰 번호로 가입
                   </div>
+                  <div className="border-b border-[#e5e8eb] pb-3 text-[#8b95a1]">
+                    소셜계정으로 가입
+                  </div>
+                </div>
 
-                  <form className="mt-5" onSubmit={handleSubmit}>
-                    <label className="block">
-                      <span className={labelClass}>이름</span>
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(event) => setName(event.target.value)}
-                        placeholder="이름을 입력해주세요."
-                        className={inputClass}
-                      />
-                    </label>
-
-                    <label className="mt-4 block">
-                      <span className={labelClass}>생년월일</span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        value={birthDate}
-                        onChange={(event) => setBirthDate(event.target.value)}
-                        placeholder="ex) 19900101"
-                        className={inputClass}
-                      />
-                    </label>
-
-                    <label className="mt-4 block">
-                      <span className={labelClass}>휴대폰 번호</span>
-                      <input
-                        type="tel"
-                        value={phoneNumber}
-                        onChange={(event) => {
-                          setPhoneNumber(event.target.value);
-                          if (phoneError) {
-                            setPhoneError(
-                              validatePhoneNumber(event.target.value)
-                            );
-                          }
-                        }}
-                        onBlur={() =>
-                          setPhoneError(validatePhoneNumber(phoneNumber))
+                <form className="mt-5" onSubmit={handleSubmit}>
+                  <label className="block">
+                    <span className={labelClass}>이름</span>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(event) => {
+                        setName(event.target.value);
+                        if (nameError) {
+                          setNameError(validateName(event.target.value));
                         }
-                        placeholder="ex) 01012345678"
-                        className={`${inputClass} ${phoneError ? errorInputClass : ''}`}
-                        aria-invalid={Boolean(phoneError)}
-                      />
-                      {phoneError && (
-                        <p className="mt-1 text-xs font-medium text-[#e5484d]">
-                          {phoneError}
-                        </p>
-                      )}
-                    </label>
+                      }}
+                      onBlur={() => setNameError(validateName(name))}
+                      placeholder="이름을 입력해주세요."
+                      className={`${inputClass} ${nameError ? errorInputClass : ''}`}
+                      aria-invalid={Boolean(nameError)}
+                    />
+                    {nameError && (
+                      <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                        {nameError}
+                      </p>
+                    )}
+                  </label>
 
-                    <label className="mt-4 block">
-                      <span className={labelClass}>비밀번호</span>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        placeholder="8자 이상 입력해주세요."
-                        className={inputClass}
-                      />
-                    </label>
+                  <label className="mt-4 block">
+                    <span className={labelClass}>생년월일</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={birthDate}
+                      onChange={(event) => {
+                        setBirthDate(event.target.value);
+                        if (birthDateError) {
+                          setBirthDateError(
+                            validateBirthDate(event.target.value)
+                          );
+                        }
+                      }}
+                      onBlur={() =>
+                        setBirthDateError(validateBirthDate(birthDate))
+                      }
+                      placeholder="ex) 19900101"
+                      className={`${inputClass} ${birthDateError ? errorInputClass : ''}`}
+                      aria-invalid={Boolean(birthDateError)}
+                    />
+                    {birthDateError && (
+                      <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                        {birthDateError}
+                      </p>
+                    )}
+                  </label>
 
-                    <div className="mt-5 space-y-3 text-sm text-[#191f28]">
-                      <label className="flex items-center gap-2">
+                  <label className="mt-4 block">
+                    <span className={labelClass}>휴대폰 번호</span>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(event) => {
+                        setPhoneNumber(event.target.value);
+                        if (phoneError) {
+                          setPhoneError(
+                            validatePhoneNumber(event.target.value)
+                          );
+                        }
+                      }}
+                      onBlur={() =>
+                        setPhoneError(validatePhoneNumber(phoneNumber))
+                      }
+                      placeholder="ex) 01012345678"
+                      className={`${inputClass} ${phoneError ? errorInputClass : ''}`}
+                      aria-invalid={Boolean(phoneError)}
+                    />
+                    {phoneError && (
+                      <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                        {phoneError}
+                      </p>
+                    )}
+                  </label>
+
+                  <label className="mt-4 block">
+                    <span className={labelClass}>비밀번호</span>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(event) => {
+                        setPassword(event.target.value);
+                        if (passwordError) {
+                          setPasswordError(
+                            validatePassword(event.target.value)
+                          );
+                        }
+                      }}
+                      onBlur={() =>
+                        setPasswordError(validatePassword(password))
+                      }
+                      placeholder="8자 이상 입력해주세요."
+                      className={`${inputClass} ${passwordError ? errorInputClass : ''}`}
+                      aria-invalid={Boolean(passwordError)}
+                    />
+                    {passwordError && (
+                      <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                        {passwordError}
+                      </p>
+                    )}
+                  </label>
+
+                  <div className="mt-5 space-y-3 text-sm text-[#191f28]">
+                    {signupTermsDocuments.map((doc) => (
+                      <label key={doc.id} className="flex items-center gap-2">
                         <input
                           type="checkbox"
-                          checked={requiredTerms.personalInfo}
-                          onChange={() => setStage('terms')}
-                          className="h-4 w-4 rounded border-[#d8dde5] accent-blue-600"
-                        />
-                        <span>개인정보 수집·이용 동의 (점포주 인증)</span>
-                        <button
-                          type="button"
-                          onClick={() => setStage('terms')}
-                          className="font-bold text-blue-600"
-                        >
-                          내용보기
-                        </button>
-                      </label>
-
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={requiredTerms.thirdParty}
+                          checked={termsAgreement[doc.id]}
                           onChange={(event) =>
-                            setRequiredTerms((previous) => ({
+                            setTermsAgreement((previous) => ({
                               ...previous,
-                              thirdParty: event.target.checked,
+                              [doc.id]: event.target.checked,
                             }))
                           }
                           className="h-4 w-4 rounded border-[#d8dde5] accent-blue-600"
                         />
-                        <span>개인정보 제3자 제공 동의 (데이터 분석)</span>
+                        <span className="flex-1">{doc.checkboxLabel}</span>
                         <button
                           type="button"
-                          onClick={() => setStage('terms')}
-                          className="font-bold text-blue-600"
+                          onClick={() => setIsTermsOpen(true)}
+                          className="shrink-0 font-bold text-blue-600"
                         >
                           내용보기
                         </button>
                       </label>
-                    </div>
+                    ))}
+                  </div>
 
-                    {errorMessage && (
-                      <p className="mt-4 text-sm font-medium text-[#e5484d]">
-                        {errorMessage}
-                      </p>
-                    )}
+                  {errorMessage && (
+                    <p className="mt-4 text-sm font-medium text-[#e5484d]">
+                      {errorMessage}
+                    </p>
+                  )}
 
-                    <div className="mt-5 grid grid-cols-2 gap-4">
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="h-14 rounded-md bg-blue-600 text-base font-extrabold text-white transition-colors hover:bg-[#1f6fe5] disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
-                      >
-                        {isSubmitting ? '처리 중...' : '가입하기'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigate('/login')}
-                        className="h-14 rounded-md bg-[#dfe3eb] text-base font-extrabold text-white transition-colors hover:bg-[#cdd3dd]"
-                      >
-                        가입취소
-                      </button>
-                    </div>
-                  </form>
-                </>
-              )}
+                  <div className="mt-5 grid grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/login')}
+                      className="h-14 rounded-md bg-[#dfe3eb] text-base font-extrabold text-white transition-colors hover:bg-[#cdd3dd]"
+                    >
+                      가입취소
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="h-14 rounded-md bg-blue-600 text-base font-extrabold text-white transition-colors hover:bg-[#1f6fe5] disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
+                    >
+                      {isSubmitting ? '처리 중...' : '가입하기'}
+                    </button>
+                  </div>
+                </form>
+              </>
             </>
           )}
         </section>
       </main>
+      {isTermsOpen && (
+        <SignupTermsModal
+          agreement={termsAgreement}
+          onChangeAgreement={setTermsAgreement}
+          onClose={() => setIsTermsOpen(false)}
+        />
+      )}
     </div>
   );
 };
