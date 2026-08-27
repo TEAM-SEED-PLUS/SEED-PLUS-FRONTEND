@@ -7,16 +7,11 @@ import {
   mockWeatherFeedNoData,
   mockWeatherFeedPartial,
 } from '@/api/weatherFeedMock';
-import type {
-  TimeBand,
-  WeatherFeed,
-  WeatherGrade,
-} from '@/api/weatherFeedTypes';
+import type { TimeBand, WeatherFeed } from '@/api/weatherFeedTypes';
 import { HeaderUser } from '@/components/layout';
 import {
-  GRADE_EMOJI,
-  GRADE_FILL,
   SeoulDistrictMap,
+  WeatherLegend,
   WeatherContentList,
   WeatherNarrativeCard,
   WeatherPlaceholderCard,
@@ -31,8 +26,6 @@ const TIME_BANDS: { band: TimeBand; label: string }[] = [
   { band: '오후', label: '오후 17:00~20:00' },
   { band: '저녁', label: '저녁 20:00~24:00' },
 ];
-
-const LEGEND: WeatherGrade[] = ['맑음', '구름', '흐림', '비', '폭풍'];
 
 /**
  * Mock 응답 선택기.
@@ -139,23 +132,9 @@ const WeatherPage = () => {
                 onSelect={(next) => runWithLoading(() => setDistrict(next))}
               />
             </div>
-
-            <ul className="mt-3 flex flex-wrap justify-center gap-3">
-              {LEGEND.map((grade) => (
-                <li
-                  key={grade}
-                  className="flex items-center gap-1.5 text-[11px] font-bold text-[#4e5968]"
-                >
-                  <span
-                    aria-hidden
-                    className="inline-block h-3 w-3 rounded-full"
-                    style={{ backgroundColor: GRADE_FILL[grade] }}
-                  />
-                  <span aria-hidden>{GRADE_EMOJI[grade]}</span>
-                  {grade}
-                </li>
-              ))}
-            </ul>
+            <div className="mt-3 flex justify-center overflow-x-auto">
+              <WeatherLegend />
+            </div>
           </section>
 
           {/* 우: 선택 자치구 상세 */}

@@ -68,9 +68,10 @@ const SeoulDistrictMap = ({
         x={labelX}
         y={labelY}
         className="pointer-events-none select-none"
-        fontSize={11}
-        fontWeight={name === selected ? 700 : 500}
-        fill={name === selected ? '#191f28' : '#4e5968'}
+        fontSize={12}
+        letterSpacing={-0.48}
+        fontWeight={name === selected ? 700 : 400}
+        fill="#222222"
       >
         {name}
       </text>

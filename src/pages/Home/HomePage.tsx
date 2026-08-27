@@ -12,9 +12,8 @@ import {
 } from '@/components/home';
 import { HeaderUser } from '@/components/layout';
 import {
-  GRADE_EMOJI,
-  GRADE_FILL,
   SeoulDistrictMap,
+  WeatherLegend,
   WeatherNarrativeCard,
 } from '@/components/weather';
 import { useDocumentTitle } from '@/hooks';
@@ -25,8 +24,6 @@ const TIME_BANDS: { band: TimeBand; label: string }[] = [
   { band: '오후', label: '오후 17:00~20:00' },
   { band: '저녁', label: '저녁 20:00~24:00' },
 ];
-
-const LEGEND = ['맑음', '구름', '흐림', '비'] as const;
 
 const HomePage = () => {
   useDocumentTitle();
@@ -95,23 +92,9 @@ const HomePage = () => {
                   onSelect={setDistrict}
                 />
               </div>
-
-              <ul className="mt-3 flex flex-wrap justify-center gap-3">
-                {LEGEND.map((grade) => (
-                  <li
-                    key={grade}
-                    className="flex items-center gap-1 text-[10px] font-bold text-[#4e5968]"
-                  >
-                    <span
-                      aria-hidden
-                      className="inline-block h-2.5 w-2.5 rounded-full"
-                      style={{ backgroundColor: GRADE_FILL[grade] }}
-                    />
-                    <span aria-hidden>{GRADE_EMOJI[grade]}</span>
-                    {grade}
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-3 flex justify-center overflow-x-auto">
+                <WeatherLegend />
+              </div>
             </div>
           </section>
 
