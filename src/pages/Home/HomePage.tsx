@@ -1,32 +1,163 @@
+import { useMemo, useState } from 'react';
+import { mockTimeSlots } from '@/api/homeMock';
+import { mockDistrictGrades, mockWeatherFeed } from '@/api/weatherFeedMock';
+import type { TimeBand } from '@/api/weatherFeedTypes';
+import { useAuth } from '@/auth';
+import {
+  LiveChatCard,
+  SignalBanner,
+  TimeSlotGrid,
+  TrendingNewsCard,
+  WeeklyBriefingCard,
+} from '@/components/home';
 import { HeaderUser } from '@/components/layout';
 import {
-  DistrictStatusCard,
-  EventCalendar,
-  IndustryRanking,
-  MarketMetricStrip,
-  PropertyScoreCard,
-  RecentTransactionsCard,
-  SalesTrendChart,
-} from '@/components/home';
+  GRADE_FILL,
+  SeoulDistrictMap,
+  WeatherNarrativeCard,
+} from '@/components/weather';
+import { useDocumentTitle } from '@/hooks';
+
+const TIME_BANDS: { band: TimeBand; label: string }[] = [
+  { band: '아침', label: '아침 06:00~12:00' },
+  { band: '점심', label: '점심 12:00~17:00' },
+  { band: '오후', label: '오후 17:00~20:00' },
+  { band: '저녁', label: '저녁 20:00~24:00' },
+];
+
+const LEGEND = ['맑음', '구름', '흐림', '비'] as const;
 
 const HomePage = () => {
+  useDocumentTitle();
+  const { isAuthenticated } = useAuth();
+  const [district, setDistrict] = useState('종로구');
+  const [timeBand, setTimeBand] = useState<TimeBand>('점심');
+
+  const weather = useMemo(
+    () => mockDistrictGrades[district] ?? mockWeatherFeed.market_weather,
+    [district]
+  );
+
   return (
     <div className="min-h-screen bg-gray-500">
       <HeaderUser activeNav="home" />
-      <main className="mx-auto w-full max-w-[1500px] px-6 pb-10 pt-[calc(var(--header-height)+20px)]">
-        <MarketMetricStrip />
 
-        <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[1fr_420px]">
-          <div className="space-y-5">
-            <IndustryRanking />
-            <SalesTrendChart />
-            <DistrictStatusCard />
+      <div className="pt-[var(--header-height)]">
+        <SignalBanner />
+      </div>
+
+      <main className="mx-auto w-full max-w-[1500px] px-5 pb-10 pt-5 lg:px-8">
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)_minmax(0,340px)]">
+          {/* 좌: 상권날씨 지도 */}
+          <section className="rounded-lg bg-white p-5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-extrabold text-[#191f28]">
+                    상권날씨
+                  </h2>
+                  <span className="rounded-full border border-[#e5484d] px-2 py-0.5 text-[10px] font-bold text-[#e5484d]">
+                    실시간
+                  </span>
+                </div>
+                <p className="mt-1 text-[11px] text-gray-46">
+                  서울 25개 자치구 실시간 상권 분석
+                </p>
+              </div>
+              <select
+                value={timeBand}
+                onChange={(event) =>
+                  setTimeBand(event.target.value as TimeBand)
+                }
+                aria-label="시간대 선택"
+                className="h-9 rounded-md border border-[#e5e8eb] bg-white px-2 text-xs text-[#191f28] outline-none focus:border-blue-600"
+              >
+                {TIME_BANDS.map(({ band }) => (
+                  <option key={band} value={band}>
+                    {band}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mt-4 rounded-md border border-[#e5e8eb] p-4">
+              <p className="text-sm font-extrabold text-[#191f28]">
+                서울 상권 날씨,
+                <br />
+                지금 이 동네 어때요?
+              </p>
+
+              <div className="mt-3 rounded-md bg-[#f7f8fa] p-2">
+                <SeoulDistrictMap
+                  grades={mockDistrictGrades}
+                  selected={district}
+                  onSelect={setDistrict}
+                />
+              </div>
+
+              <ul className="mt-3 flex flex-wrap justify-center gap-3">
+                {LEGEND.map((grade) => (
+                  <li
+                    key={grade}
+                    className="flex items-center gap-1 text-[10px] font-bold text-[#4e5968]"
+                  >
+                    <span
+                      aria-hidden
+                      className="inline-block h-2.5 w-2.5 rounded-sm"
+                      style={{ backgroundColor: GRADE_FILL[grade] }}
+                    />
+                    {grade}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+
+          {/* 중앙: 선택 자치구 상세 + 브리핑/채팅 */}
+          <div className="flex flex-col gap-5">
+            <section className="rounded-lg bg-white p-5 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-extrabold text-[#191f28]">
+                  {district} 상권날씨 <span aria-hidden>{weather.emoji}</span>{' '}
+                  <span className="text-blue-600">{weather.grade}</span>
+                </h2>
+                <button
+                  type="button"
+                  className="rounded-md border border-[#e5e8eb] px-3 py-1.5 text-xs font-bold text-[#4e5968] transition hover:bg-gray-500"
+                >
+                  ☆ 즐겨찾기
+                </button>
+              </div>
+
+              <p className="mt-2 text-xs text-gray-46">
+                {mockWeatherFeed.narrative.judgement_sentence}
+              </p>
+
+              <div className="mt-4">
+                <TimeSlotGrid slots={mockTimeSlots} />
+              </div>
+
+              <div className="mt-4 rounded-md bg-[#e8f1ff] px-4 py-3 text-xs text-[#191f28]">
+                <span aria-hidden className="mr-1">
+                  💡
+                </span>
+                <strong className="font-extrabold text-blue-600">
+                  추천 액션:
+                </strong>{' '}
+                {mockWeatherFeed.narrative.recommended_actions[0]}
+              </div>
+            </section>
+
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              <WeeklyBriefingCard />
+              <LiveChatCard isAuthenticated={isAuthenticated} />
+            </div>
+
+            <WeatherNarrativeCard narrative={mockWeatherFeed.narrative} />
           </div>
-          <aside className="space-y-5">
-            <EventCalendar />
-            <PropertyScoreCard />
-            <RecentTransactionsCard />
-          </aside>
+
+          {/* 우: 지금 뜨는 소식 */}
+          <TrendingNewsCard />
         </div>
       </main>
     </div>

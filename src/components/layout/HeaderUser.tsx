@@ -11,8 +11,20 @@ interface HeaderUserProps {
   onMenuClick?: () => void;
 }
 
-const navItems: { id: UserNav; label: string; to: string }[] = [
-  { id: 'store', label: '내 상가 만들기', to: '/store-builder' },
+const navItems: {
+  id: UserNav;
+  label: string;
+  to: string;
+  /** 로그인 회원에게만 노출할 메뉴 (내 상가 만들기는 로그인 가드가 있다) */
+  requiresAuth?: boolean;
+}[] = [
+  { id: 'home', label: '홈', to: '/home' },
+  {
+    id: 'store',
+    label: '내 상가 만들기',
+    to: '/store-builder',
+    requiresAuth: true,
+  },
 ];
 
 const SearchIcon = () => (
@@ -104,8 +116,9 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
           </Link>
 
           <nav className="flex flex-1 items-center gap-1">
-            {isAuthenticated &&
-              navItems.map((item) => (
+            {navItems
+              .filter((item) => !item.requiresAuth || isAuthenticated)
+              .map((item) => (
                 <Link
                   key={item.id}
                   to={item.to}
