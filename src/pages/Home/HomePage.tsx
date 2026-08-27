@@ -44,8 +44,8 @@ const HomePage = () => {
         <SignalBanner />
       </div>
 
-      <main className="mx-auto w-full max-w-[1500px] px-5 pb-10 pt-5 lg:px-8">
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)_minmax(0,340px)]">
+      <main className="mx-auto w-full max-w-[1800px] px-5 pb-10 pt-5 lg:px-8">
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,550px)_minmax(0,1fr)_minmax(0,413px)]">
           {/* 좌: 상권날씨 지도 */}
           <section className="rounded-lg bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 pr-1">
