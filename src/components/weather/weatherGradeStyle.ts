@@ -8,3 +8,12 @@ export const GRADE_FILL: Record<WeatherGrade, string> = {
   비: '#c9e0ff',
   폭풍: '#5b6472',
 };
+
+/** 등급별 날씨 아이콘 (범례·요약에서 공용) */
+export const GRADE_EMOJI: Record<WeatherGrade, string> = {
+  맑음: '☀️',
+  구름: '🌥️',
+  흐림: '☁️',
+  비: '🌧️',
+  폭풍: '🌪️',
+};

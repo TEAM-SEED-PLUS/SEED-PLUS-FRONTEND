@@ -12,6 +12,7 @@ import {
 } from '@/components/home';
 import { HeaderUser } from '@/components/layout';
 import {
+  GRADE_EMOJI,
   GRADE_FILL,
   SeoulDistrictMap,
   WeatherNarrativeCard,
@@ -50,7 +51,7 @@ const HomePage = () => {
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)_minmax(0,340px)]">
           {/* 좌: 상권날씨 지도 */}
           <section className="rounded-lg bg-white p-5 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-3 pr-1">
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-extrabold text-[#191f28]">
@@ -103,9 +104,10 @@ const HomePage = () => {
                   >
                     <span
                       aria-hidden
-                      className="inline-block h-2.5 w-2.5 rounded-sm"
+                      className="inline-block h-2.5 w-2.5 rounded-full"
                       style={{ backgroundColor: GRADE_FILL[grade] }}
                     />
+                    <span aria-hidden>{GRADE_EMOJI[grade]}</span>
                     {grade}
                   </li>
                 ))}

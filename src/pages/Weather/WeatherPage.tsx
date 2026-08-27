@@ -14,6 +14,7 @@ import type {
 } from '@/api/weatherFeedTypes';
 import { HeaderUser } from '@/components/layout';
 import {
+  GRADE_EMOJI,
   GRADE_FILL,
   SeoulDistrictMap,
   WeatherContentList,
@@ -147,9 +148,10 @@ const WeatherPage = () => {
                 >
                   <span
                     aria-hidden
-                    className="inline-block h-3 w-3 rounded-sm"
+                    className="inline-block h-3 w-3 rounded-full"
                     style={{ backgroundColor: GRADE_FILL[grade] }}
                   />
+                  <span aria-hidden>{GRADE_EMOJI[grade]}</span>
                   {grade}
                 </li>
               ))}
