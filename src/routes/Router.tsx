@@ -9,6 +9,7 @@ import {
   NotFoundPage,
   SignupPage,
   StoreBuilderPage,
+  WeatherPage,
 } from '@/pages';
 
 const Router = () => {
@@ -21,6 +22,7 @@ const Router = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/store-builder" element={<StoreBuilderPage />} />
+        <Route path="/weather" element={<WeatherPage />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/mypage/settings" element={<MyPageSettings />} />
         <Route path="*" element={<NotFoundPage />} />

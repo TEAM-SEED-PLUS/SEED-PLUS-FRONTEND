@@ -5,4 +5,5 @@ export { default as MyPage } from './MyPage/MyPage';
 export { default as MyPageSettings } from './MyPage/MyPageSettings';
 export { default as NotFoundPage } from './NotFoundPage';
 export { default as SignupPage } from './Signup/SignupPage';
+export { default as WeatherPage } from './Weather/WeatherPage';
 export { default as StoreBuilderPage } from './StoreBuilder/StoreBuilderPage';
