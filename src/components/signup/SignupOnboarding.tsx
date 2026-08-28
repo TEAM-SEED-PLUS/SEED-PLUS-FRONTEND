@@ -6,8 +6,18 @@ type OnboardingStep = {
 };
 
 interface SignupOnboardingProps {
-  onComplete: () => void;
+  onComplete: (result: OnboardingResult) => void;
 }
+
+/**
+ * 온보딩 응답. 기능명세서 ⑤DB스키마 user_onboarding 컬럼과 형태를 맞췄다.
+ * 건너뛴 단계는 null로 전달해 스킵율 분석이 가능하도록 한다.
+ */
+export type OnboardingResult = {
+  acquisitionChannels: string[] | null;
+  businessStage: string[] | null;
+  interestIndustry: string[] | null;
+};
 
 const onboardingSteps: OnboardingStep[] = [
   {
@@ -60,6 +70,7 @@ const SignupOnboarding = ({ onComplete }: SignupOnboardingProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<string[][]>(initialAnswers);
   const [otherAnswers, setOtherAnswers] = useState(['', '', '']);
+  const [skipped, setSkipped] = useState([false, false, false]);
   const step = onboardingSteps[currentStep];
   const selectedAnswers = answers[currentStep];
   const isLastStep = currentStep === onboardingSteps.length - 1;
@@ -78,13 +89,34 @@ const SignupOnboarding = ({ onComplete }: SignupOnboardingProps) => {
     );
   };
 
-  const handleConfirm = () => {
+  const buildResult = (skippedFlags: boolean[]): OnboardingResult => {
+    const pick = (index: number) =>
+      skippedFlags[index] ? null : answers[index];
+
+    return {
+      acquisitionChannels: pick(0),
+      businessStage: pick(1),
+      interestIndustry: pick(2),
+    };
+  };
+
+  const goNext = (skippedFlags: boolean[]) => {
     if (isLastStep) {
-      onComplete();
+      onComplete(buildResult(skippedFlags));
       return;
     }
 
     setCurrentStep((previous) => previous + 1);
+  };
+
+  const handleConfirm = () => goNext(skipped);
+
+  const handleSkip = () => {
+    const nextSkipped = skipped.map((value, index) =>
+      index === currentStep ? true : value
+    );
+    setSkipped(nextSkipped);
+    goNext(nextSkipped);
   };
 
   return (
@@ -129,13 +161,22 @@ const SignupOnboarding = ({ onComplete }: SignupOnboardingProps) => {
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={handleConfirm}
-        className="mt-6 h-14 w-full rounded-md bg-blue-600 text-base font-extrabold text-white transition-colors hover:bg-[#1f6fe5]"
-      >
-        확인
-      </button>
+      <div className="mt-6 space-y-2">
+        <button
+          type="button"
+          onClick={handleConfirm}
+          className="h-14 w-full rounded-md bg-blue-600 text-base font-extrabold text-white transition-colors hover:bg-[#1f6fe5]"
+        >
+          확인
+        </button>
+        <button
+          type="button"
+          onClick={handleSkip}
+          className="h-12 w-full rounded-md text-sm font-bold text-gray-46 transition-colors hover:bg-gray-500"
+        >
+          건너뛰기
+        </button>
+      </div>
     </div>
   );
 };
