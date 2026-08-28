@@ -3,7 +3,8 @@ interface ProfileSummaryCardProps {
   initial: string;
   savedCount: number;
   postCount: number;
-  activityScore: number;
+  /** 산출 기준이 정해지기 전까지는 null을 넘겨 '-'로 표기한다. */
+  activityScore: number | null;
   className?: string;
   onSettingsClick?: () => void;
 }
@@ -36,7 +37,10 @@ const ProfileSummaryCard = ({
   const stats = [
     { label: '저장 상가', value: `${savedCount}` },
     { label: '작성 글', value: `${postCount}` },
-    { label: '활동 점수', value: `${activityScore}%` },
+    {
+      label: '활동 점수',
+      value: activityScore === null ? '-' : `${activityScore}%`,
+    },
   ];
 
   return (

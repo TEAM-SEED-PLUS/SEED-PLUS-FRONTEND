@@ -1,4 +1,5 @@
 import type { WeatherFeed } from '@/api/weatherFeedTypes';
+import { GRADE_ICON } from './weatherGradeStyle';
 
 interface WeatherSummaryCardProps {
   feed: WeatherFeed;
@@ -14,7 +15,13 @@ const WeatherSummaryCard = ({ feed }: WeatherSummaryCardProps) => {
     <section className="rounded-lg bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-extrabold text-[#191f28]">
-          {query.district} 상권날씨 <span aria-hidden>{weather.emoji}</span>{' '}
+          {query.district} 상권날씨{' '}
+          <img
+            src={GRADE_ICON[weather.grade]}
+            alt=""
+            aria-hidden
+            className="inline-block h-5 w-5 align-text-bottom"
+          />{' '}
           <span className="text-blue-600">{weather.grade}</span>
         </h2>
         <span className="rounded-full bg-[#f2f4f6] px-3 py-1 text-xs font-bold text-gray-46">

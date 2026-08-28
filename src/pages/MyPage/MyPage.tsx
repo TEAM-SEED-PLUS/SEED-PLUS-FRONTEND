@@ -12,42 +12,19 @@ import { StoreGrid } from '@/components/store';
 import type { StoreItem } from '@/components/store';
 import useSavedStores from './useSavedStores';
 
-const categories = [
-  '내가 설정한 카테고리 이름 1',
-  '내가 설정한 카테고리 이름 2',
-  '내가 설정한 카테고리 이름 3',
-];
-
-const activityPosts: ActivityPost[] = [
-  {
-    id: 1,
-    initial: '홍',
-    colorClass: 'bg-blue-600',
-    title: '홍대 파스타 A',
-    district: '마포구 서교동',
-    content:
-      '안녕하세요! 저희 가게 근처 식자재 공동구매 참여하실 분 계신가요? 최소 5개 점포 모이면 30% 할인 가능합니다. 주로 파스타 면류, 올리브오일, 토마토소스 등입니다. 관심 있으신 분은 댓글 달아주세요 😊',
-    tags: ['공동구매', '식자재', '파스타'],
-    comments: 24,
-    likes: 11,
-    views: 3,
-  },
-  {
-    id: 2,
-    initial: '홍',
-    colorClass: 'bg-[#f36f28]',
-    title: '홍대 파스타 A',
-    district: '마포구 서교동',
-    content:
-      '안녕하세요! 저희 가게 근처 식자재 공동구매 참여하실 분 계신가요? 최소 5개 점포 모이면 30% 할인 가능합니다. 주로 파스타 면류, 올리브오일, 토마토소스 등입니다. 관심 있으신 분은 댓글 달아주세요 😊',
-    tags: ['공동구매', '식자재', '파스타'],
-    comments: 24,
-    likes: 11,
-    views: 3,
-  },
-];
+// 저장 카테고리·소통 활동 내역은 아직 API가 없다.
+// 값을 지어내지 않고 빈 목록으로 두고, 화면에서는 빈 상태 문구를 노출한다.
+// TODO(BE): 카테고리 CRUD·내가 쓴 글 목록 엔드포인트 확정 시 연동.
+const categories: string[] = [];
+const activityPosts: ActivityPost[] = [];
 
 type MobileView = 'overview' | 'saved' | 'posts';
+
+const EmptyNotice = ({ message }: { message: string }) => (
+  <div className="rounded-lg border border-[#d8dde5] bg-white px-5 py-14 text-center text-sm font-medium text-gray-46">
+    {message}
+  </div>
+);
 
 const SectionHeading = ({
   title,
@@ -92,6 +69,27 @@ const MyPage = () => {
     toggleLike,
   } = useSavedStores(isAuthenticated);
 
+  const renderCategoryTabs = (className?: string) =>
+    categories.length > 0 ? (
+      <CategoryTabs
+        categories={categories}
+        activeIndex={activeCategory}
+        onSelect={setActiveCategory}
+        className={className}
+      />
+    ) : null;
+
+  const renderActivityPosts = () =>
+    activityPosts.length > 0 ? (
+      <div className="space-y-4">
+        {activityPosts.map((post) => (
+          <ActivityPostCard key={post.id} post={post} />
+        ))}
+      </div>
+    ) : (
+      <EmptyNotice message="아직 작성한 글이 없습니다." />
+    );
+
   const renderSavedStores = (stores: StoreItem[]) => (
     <StoreGrid
       stores={stores}
@@ -128,9 +126,9 @@ const MyPage = () => {
     <ProfileSummaryCard
       name={name}
       initial={initial}
-      savedCount={12}
-      postCount={4}
-      activityScore={96}
+      savedCount={savedStores.length}
+      postCount={activityPosts.length}
+      activityScore={null}
       className={className}
       onSettingsClick={() => navigate('/mypage/settings')}
     />
@@ -148,11 +146,7 @@ const MyPage = () => {
               title="저장한 상가 리스트"
               description="관심 있는 상가를 카테고리별로 관리해보세요."
             />
-            <CategoryTabs
-              categories={categories}
-              activeIndex={activeCategory}
-              onSelect={setActiveCategory}
-            />
+            {renderCategoryTabs()}
             <div className="mt-5">{renderSavedStores(savedStores)}</div>
           </section>
 
@@ -161,11 +155,7 @@ const MyPage = () => {
               title="소통 활동 내역"
               description="내가 쓴 글을 확인해보세요."
             />
-            <div className="space-y-4">
-              {activityPosts.map((post) => (
-                <ActivityPostCard key={post.id} post={post} />
-              ))}
-            </div>
+            {renderActivityPosts()}
           </section>
         </div>
 
@@ -193,12 +183,7 @@ const MyPage = () => {
                 저장된 상가 리스트
               </h2>
             </div>
-            <CategoryTabs
-              categories={categories}
-              activeIndex={activeCategory}
-              onSelect={setActiveCategory}
-              className="mb-5"
-            />
+            {renderCategoryTabs('mb-5')}
             {renderSavedStores(savedStores)}
           </section>
         ) : mobileView === 'posts' ? (
@@ -216,11 +201,7 @@ const MyPage = () => {
                 내가 작성한 글
               </h2>
             </div>
-            <div className="space-y-4">
-              {activityPosts.map((post) => (
-                <ActivityPostCard key={post.id} post={post} />
-              ))}
-            </div>
+            {renderActivityPosts()}
           </section>
         ) : (
           <>
@@ -231,12 +212,7 @@ const MyPage = () => {
                 actionLabel="전체보기"
                 onAction={() => setMobileView('saved')}
               />
-              <CategoryTabs
-                categories={categories}
-                activeIndex={activeCategory}
-                onSelect={setActiveCategory}
-                className="mb-5"
-              />
+              {renderCategoryTabs('mb-5')}
               {renderSavedStores(savedStores.slice(0, 1))}
             </section>
 
@@ -247,7 +223,11 @@ const MyPage = () => {
                 actionLabel="전체보기"
                 onAction={() => setMobileView('posts')}
               />
-              {activityPosts[0] && <ActivityPostCard post={activityPosts[0]} />}
+              {activityPosts[0] ? (
+                <ActivityPostCard post={activityPosts[0]} />
+              ) : (
+                <EmptyNotice message="아직 작성한 글이 없습니다." />
+              )}
             </section>
           </>
         )}

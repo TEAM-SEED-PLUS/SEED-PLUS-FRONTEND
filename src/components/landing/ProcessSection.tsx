@@ -1,3 +1,4 @@
+import CloudIcon from '@/assets/weather/cloud-02.svg';
 import appScreen1 from '@/assets/landing/app-screen-1.png';
 import appScreen2 from '@/assets/landing/app-screen-2.png';
 import appScreen3 from '@/assets/landing/app-screen-3.png';
@@ -52,9 +53,12 @@ const ProcessSection = () => {
                     className="max-h-full max-w-full rounded-[5px] object-contain"
                   />
                 ) : (
-                  <span aria-hidden className="text-7xl">
-                    ⛅
-                  </span>
+                  <img
+                    src={CloudIcon}
+                    alt=""
+                    aria-hidden
+                    className="h-20 w-20"
+                  />
                 )}
               </div>
               <h3 className="pt-6 text-center text-lg font-bold text-[#191f28]">

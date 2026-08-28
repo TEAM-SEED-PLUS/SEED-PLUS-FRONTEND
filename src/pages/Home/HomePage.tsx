@@ -17,6 +17,8 @@ import {
   WeatherNarrativeCard,
 } from '@/components/weather';
 import { useDocumentTitle } from '@/hooks';
+import { LightbulbIcon, StarIcon } from '@/components/ui/icons';
+import { GRADE_ICON } from '@/components/weather/weatherGradeStyle';
 
 const TIME_BANDS: { band: TimeBand; label: string }[] = [
   { band: '아침', label: '아침 06:00~12:00' },
@@ -103,14 +105,21 @@ const HomePage = () => {
             <section className="rounded-lg bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-extrabold text-[#191f28]">
-                  {district} 상권날씨 <span aria-hidden>{weather.emoji}</span>{' '}
+                  {district} 상권날씨{' '}
+                  <img
+                    src={GRADE_ICON[weather.grade]}
+                    alt=""
+                    aria-hidden
+                    className="inline-block h-5 w-5 align-text-bottom"
+                  />{' '}
                   <span className="text-blue-600">{weather.grade}</span>
                 </h2>
                 <button
                   type="button"
-                  className="rounded-md border border-[#e5e8eb] px-3 py-1.5 text-xs font-bold text-[#4e5968] transition hover:bg-gray-500"
+                  className="flex items-center gap-1 rounded-md border border-[#e5e8eb] px-3 py-1.5 text-xs font-bold text-[#4e5968] transition hover:bg-gray-500"
                 >
-                  ☆ 즐겨찾기
+                  <StarIcon className="h-3.5 w-3.5" />
+                  즐겨찾기
                 </button>
               </div>
 
@@ -123,9 +132,7 @@ const HomePage = () => {
               </div>
 
               <div className="mt-4 rounded-md bg-[#e8f1ff] px-4 py-3 text-xs text-[#191f28]">
-                <span aria-hidden className="mr-1">
-                  💡
-                </span>
+                <LightbulbIcon className="mr-1 inline-block h-4 w-4 align-text-bottom text-blue-600" />
                 <strong className="font-extrabold text-blue-600">
                   추천 액션:
                 </strong>{' '}
