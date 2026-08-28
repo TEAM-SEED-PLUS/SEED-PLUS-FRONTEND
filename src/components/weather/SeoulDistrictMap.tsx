@@ -1,10 +1,10 @@
 import type { WeatherGrade } from '@/api/weatherFeedTypes';
-import { GRADE_FILL } from './weatherGradeStyle';
 import {
   SEOUL_DISTRICT_PATHS,
   SEOUL_MAP_BACKGROUND,
   SEOUL_MAP_VIEWBOX,
 } from './seoulMapPaths';
+import { GRADE_FILL } from './weatherGradeStyle';
 
 interface SeoulDistrictMapProps {
   grades: Record<string, { grade: WeatherGrade } | undefined>;
@@ -56,10 +56,26 @@ const SeoulDistrictMap = ({
           fillOpacity={isSelected ? 1 : 0.85}
           stroke={isSelected ? '#3182f6' : '#9fb3d1'}
           strokeWidth={isSelected ? 2.5 : 0.8}
-          className="cursor-pointer outline-none transition-[fill-opacity] hover:fill-opacity-100 focus-visible:stroke-blue-600"
+          className="cursor-pointer outline-none transition-opacity hover:opacity-80 focus-visible:stroke-blue-600"
         />
       );
     })}
+
+    {/* 자치구명은 클릭을 가로채지 않도록 pointer-events를 비운다 */}
+    {SEOUL_DISTRICT_PATHS.map(({ name, labelX, labelY }) => (
+      <text
+        key={`label-${name}`}
+        x={labelX}
+        y={labelY}
+        className="pointer-events-none select-none"
+        fontSize={12}
+        letterSpacing={-0.48}
+        fontWeight={name === selected ? 700 : 400}
+        fill="#222222"
+      >
+        {name}
+      </text>
+    ))}
   </svg>
 );
 

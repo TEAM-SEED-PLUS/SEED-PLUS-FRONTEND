@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { GoogleAnalyticsTracker } from '@/components/analytics';
 import {
   FeedPage,
+  HomePage,
   LandingPage,
   LoginPage,
   MyPage,
@@ -18,6 +19,7 @@ const Router = () => {
       <GoogleAnalyticsTracker />
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/feed" element={<FeedPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
