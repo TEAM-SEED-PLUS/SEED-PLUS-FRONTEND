@@ -41,8 +41,15 @@ const LandingHeader = () => {
           >
             로그인
           </Link>
+          {/*
+            비회원 둘러보기 진입점.
+            내 상가 만들기(/store-builder)는 BUILDER 명세 BLD-09에 따라 비회원 조회가
+            막혀 있어, 이 버튼을 그리로 보내면 곧바로 /login으로 튕겨 '로그인' 버튼과
+            동작이 같아진다. 비회원에게 열려 있는 홈으로 보내 상권날씨·피드를
+            먼저 둘러보게 한다.
+          */}
           <Link
-            to="/store-builder"
+            to="/home"
             className="rounded-lg border border-blue-600 bg-white px-3 py-2 text-xs font-semibold whitespace-nowrap text-[#191f28] transition-colors hover:bg-blue-300 sm:rounded-xl sm:px-7 sm:py-3 sm:text-lg"
           >
             기능 둘러보기
