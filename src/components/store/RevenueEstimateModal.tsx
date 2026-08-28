@@ -7,7 +7,9 @@ import {
   type IndustryResponse,
   type ProfitAnalysisResponse,
   type RegionResponse,
+  updateBuilderStoreVisibility,
 } from '@/api';
+import { useAuth } from '@/auth';
 
 interface RevenueEstimateModalProps {
   industries: IndustryResponse[];
@@ -17,14 +19,13 @@ interface RevenueEstimateModalProps {
   onCreated: () => void;
 }
 
+// 예상매출·수익률은 산출 전용(RPC-02) — 입력 필드로 두지 않는다.
 type RevenueForm = {
   storeName: string;
   staff: string;
   industryCode: string;
   regionCode: string;
   area: string;
-  expectedMonthlySales: string;
-  expectedProfitRate: string;
   invest: string;
   rent: string;
   premium: string;
@@ -36,8 +37,6 @@ const initialForm: RevenueForm = {
   industryCode: '',
   regionCode: '',
   area: '',
-  expectedMonthlySales: '',
-  expectedProfitRate: '',
   invest: '',
   rent: '',
   premium: '',
@@ -87,6 +86,12 @@ const RevenueEstimateModal = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
   const [mobileStep, setMobileStep] = useState<'input' | 'result'>('input');
+  // 저장 완료 → 공유 제안 → 공유 완료 2단계 모달(RPC-05)
+  const [shareStep, setShareStep] = useState<'ask' | 'done' | null>(null);
+  const [savedStoreId, setSavedStoreId] = useState<number | null>(null);
+  const [isSharing, setIsSharing] = useState(false);
+  const { user } = useAuth();
+  const displayName = user?.name?.trim() || '회원';
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -151,13 +156,6 @@ const RevenueEstimateModal = ({
       });
 
       setResult(response);
-      setForm((current) => ({
-        ...current,
-        expectedMonthlySales: String(Math.round(response.result.monthlyRev)),
-        expectedProfitRate: String(
-          Number(response.result.profitRate.toFixed(1))
-        ),
-      }));
       setMobileStep('result');
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error));
@@ -170,13 +168,17 @@ const RevenueEstimateModal = ({
     setErrorMessage('');
     setSaveMessage('');
 
+    // 예상매출·수익률은 계산 결과로만 저장한다(RPC-02).
+    if (!result) {
+      setSaveMessage('수익률 추정을 먼저 완료해주세요.');
+      return;
+    }
+
     if (
       !form.storeName.trim() ||
       !selectedIndustry ||
       !selectedDistrict ||
       !form.area ||
-      !form.expectedMonthlySales ||
-      !form.expectedProfitRate ||
       !form.invest ||
       !form.rent ||
       !form.premium
@@ -187,21 +189,11 @@ const RevenueEstimateModal = ({
 
     setIsSaving(true);
     try {
-      const expectedMonthlySales =
-        result?.result.monthlyRev ?? toNumber(form.expectedMonthlySales);
-      const expectedProfitRate =
-        result?.result.profitRate ?? toNumber(form.expectedProfitRate);
-      const investmentPaybackMonths =
-        result?.result.paybackMonths ??
-        Math.max(
-          1,
-          Math.round(
-            (toNumber(form.invest) + toNumber(form.premium)) /
-              Math.max(expectedMonthlySales, 1)
-          )
-        );
+      const expectedMonthlySales = result.result.monthlyRev;
+      const expectedProfitRate = result.result.profitRate;
+      const investmentPaybackMonths = result.result.paybackMonths;
 
-      await createBuilderStore({
+      const created = await createBuilderStore({
         regionId: selectedDistrict.regionId,
         commercialAreaId: FIXED_COMMERCIAL_AREA_ID,
         industryId: selectedIndustry.industryId,
@@ -223,17 +215,47 @@ const RevenueEstimateModal = ({
           deposit: toWon(toNumber(form.premium)),
         },
         description: '수익률 추정 계산기로 생성한 가상 점포',
-        visibilityStatus: 'PUBLIC',
+        // 저장은 비공개가 기본. 공유에 동의해야 PUBLIC으로 전환한다(RPC-05).
+        visibilityStatus: 'PRIVATE',
         imageUrls: [],
       });
 
-      onCreated();
-      onClose();
+      setSavedStoreId(created?.builderStoreId ?? null);
+      setShareStep('ask');
     } catch (error) {
       setSaveMessage(getApiErrorMessage(error));
     } finally {
       setIsSaving(false);
     }
+  };
+
+  /** 저장된 상가를 목록에 공개한다. */
+  const handleShare = async () => {
+    if (savedStoreId === null) {
+      setSaveMessage(
+        '공유에 필요한 상가 정보를 확인하지 못했습니다. 마이페이지에서 공개로 변경해주세요.'
+      );
+      setShareStep(null);
+      return;
+    }
+
+    setIsSharing(true);
+    try {
+      await updateBuilderStoreVisibility(savedStoreId, 'PUBLIC');
+      setShareStep('done');
+    } catch (error) {
+      setSaveMessage(getApiErrorMessage(error));
+      setShareStep(null);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  /** 모달을 닫고 '내 상가 만들기' 목록으로 돌아간다. */
+  const closeAfterSave = () => {
+    setShareStep(null);
+    onCreated();
+    onClose();
   };
 
   return (
@@ -342,34 +364,6 @@ const RevenueEstimateModal = ({
                 value={form.area}
                 onChange={(event) => updateField('area', event.target.value)}
                 placeholder="예) 50"
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block">
-              <span className={labelClass}>예상 매출(만원)</span>
-              <input
-                type="number"
-                min="0"
-                value={form.expectedMonthlySales}
-                onChange={(event) =>
-                  updateField('expectedMonthlySales', event.target.value)
-                }
-                placeholder="계산 후 자동 입력 또는 직접 입력"
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block">
-              <span className={labelClass}>수익률(%)</span>
-              <input
-                type="number"
-                min="0"
-                value={form.expectedProfitRate}
-                onChange={(event) =>
-                  updateField('expectedProfitRate', event.target.value)
-                }
-                placeholder="계산 후 자동 입력 또는 직접 입력"
                 className={inputClass}
               />
             </label>
@@ -512,13 +506,77 @@ const RevenueEstimateModal = ({
           <button
             type="button"
             onClick={handleSaveStore}
-            disabled={isSaving}
+            disabled={isSaving || !result}
             className="mt-4 h-12 w-full rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
           >
             {isSaving ? '저장 중...' : '내 상가 목록에 저장하기'}
           </button>
+          <p className="mt-2 text-center text-xs font-medium text-[#8b95a1]">
+            저장한 상가는 나만 볼 수 있어요. 저장 후 공유 여부를 선택할 수
+            있습니다.
+          </p>
         </div>
       </section>
+
+      {shareStep === 'ask' && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-0 md:items-center md:px-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label="상가 저장 완료"
+        >
+          <div className="w-full max-w-[420px] rounded-t-2xl bg-white px-6 py-6 shadow-[0_18px_60px_rgba(25,31,40,0.18)] md:rounded-lg">
+            <p className="text-base font-bold leading-relaxed text-[#191f28]">
+              {displayName}님의 마이페이지에 상가가 성공적으로 저장되었어요!
+            </p>
+            <p className="mt-3 text-sm font-medium leading-relaxed text-[#4e5968]">
+              저장한 상가를 &lsquo;내 상가 만들기&rsquo;에 공유할까요? 공유하면
+              다른 사용자에게도 공개됩니다.
+            </p>
+            <div className="mt-6 flex gap-2">
+              <button
+                type="button"
+                onClick={closeAfterSave}
+                disabled={isSharing}
+                className="h-11 flex-1 rounded-md border border-[#d8dde5] bg-white text-sm font-extrabold text-[#4e5968] transition hover:bg-[#f2f4f6] disabled:opacity-50"
+              >
+                아니요
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                disabled={isSharing}
+                className="h-11 flex-1 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:bg-[#b0c4f5]"
+              >
+                {isSharing ? '공유 중...' : '네'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {shareStep === 'done' && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-0 md:items-center md:px-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label="상가 공유 완료"
+        >
+          <div className="w-full max-w-[420px] rounded-t-2xl bg-white px-6 py-6 shadow-[0_18px_60px_rgba(25,31,40,0.18)] md:rounded-lg">
+            <p className="text-base font-bold leading-relaxed text-[#191f28]">
+              내 상가 만들기에 {displayName}님의 상가가 성공적으로
+              공유되었습니다!
+            </p>
+            <button
+              type="button"
+              onClick={closeAfterSave}
+              className="mt-6 h-11 w-full rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
