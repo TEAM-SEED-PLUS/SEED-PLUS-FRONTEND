@@ -100,7 +100,7 @@ const SignupOnboarding = ({ onComplete }: SignupOnboardingProps) => {
         {step.options.map((option) => (
           <label
             key={option}
-            className="flex min-h-5 items-center gap-2 text-sm font-semibold text-[#191f28]"
+            className="flex min-h-11 items-center gap-2 text-sm font-semibold text-[#191f28]"
           >
             <input
               type="checkbox"

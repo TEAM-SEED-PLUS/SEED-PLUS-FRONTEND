@@ -71,10 +71,10 @@ const LoginPage = () => {
     }`;
 
   return (
-    <div className="min-h-screen bg-gray-500">
+    <div className="min-h-[100dvh] bg-gray-500">
       <HeaderUser />
-      <main className="flex min-h-screen items-center justify-center px-6 pt-[var(--header-height)]">
-        <section className="w-full max-w-150 rounded-lg border border-[#d8dde5] bg-white px-6 py-7">
+      <main className="flex min-h-[100dvh] items-center justify-center px-0 pt-[var(--header-height)] md:px-6">
+        <section className="w-full max-w-150 border-[#d8dde5] bg-white px-5 py-7 md:rounded-lg md:border md:px-6">
           <div className="text-center">
             <h1 className="text-xl font-extrabold text-[#191f28]">
               점포주 로그인
@@ -189,7 +189,7 @@ const LoginPage = () => {
               <button
                 type="button"
                 onClick={() => navigate('/signup')}
-                className="font-bold text-blue-600"
+                className="inline-flex min-h-11 items-center px-1 font-bold text-blue-600"
               >
                 가입하기
               </button>

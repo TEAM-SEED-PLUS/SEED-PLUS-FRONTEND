@@ -127,14 +127,14 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-500">
+    <div className="min-h-[100dvh] bg-gray-500">
       <HeaderUser />
       <main
-        className={`flex min-h-screen justify-center px-6 py-5 pt-[calc(var(--header-height)+20px)] ${
+        className={`flex min-h-[100dvh] justify-center px-0 py-5 pt-[calc(var(--header-height)+20px)] md:px-6 ${
           stage === 'onboarding' ? 'items-start' : 'items-center'
         }`}
       >
-        <section className="w-full max-w-150 rounded-lg border border-[#d8dde5] bg-white px-6 py-7">
+        <section className="w-full max-w-150 border-[#d8dde5] bg-white px-5 py-7 md:rounded-lg md:border md:px-6">
           {stage === 'onboarding' ? (
             <SignupOnboarding onComplete={handleComplete} />
           ) : (
@@ -266,7 +266,10 @@ const SignupPage = () => {
 
                   <div className="mt-5 space-y-3 text-sm text-[#191f28]">
                     {signupTermsDocuments.map((doc) => (
-                      <label key={doc.id} className="flex items-center gap-2">
+                      <label
+                        key={doc.id}
+                        className="flex min-h-11 items-center gap-2"
+                      >
                         <input
                           type="checkbox"
                           checked={termsAgreement[doc.id]}
@@ -282,7 +285,7 @@ const SignupPage = () => {
                         <button
                           type="button"
                           onClick={() => setIsTermsOpen(true)}
-                          className="shrink-0 font-bold text-blue-600"
+                          className="flex min-h-11 shrink-0 items-center px-1 font-bold text-blue-600"
                         >
                           내용보기
                         </button>
