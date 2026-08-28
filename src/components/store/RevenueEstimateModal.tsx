@@ -10,6 +10,8 @@ import {
   updateBuilderStoreVisibility,
 } from '@/api';
 import { useAuth } from '@/auth';
+import Skeleton from '@/components/ui/Skeleton';
+import { SpinnerIcon } from '@/components/ui/icons';
 
 interface RevenueEstimateModalProps {
   industries: IndustryResponse[];
@@ -413,14 +415,16 @@ const RevenueEstimateModal = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="mt-1 h-12 rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5] md:col-span-2"
+              className="mt-1 flex h-12 items-center justify-center gap-2 rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5] md:col-span-2"
             >
+              {isSubmitting && <SpinnerIcon className="h-5 w-5" />}
               {isSubmitting ? '수익률 추정 중...' : '수익률 추정'}
             </button>
           </form>
         </div>
 
         <div
+          aria-busy={isSubmitting}
           className={`rounded-lg border border-[#d8dde5] bg-white p-6 lg:block ${
             mobileStep === 'input' ? 'hidden' : 'block'
           }`}
@@ -452,9 +456,13 @@ const RevenueEstimateModal = ({
           <div className="mt-4 rounded-lg bg-blue-600 p-5 text-white">
             <p className="text-lg font-bold">나의 예상 월 매출은?</p>
             <div className="mt-5 flex items-end gap-2">
-              <strong className="text-3xl font-extrabold tracking-tight">
-                {formatNumber(result?.result.monthlyRev)}
-              </strong>
+              {isSubmitting ? (
+                <Skeleton tone="onDark" className="h-9 w-40" />
+              ) : (
+                <strong className="text-3xl font-extrabold tracking-tight">
+                  {formatNumber(result?.result.monthlyRev)}
+                </strong>
+              )}
               <span className="mb-1 text-sm font-bold">만원</span>
             </div>
 
@@ -463,36 +471,56 @@ const RevenueEstimateModal = ({
                 <p className="text-xs text-white/80">
                   직원 {form.staff || '-'}명 인건비
                 </p>
-                <p className="mt-2 text-xl font-extrabold">
-                  {formatNumber(result?.result.staffCost)}만원 반영
-                </p>
+                {isSubmitting ? (
+                  <Skeleton tone="onDark" className="mt-2 h-7 w-28" />
+                ) : (
+                  <p className="mt-2 text-xl font-extrabold">
+                    {formatNumber(result?.result.staffCost)}만원 반영
+                  </p>
+                )}
               </div>
               <div className="rounded-md border border-white/25 bg-white/15 p-3">
                 <p className="text-xs text-white/80">업종 평균 대비</p>
-                <p className="mt-2 text-xl font-extrabold">
-                  {formatNumber(result?.assumptions.baseProfitRate, 1)}% 기준
-                </p>
+                {isSubmitting ? (
+                  <Skeleton tone="onDark" className="mt-2 h-7 w-24" />
+                ) : (
+                  <p className="mt-2 text-xl font-extrabold">
+                    {formatNumber(result?.assumptions.baseProfitRate, 1)}% 기준
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="rounded-md border border-white/25 bg-white/15 p-3">
                 <p className="text-xs text-white/80">예상 순이익률</p>
-                <p className="mt-2 text-right text-xl font-extrabold">
-                  {formatNumber(result?.result.profitRate, 1)}%
-                </p>
+                {isSubmitting ? (
+                  <Skeleton tone="onDark" className="mt-2 ml-auto h-7 w-16" />
+                ) : (
+                  <p className="mt-2 text-right text-xl font-extrabold">
+                    {formatNumber(result?.result.profitRate, 1)}%
+                  </p>
+                )}
               </div>
               <div className="rounded-md border border-white/25 bg-white/15 p-3">
                 <p className="text-xs text-white/80">투자 회수 기간</p>
-                <p className="mt-2 text-right text-xl font-extrabold">
-                  {formatNumber(result?.result.paybackMonths, 1)}개월
-                </p>
+                {isSubmitting ? (
+                  <Skeleton tone="onDark" className="mt-2 ml-auto h-7 w-20" />
+                ) : (
+                  <p className="mt-2 text-right text-xl font-extrabold">
+                    {formatNumber(result?.result.paybackMonths, 1)}개월
+                  </p>
+                )}
               </div>
               <div className="rounded-md border border-white/25 bg-white/15 p-3">
                 <p className="text-xs text-white/80">Property Score</p>
-                <p className="mt-2 text-right text-xl font-extrabold">
-                  {formatNumber(result?.result.propertyScore, 0)}점
-                </p>
+                {isSubmitting ? (
+                  <Skeleton tone="onDark" className="mt-2 ml-auto h-7 w-16" />
+                ) : (
+                  <p className="mt-2 text-right text-xl font-extrabold">
+                    {formatNumber(result?.result.propertyScore, 0)}점
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -506,9 +534,10 @@ const RevenueEstimateModal = ({
           <button
             type="button"
             onClick={handleSaveStore}
-            disabled={isSaving || !result}
-            className="mt-4 h-12 w-full rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
+            disabled={isSaving || isSubmitting || !result}
+            className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
           >
+            {isSaving && <SpinnerIcon className="h-5 w-5" />}
             {isSaving ? '저장 중...' : '내 상가 목록에 저장하기'}
           </button>
           <p className="mt-2 text-center text-xs font-medium text-[#8b95a1]">
@@ -546,8 +575,9 @@ const RevenueEstimateModal = ({
                 type="button"
                 onClick={handleShare}
                 disabled={isSharing}
-                className="h-11 flex-1 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:bg-[#b0c4f5]"
+                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:bg-[#b0c4f5]"
               >
+                {isSharing && <SpinnerIcon className="h-4 w-4" />}
                 {isSharing ? '공유 중...' : '네'}
               </button>
             </div>
