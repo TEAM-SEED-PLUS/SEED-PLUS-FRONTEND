@@ -9,7 +9,9 @@ import {
   type SurvivalAnalysisResponse,
 } from '@/api';
 import WarningIcon from '@/assets/icons/warning-icon.svg';
-import SurvivalPdfReport from './SurvivalPdfReport';
+import SurvivalPdfReport, {
+  type PdfComparisonDistrict,
+} from './SurvivalPdfReport';
 
 interface SurvivalEstimateModalProps {
   industries: IndustryResponse[];
@@ -411,44 +413,21 @@ const SurvivalEstimateModal = ({
     printPdfReport();
   };
 
-  const comparisonDistricts = useMemo(() => {
-    if (districts.length === 0) {
-      return [
-        { name: '성동구', score: 83, active: false },
-        { name: '마포구', score: totalScore, active: true },
-        { name: '강남구', score: 77, active: false },
-      ];
-    }
-
-    const activeIndex = Math.max(
-      districts.findIndex(
-        (district) => String(district.code) === form.regionCode
-      ),
-      0
-    );
-    const previous =
-      districts[(activeIndex - 1 + districts.length) % districts.length];
-    const active = districts[activeIndex];
-    const next = districts[(activeIndex + 1) % districts.length];
-
-    return [
+  // 유사 상권 비교값은 아직 API(SVC-04 peers[])가 제공하지 않는다.
+  // 임의로 가감한 숫자를 실제 비교치처럼 노출하지 않도록, 내 상권만 산출값을 쓰고
+  // 나머지 두 칸은 계산 전과 동일하게 '?'로 둔다.
+  const comparisonDistricts: PdfComparisonDistrict[] = useMemo(
+    () => [
+      { name: '유사 상권', score: null, active: false },
       {
-        name: previous?.sigungu ?? '인접 상권',
-        score: clamp(totalScore + 5, 0, 100),
-        active: false,
-      },
-      {
-        name: active?.sigungu ?? selectedDistrict?.sigungu ?? '내 상권',
-        score: totalScore,
+        name: selectedDistrict?.sigungu ?? '내 상권',
+        score: hasResult ? totalScore : null,
         active: true,
       },
-      {
-        name: next?.sigungu ?? '인접 상권',
-        score: clamp(totalScore - 1, 0, 100),
-        active: false,
-      },
-    ];
-  }, [districts, form.regionCode, selectedDistrict?.sigungu, totalScore]);
+      { name: '유사 상권', score: null, active: false },
+    ],
+    [hasResult, selectedDistrict?.sigungu, totalScore]
+  );
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -923,9 +902,9 @@ const SurvivalEstimateModal = ({
               </span>
             </div>
             <div className="grid grid-cols-3 gap-3">
-              {comparisonDistricts.map((district) => (
+              {comparisonDistricts.map((district, index) => (
                 <div
-                  key={`${district.name}-${district.active ? 'active' : 'neighbor'}`}
+                  key={`comparison-${index}`}
                   className={`rounded-md border p-3 text-center ${
                     district.active
                       ? 'border-blue-600 bg-[#eef4ff]'
@@ -940,15 +919,25 @@ const SurvivalEstimateModal = ({
                   <p className="text-[11px] font-bold text-[#4e5968]">
                     {district.name}
                   </p>
-                  <p className="mt-1 text-xl font-extrabold text-blue-600">
-                    {hasResult ? `${district.score}점` : '?점'}
+                  <p
+                    className={`mt-1 text-xl font-extrabold ${
+                      district.score === null
+                        ? 'text-[#8b95a1]'
+                        : 'text-blue-600'
+                    }`}
+                  >
+                    {district.score === null ? '?점' : `${district.score}점`}
                   </p>
                   <p className="mt-1 text-[10px] text-[#4e5968]">
-                    {hasResult ? getLevel(district.score) : '?'}
+                    {district.score === null ? '?' : getLevel(district.score)}
                   </p>
                 </div>
               ))}
             </div>
+            <p className="mt-3 text-[10px] text-[#8b95a1]">
+              유사 상권 비교 데이터는 준비 중입니다. 연동 완료 후 실제 상권명과
+              점수가 표시됩니다.
+            </p>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2">
