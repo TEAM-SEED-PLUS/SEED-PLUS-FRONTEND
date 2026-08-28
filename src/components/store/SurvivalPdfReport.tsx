@@ -5,7 +5,8 @@ import { SurvivalGauge } from './SurvivalEstimateModal';
 export type PdfScoreRow = {
   label: string;
   description: string;
-  score: number;
+  /** 미산출 상태는 null로 두고 리포트에도 '?'로 출력한다. */
+  score: number | null;
   positive: boolean;
 };
 
@@ -20,7 +21,7 @@ interface SurvivalPdfReportProps {
   ref: Ref<HTMLDivElement>;
   dataBadges: string[];
   inputSummary: [string, string][];
-  totalScore: number;
+  totalScore: number | null;
   survival1Year: string;
   survival3Year: string;
   scoreRows: PdfScoreRow[];
@@ -31,7 +32,8 @@ interface SurvivalPdfReportProps {
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
-const signedScore = (value: number) => `${value >= 0 ? '+' : ''}${value}`;
+const signedScore = (value: number | null) =>
+  value === null ? '?' : `${value >= 0 ? '+' : ''}${value}`;
 const getLevel = (score: number) => {
   if (score >= 90) return '높음';
   if (score >= 70) return '보통';
@@ -149,7 +151,9 @@ const SurvivalPdfReport = ({
                     </p>
                     <p
                       className={`text-[20px] font-bold ${
-                        item.score < 0 ? 'text-[#e33639]' : 'text-blue-600'
+                        item.score !== null && item.score < 0
+                          ? 'text-[#e33639]'
+                          : 'text-blue-600'
                       }`}
                     >
                       {signedScore(item.score)}점
@@ -217,14 +221,16 @@ const SurvivalPdfReport = ({
                 </p>
                 <div className="mt-2 flex items-center gap-1">
                   <div className="h-[19px] flex-1 overflow-hidden rounded-full bg-[#f7f8fa]">
-                    <div
-                      className={`h-full ${
-                        item.positive ? 'bg-blue-600' : 'bg-[#e33639]'
-                      }`}
-                      style={{
-                        width: `${clamp(Math.abs(item.score) * 5, 4, 100)}%`,
-                      }}
-                    />
+                    {item.score !== null && (
+                      <div
+                        className={`h-full ${
+                          item.positive ? 'bg-blue-600' : 'bg-[#e33639]'
+                        }`}
+                        style={{
+                          width: `${clamp(Math.abs(item.score) * 5, 4, 100)}%`,
+                        }}
+                      />
+                    )}
                   </div>
                   <p
                     className={`text-[15px] font-semibold ${

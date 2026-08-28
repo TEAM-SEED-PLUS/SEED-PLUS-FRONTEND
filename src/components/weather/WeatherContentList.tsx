@@ -1,3 +1,4 @@
+import { CalendarIcon, PlayIcon } from '@/components/ui/icons';
 import type { WeatherContentItem } from '@/api/weatherFeedTypes';
 
 const TYPE_LABEL: Record<WeatherContentItem['type'], string> = {
@@ -32,10 +33,10 @@ const WeatherContentList = ({ items }: WeatherContentListProps) => (
                   alt=""
                   className="h-full w-full object-cover"
                 />
+              ) : item.type === 'video' ? (
+                <PlayIcon className="h-7 w-7 text-[#8b95a1]" />
               ) : (
-                <span aria-hidden className="text-2xl">
-                  {item.type === 'video' ? '▶' : '🗓'}
-                </span>
+                <CalendarIcon className="h-7 w-7 text-[#8b95a1]" />
               )}
               <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-blue-600">
                 {TYPE_LABEL[item.type]}

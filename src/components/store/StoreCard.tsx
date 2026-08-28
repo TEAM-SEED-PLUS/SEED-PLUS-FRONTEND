@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { formatUpdatedAt } from '@/utils/formatUpdatedAt';
+import { HeartIcon, RepeatIcon } from '@/components/ui/icons';
 import location from '@/assets/icons/location-icon.svg';
 import ruler from '@/assets/icons/ruler-icon.svg';
 import questionMark from '@/assets/icons/questionMark-icon.svg';
@@ -139,7 +140,7 @@ const StoreCard = ({
               aria-expanded={isScoreExpanded}
               className="flex items-center gap-2 transition hover:brightness-95"
             >
-              🌱 SEEDing the Property Score
+              SEEDing the Property Score
             </button>
             <button
               type="button"
@@ -178,16 +179,19 @@ const StoreCard = ({
           disabled={isLikePending}
           aria-label={store.liked ? '좋아요 취소' : '좋아요'}
           aria-pressed={store.liked ?? false}
-          className={`transition disabled:opacity-50 ${
+          className={`flex items-center gap-1.5 transition disabled:opacity-50 ${
             store.liked ? 'font-bold text-[#e5484d]' : 'hover:text-[#e5484d]'
           }`}
         >
-          <span className="mr-1 text-xl leading-none">
-            {store.liked ? '♥' : '♡'}
-          </span>
+          <HeartIcon className="h-4 w-4" filled={store.liked ?? false} />
           {store.likes}
         </button>
-        {store.reposts > 0 && <span>↻ {store.reposts}</span>}
+        {store.reposts > 0 && (
+          <span className="flex items-center gap-1.5">
+            <RepeatIcon className="h-4 w-4" />
+            {store.reposts}
+          </span>
+        )}
       </div>
 
       {isScoreInfoOpen && (

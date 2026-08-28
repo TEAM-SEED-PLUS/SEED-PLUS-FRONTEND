@@ -1,12 +1,11 @@
+import { MobileIcon, PlayIcon } from '@/components/ui/icons';
 import { mockTrendingVideos } from '@/api/homeMock';
 
 /** 지금 뜨는 소식 — 기획팀 제작 영상 콘텐츠 영역 */
 const TrendingNewsCard = () => (
   <section className="rounded-lg bg-white p-5 shadow-sm">
-    <h3 className="text-sm font-extrabold text-[#191f28]">
-      <span aria-hidden className="mr-1">
-        📱
-      </span>
+    <h3 className="flex items-center gap-1.5 text-sm font-extrabold text-[#191f28]">
+      <MobileIcon className="h-4 w-4 text-blue-600" />
       지금 뜨는 소식
     </h3>
 
@@ -17,11 +16,8 @@ const TrendingNewsCard = () => (
           className="overflow-hidden rounded-md border border-[#e5e8eb]"
         >
           <div className="relative flex h-20 items-center justify-center bg-[#e5e8eb]">
-            <span
-              aria-hidden
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-white/80 text-xs"
-            >
-              ▶
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/80">
+              <PlayIcon className="h-3 w-3 text-[#4e5968]" />
             </span>
           </div>
           <div className="px-2 py-2">
