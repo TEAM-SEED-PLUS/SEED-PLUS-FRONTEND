@@ -19,12 +19,7 @@ const TimeSlotGrid = ({ slots }: TimeSlotGridProps) => (
         <p className="text-[11px] font-medium text-gray-46">
           {slot.band} {slot.range}
         </p>
-        <p className="mt-1 text-sm font-bold text-[#191f28]">
-          <span aria-hidden className="mr-1">
-            {slot.emoji}
-          </span>
-          {slot.title}
-        </p>
+        <p className="mt-1 text-sm font-bold text-[#191f28]">{slot.title}</p>
         <div className="mt-2 flex flex-wrap gap-4">
           {slot.metrics.map((metric) => (
             <span key={metric.label} className="text-[11px] text-gray-46">
@@ -32,7 +27,7 @@ const TimeSlotGrid = ({ slots }: TimeSlotGridProps) => (
               <strong
                 className={metric.up ? 'text-[#e5484d]' : 'text-[#191f28]'}
               >
-                {metric.up && <span aria-hidden>▲ </span>}
+                {metric.up && <span aria-hidden>↑ </span>}
                 {metric.value}
               </strong>
             </span>

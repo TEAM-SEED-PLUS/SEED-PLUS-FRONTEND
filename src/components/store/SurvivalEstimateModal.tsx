@@ -11,6 +11,7 @@ import {
 import WarningIcon from '@/assets/icons/warning-icon.svg';
 import SurvivalPdfReport, {
   type PdfComparisonDistrict,
+  type PdfScoreRow,
 } from './SurvivalPdfReport';
 
 interface SurvivalEstimateModalProps {
@@ -92,59 +93,52 @@ const variableFactors: {
   { field: 'churn', label: '휴·폐업 변동 빈도' },
 ];
 
+// description은 '무엇을 보는 지표인지'만 설명한다.
+// 계산 전부터 '상권 평균 매출 상위권'·'임차부담도 53%'처럼 결과를 단정하던 문구는 제거했다.
 const scoreRowMeta: {
   field: ScoreField;
   label: string;
   description: string;
-  fallback: number;
 }[] = [
   {
     field: 's1_salesStability',
     label: '매출 안정성',
-    description: '상권 평균 매출 상위권',
-    fallback: 20,
+    description: '상권 평균 매출 수준',
   },
   {
     field: 's2_salesGrowth',
     label: '상권 성장성',
-    description: '최근 매출 상승',
-    fallback: 9,
+    description: '최근 매출 성장률',
   },
   {
     field: 's3_competition',
     label: '경쟁 강도',
-    description: '동일업종 밀도 과밀',
-    fallback: -20,
+    description: '동일업종 점포 밀도',
   },
   {
     field: 's4_vacancyRisk',
     label: '공실 리스크',
-    description: '공실률 낮음',
-    fallback: 0,
+    description: '상권 공실률',
   },
   {
     field: 's5_traffic',
     label: '유동인구',
-    description: '유동인구 매우 많음',
-    fallback: -20,
+    description: '유동인구 수준',
   },
   {
     field: 's6_rentBurden',
     label: '임차 부담',
-    description: '임차부담도 53%',
-    fallback: 0,
+    description: '월세 대비 상권평균매출 비중',
   },
   {
     field: 's7_churn',
     label: '상권 안정성',
-    description: '휴폐업 변동 안정',
-    fallback: 20,
+    description: '휴·폐업 변동 빈도',
   },
   {
     field: 's8_startupTypeBonus',
     label: '창업 형태',
-    description: '신규창업',
-    fallback: 0,
+    description: '신규·양수 구분',
   },
 ];
 
@@ -158,7 +152,8 @@ const formatNumber = (value?: number, digits = 0) =>
         maximumFractionDigits: digits,
         minimumFractionDigits: digits,
       });
-const signedScore = (value: number) => `${value >= 0 ? '+' : ''}${value}`;
+const signedScore = (value: number | null) =>
+  value === null ? '?' : `${value >= 0 ? '+' : ''}${value}`;
 const getLevel = (score: number) => {
   if (score >= 90) return '높음';
   if (score >= 70) return '보통';
@@ -328,11 +323,12 @@ const SurvivalEstimateModal = ({
     form.avgSalesAmt
   );
 
-  const displayScoreRows = useMemo(
+  // 계산 전에는 폴백 수치를 채우지 않고 null로 둔다(SVC-02: 미산출은 '?').
+  const displayScoreRows: PdfScoreRow[] = useMemo(
     () =>
       scoreRowMeta.map((row) => {
-        const value = result?.scoreBreakdown[row.field] ?? row.fallback;
-        return { ...row, score: value, positive: value >= 0 };
+        const value = result?.scoreBreakdown[row.field] ?? null;
+        return { ...row, score: value, positive: value !== null && value >= 0 };
       }),
     [result]
   );
@@ -340,41 +336,39 @@ const SurvivalEstimateModal = ({
   const topRisks = useMemo(
     () =>
       displayScoreRows
-        .filter((row) => row.score < 0)
-        .sort((left, right) => left.score - right.score)
+        .filter((row) => row.score !== null && row.score < 0)
+        .sort((left, right) => (left.score ?? 0) - (right.score ?? 0))
         .slice(0, 3),
     [displayScoreRows]
   );
 
-  const totalScore = Math.round(result?.scoreBreakdown.totalScore ?? 50);
-  const competitionRatio = result?.derived.competitionRatio ?? 100;
-  const rentBurden = result?.derived.rentBurden ?? 53;
-  const vitalityScore = result?.derived.vitalityScore ?? 88;
-  const stabilityIndex = result?.derived.stabilityIndex ?? 75;
+  const totalScore = result
+    ? Math.round(result.scoreBreakdown.totalScore)
+    : null;
 
   const resolvedTopRisks =
-    hasResult && topRisks.length > 0 ? topRisks : displayScoreRows.slice(2, 5);
+    topRisks.length > 0 ? topRisks : displayScoreRows.slice(0, 3);
 
   const metricCards: [string, string, string][] = [
     [
       '경쟁강도',
       '동일업종 점포수 / 전체 점포수',
-      hasResult ? `${formatNumber(competitionRatio, 0)}%` : '?',
+      result ? `${formatNumber(result.derived.competitionRatio, 0)}%` : '?',
     ],
     [
       '임차부담도',
       '월세 / 상권평균매출',
-      hasResult ? `${formatNumber(rentBurden, 0)}%` : '?',
+      result ? `${formatNumber(result.derived.rentBurden, 0)}%` : '?',
     ],
     [
       '상권활력도',
       '유동인구증가율 + 매출증가율',
-      hasResult ? `${formatNumber(vitalityScore, 0)}점` : '?',
+      result ? `${formatNumber(result.derived.vitalityScore, 0)}점` : '?',
     ],
     [
       '안정성지수',
       '1 - 공실률',
-      hasResult ? `${formatNumber(stabilityIndex, 0)}점` : '?',
+      result ? `${formatNumber(result.derived.stabilityIndex, 0)}점` : '?',
     ],
   ];
 
@@ -421,12 +415,12 @@ const SurvivalEstimateModal = ({
       { name: '유사 상권', score: null, active: false },
       {
         name: selectedDistrict?.sigungu ?? '내 상권',
-        score: hasResult ? totalScore : null,
+        score: totalScore,
         active: true,
       },
       { name: '유사 상권', score: null, active: false },
     ],
-    [hasResult, selectedDistrict?.sigungu, totalScore]
+    [selectedDistrict?.sigungu, totalScore]
   );
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -769,7 +763,7 @@ const SurvivalEstimateModal = ({
               <div className="min-w-0">
                 <p className="text-xs font-bold">Survival Score</p>
                 <div className="mt-2 flex justify-center overflow-hidden px-1">
-                  <SurvivalGauge score={hasResult ? totalScore : null} />
+                  <SurvivalGauge score={totalScore} />
                 </div>
               </div>
               <div className="flex min-w-0 flex-col justify-center gap-3">
@@ -807,7 +801,7 @@ const SurvivalEstimateModal = ({
                   </p>
                   <div className="flex items-center gap-2">
                     <div className="h-2 min-w-0 flex-1 rounded-full bg-[#e5e8eb]">
-                      {hasResult && (
+                      {item.score !== null && (
                         <div
                           className={`h-2 rounded-full ${
                             item.positive ? 'bg-blue-600' : 'bg-[#e5484d]'
@@ -820,14 +814,14 @@ const SurvivalEstimateModal = ({
                     </div>
                     <span
                       className={`text-[10px] ${
-                        !hasResult
+                        item.score === null
                           ? 'text-[#8b95a1]'
                           : item.positive
                             ? 'text-blue-600'
                             : 'text-[#e5484d]'
                       }`}
                     >
-                      {hasResult ? signedScore(item.score) : '?'}
+                      {signedScore(item.score)}
                     </span>
                   </div>
                 </div>
@@ -864,27 +858,27 @@ const SurvivalEstimateModal = ({
                 <div key={item.label} className="rounded-md bg-[#f7f8fa] p-3">
                   <div className="flex items-center justify-between">
                     <strong className="flex items-center gap-1 text-xs text-[#191f28]">
-                      {hasResult && index === 0 && (
+                      {item.score !== null && index === 0 && (
                         <img src={WarningIcon} alt="" className="h-3 w-3" />
                       )}
-                      {index + 1}위 {hasResult ? item.label : '?'}
+                      {index + 1}위 {item.score === null ? '?' : item.label}
                     </strong>
                     <span
                       className={`text-lg font-extrabold ${
-                        !hasResult
+                        item.score === null
                           ? 'text-[#8b95a1]'
                           : item.score < 0
                             ? 'text-[#e5484d]'
                             : 'text-blue-600'
                       }`}
                     >
-                      {hasResult ? `${signedScore(item.score)}점` : '?점'}
+                      {signedScore(item.score)}점
                     </span>
                   </div>
                   <p className="mt-2 text-[11px] leading-relaxed text-[#4e5968]">
-                    {hasResult
-                      ? `${item.description} 항목이 생존 가능성 산정에 반영됩니다. 수익성 악화 위험이 높을수록 감점 폭이 커집니다.`
-                      : '생존율 계산 후 위험 요인이 표시됩니다.'}
+                    {item.score === null
+                      ? '생존율 계산 후 위험 요인이 표시됩니다.'
+                      : `${item.description} 항목이 생존 가능성 산정에 반영됩니다. 수익성 악화 위험이 높을수록 감점 폭이 커집니다.`}
                   </p>
                 </div>
               ))}

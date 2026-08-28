@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SEEDPLUS from '@/assets/Logo/SEED+ LOGO.svg';
+import { MenuIcon, ProfileIcon, SearchIcon } from '@/components/ui/icons';
 import { useAuth } from '@/auth';
 import LogoutConfirmModal from './LogoutConfirmModal';
 
@@ -26,54 +27,6 @@ const navItems: {
     requiresAuth: true,
   },
 ];
-
-const SearchIcon = () => (
-  <svg
-    aria-hidden="true"
-    viewBox="0 0 24 24"
-    className="h-5 w-5"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="11" cy="11" r="7" />
-    <path d="m20 20-3.5-3.5" />
-  </svg>
-);
-
-const PersonIcon = () => (
-  <svg
-    aria-hidden="true"
-    viewBox="0 0 24 24"
-    className="h-5 w-5"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="8" r="4" />
-    <path d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6" />
-  </svg>
-);
-
-const MenuIcon = () => (
-  <svg
-    aria-hidden="true"
-    viewBox="0 0 24 24"
-    className="h-5 w-5"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-  >
-    <path d="M4 7h12" />
-    <path d="M4 12h9" />
-    <path d="M4 17h12" />
-  </svg>
-);
 
 const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
   const navigate = useNavigate();
@@ -141,7 +94,7 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
                   className="w-full bg-transparent outline-none placeholder:text-[#b0b8c1]"
                   placeholder="검색어를 입력하세요"
                 />
-                <SearchIcon />
+                <SearchIcon className="h-5 w-5" />
               </label>
             )}
             {isAuthenticated && (
@@ -150,7 +103,7 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
                 aria-label="마이페이지"
                 className="flex h-9 w-9 items-center justify-center rounded-full text-[#4e5968] transition hover:bg-gray-500 hover:text-blue-600"
               >
-                <PersonIcon />
+                <ProfileIcon className="h-5 w-5" />
               </Link>
             )}
             {authControl}
@@ -164,7 +117,7 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
             aria-label="메뉴 열기"
             className="flex h-10 w-10 items-center justify-center rounded-md text-[#333d4b] transition hover:bg-gray-500"
           >
-            <MenuIcon />
+            <MenuIcon className="h-5 w-5" />
           </button>
 
           <Link
@@ -182,7 +135,7 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
                 aria-label="검색"
                 className="flex h-10 w-10 items-center justify-center rounded-md text-[#4e5968] transition hover:bg-gray-500"
               >
-                <SearchIcon />
+                <SearchIcon className="h-5 w-5" />
               </button>
             )}
             {isAuthenticated && (
@@ -191,7 +144,7 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
                 aria-label="마이페이지"
                 className="flex h-10 w-10 items-center justify-center rounded-md text-[#4e5968] transition hover:bg-gray-500"
               >
-                <PersonIcon />
+                <ProfileIcon className="h-5 w-5" />
               </Link>
             )}
             {isAuthenticated ? (
