@@ -1,10 +1,10 @@
 import {
+  CommentIcon,
   EyeIcon,
-  FlagIcon,
   HeartIcon,
-  MarkerPinIcon,
-  MessageIcon,
   ShareIcon,
+  SirenIcon,
+  TrashIcon,
 } from '@/components/ui/icons';
 
 export interface ActivityPost {
@@ -36,10 +36,7 @@ const ActivityPostCard = ({ post, onDelete }: ActivityPostCardProps) => {
         </div>
         <div className="min-w-0">
           <h3 className="text-base font-bold text-[#191f28]">{post.title}</h3>
-          <p className="mt-1 flex items-center gap-1 text-sm text-gray-46">
-            <MarkerPinIcon className="h-4 w-4" />
-            {post.district}
-          </p>
+          <p className="mt-1 text-sm text-gray-46">{post.district}</p>
         </div>
       </div>
 
@@ -59,7 +56,7 @@ const ActivityPostCard = ({ post, onDelete }: ActivityPostCardProps) => {
       <div className="mt-5 flex items-center justify-between border-t border-[#e5e8eb] pt-4 text-sm text-gray-46">
         <div className="flex gap-5">
           <span className="flex items-center gap-1.5">
-            <MessageIcon className="h-4 w-4" />
+            <CommentIcon className="h-4 w-4" />
             {post.comments}
           </span>
           <span className="flex items-center gap-1.5">
@@ -81,15 +78,16 @@ const ActivityPostCard = ({ post, onDelete }: ActivityPostCardProps) => {
             type="button"
             className="flex items-center gap-1.5 font-medium transition hover:text-[#4e5968]"
           >
-            <FlagIcon className="h-4 w-4" />
+            <SirenIcon className="h-4 w-4" />
             신고
           </button>
         </div>
         <button
           type="button"
           onClick={() => onDelete?.(post)}
-          className="font-medium transition hover:text-[#e5484d]"
+          className="flex items-center gap-1.5 font-medium transition hover:text-[#e5484d]"
         >
+          <TrashIcon className="h-4 w-4" />
           삭제
         </button>
       </div>

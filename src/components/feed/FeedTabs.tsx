@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { MessageIcon, NewsIcon } from '@/components/ui/icons';
+import { CommentIcon, NewsIcon } from '@/components/ui/icons';
 
 type FeedTab = {
   id: 'news' | 'community';
@@ -14,7 +14,7 @@ interface FeedTabsProps {
 
 const tabs: FeedTab[] = [
   { id: 'news', label: '뉴스', Icon: NewsIcon },
-  { id: 'community', label: '소통', Icon: MessageIcon },
+  { id: 'community', label: '소통', Icon: CommentIcon },
 ];
 
 const FeedTabs = ({ activeTab, onChange }: FeedTabsProps) => {

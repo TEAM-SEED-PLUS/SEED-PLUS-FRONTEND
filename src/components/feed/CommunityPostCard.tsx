@@ -1,7 +1,6 @@
 import {
+  CommentIcon,
   HeartIcon,
-  MarkerPinIcon,
-  MessageIcon,
   RepeatIcon,
   ShareIcon,
 } from '@/components/ui/icons';
@@ -34,10 +33,7 @@ const CommunityPostCard = ({ post }: CommunityPostCardProps) => {
         </div>
         <div>
           <h3 className="text-base font-bold text-[#191f28]">{post.title}</h3>
-          <p className="mt-1 flex items-center gap-1 text-sm text-gray-46">
-            <MarkerPinIcon className="h-4 w-4" />
-            {post.district}
-          </p>
+          <p className="mt-1 text-sm text-gray-46">{post.district}</p>
         </div>
       </div>
 
@@ -60,7 +56,7 @@ const CommunityPostCard = ({ post }: CommunityPostCardProps) => {
           {post.likes}
         </span>
         <span className="flex items-center gap-1.5">
-          <MessageIcon className="h-4 w-4" />
+          <CommentIcon className="h-4 w-4" />
           {post.comments}
         </span>
         <span className="flex items-center gap-1.5">

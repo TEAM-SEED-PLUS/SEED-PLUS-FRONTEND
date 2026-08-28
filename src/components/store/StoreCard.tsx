@@ -183,7 +183,7 @@ const StoreCard = ({
             store.liked ? 'font-bold text-[#e5484d]' : 'hover:text-[#e5484d]'
           }`}
         >
-          <HeartIcon className="h-4 w-4" filled={store.liked ?? false} />
+          <HeartIcon className="h-4 w-4" />
           {store.likes}
         </button>
         {store.reposts > 0 && (
