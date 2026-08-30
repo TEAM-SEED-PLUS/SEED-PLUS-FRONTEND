@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth';
+import { FEATURE_FLAGS } from '@/config/featureFlags';
 import { HeaderUser, LogoutConfirmModal } from '@/components/layout';
 import { AccountActions, NotificationSettings } from '@/components/mypage';
 import { useDocumentTitle } from '@/hooks';
@@ -47,10 +48,10 @@ const MyPageSettings = () => {
           <h1 className="text-xl font-extrabold text-[#191f28]">설정</h1>
         </div>
 
-        <NotificationSettings />
+        {FEATURE_FLAGS.NOTIFICATION_SETTINGS && <NotificationSettings />}
 
         <AccountActions
-          className="mt-8"
+          className={FEATURE_FLAGS.NOTIFICATION_SETTINGS ? 'mt-8' : ''}
           onLogout={() => setIsLogoutConfirmOpen(true)}
           onWithdraw={() => setIsWithdrawOpen(true)}
         />
