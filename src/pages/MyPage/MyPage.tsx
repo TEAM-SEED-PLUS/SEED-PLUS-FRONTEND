@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth';
+import { FEATURE_FLAGS } from '@/config/featureFlags';
 import { HeaderUser } from '@/components/layout';
 import {
   ActivityPostCard,
@@ -150,13 +151,15 @@ const MyPage = () => {
             <div className="mt-5">{renderSavedStores(savedStores)}</div>
           </section>
 
-          <section className="mt-12">
-            <SectionHeading
-              title="소통 활동 내역"
-              description="내가 쓴 글을 확인해보세요."
-            />
-            {renderActivityPosts()}
-          </section>
+          {FEATURE_FLAGS.MYPAGE_ACTIVITY_POSTS && (
+            <section className="mt-12">
+              <SectionHeading
+                title="소통 활동 내역"
+                description="내가 쓴 글을 확인해보세요."
+              />
+              {renderActivityPosts()}
+            </section>
+          )}
         </div>
 
         <aside className="flex w-[330px] shrink-0 flex-col gap-5 self-stretch">
@@ -186,7 +189,7 @@ const MyPage = () => {
             {renderCategoryTabs('mb-5')}
             {renderSavedStores(savedStores)}
           </section>
-        ) : mobileView === 'posts' ? (
+        ) : mobileView === 'posts' && FEATURE_FLAGS.MYPAGE_ACTIVITY_POSTS ? (
           <section>
             <div className="mb-4 flex items-center gap-2">
               <button
@@ -216,19 +219,21 @@ const MyPage = () => {
               {renderSavedStores(savedStores.slice(0, 1))}
             </section>
 
-            <section className="mt-10">
-              <SectionHeading
-                title="소통 활동 내역"
-                description="내가 쓴 글을 확인해보세요."
-                actionLabel="전체보기"
-                onAction={() => setMobileView('posts')}
-              />
-              {activityPosts[0] ? (
-                <ActivityPostCard post={activityPosts[0]} />
-              ) : (
-                <EmptyNotice message="아직 작성한 글이 없습니다." />
-              )}
-            </section>
+            {FEATURE_FLAGS.MYPAGE_ACTIVITY_POSTS && (
+              <section className="mt-10">
+                <SectionHeading
+                  title="소통 활동 내역"
+                  description="내가 쓴 글을 확인해보세요."
+                  actionLabel="전체보기"
+                  onAction={() => setMobileView('posts')}
+                />
+                {activityPosts[0] ? (
+                  <ActivityPostCard post={activityPosts[0]} />
+                ) : (
+                  <EmptyNotice message="아직 작성한 글이 없습니다." />
+                )}
+              </section>
+            )}
           </>
         )}
       </main>

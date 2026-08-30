@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SEEDPLUS from '@/assets/Logo/SEED+ LOGO.svg';
+import { FEATURE_FLAGS } from '@/config/featureFlags';
 import { MenuIcon, ProfileIcon, SearchIcon } from '@/components/ui/icons';
 import { useAuth } from '@/auth';
 import LogoutConfirmModal from './LogoutConfirmModal';
@@ -18,8 +19,11 @@ const navItems: {
   to: string;
   /** 로그인 회원에게만 노출할 메뉴 (내 상가 만들기는 로그인 가드가 있다) */
   requiresAuth?: boolean;
+  /** 프로덕션 비노출 처리된 메뉴 */
+  hidden?: boolean;
 }[] = [
-  { id: 'home', label: '홈', to: '/home' },
+  // 홈 화면이 아직 mock 데이터라 프로덕션에서는 감춰둔다(FEATURE_FLAGS.HOME_TAB).
+  { id: 'home', label: '홈', to: '/home', hidden: !FEATURE_FLAGS.HOME_TAB },
   {
     id: 'store',
     label: '내 상가 만들기',
@@ -70,7 +74,10 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
 
           <nav className="flex flex-1 items-center gap-1">
             {navItems
-              .filter((item) => !item.requiresAuth || isAuthenticated)
+              .filter(
+                (item) =>
+                  !item.hidden && (!item.requiresAuth || isAuthenticated)
+              )
               .map((item) => (
                 <Link
                   key={item.id}
