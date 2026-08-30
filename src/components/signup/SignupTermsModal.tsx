@@ -68,14 +68,14 @@ const SignupTermsModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-5"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 px-0 md:items-center md:px-5"
       role="dialog"
       aria-modal="true"
       aria-label="약관 동의"
       onClick={onClose}
     >
       <section
-        className="flex max-h-[85vh] w-full max-w-[520px] flex-col rounded-lg bg-white p-6 shadow-[0_18px_60px_rgba(25,31,40,0.18)]"
+        className="flex max-h-[85dvh] w-full max-w-[520px] flex-col rounded-t-2xl bg-white p-5 shadow-[0_18px_60px_rgba(25,31,40,0.18)] md:max-h-[85vh] md:rounded-lg md:p-6"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -84,7 +84,7 @@ const SignupTermsModal = ({
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-xl font-light text-[#6b7684] transition hover:bg-[#f2f4f6] hover:text-[#191f28]"
+            className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-xl font-light text-[#6b7684] transition hover:bg-[#f2f4f6] hover:text-[#191f28]"
           >
             ×
           </button>
@@ -99,7 +99,7 @@ const SignupTermsModal = ({
               key={doc.id}
               className="rounded-md border border-[#e5e8eb] bg-[#fafbfc]"
             >
-              <label className="flex items-center gap-2 border-b border-[#e5e8eb] px-3 py-2.5 text-sm font-bold text-[#191f28]">
+              <label className="flex min-h-11 items-center gap-2 border-b border-[#e5e8eb] px-3 py-2.5 text-sm font-bold text-[#191f28]">
                 <input
                   type="checkbox"
                   checked={agreement[doc.id]}
@@ -122,7 +122,7 @@ const SignupTermsModal = ({
           ))}
         </div>
 
-        <label className="mt-4 flex items-center gap-2 border-t border-[#e5e8eb] pt-4 text-sm font-extrabold text-[#191f28]">
+        <label className="mt-4 flex min-h-11 items-center gap-2 border-t border-[#e5e8eb] pt-4 text-sm font-extrabold text-[#191f28]">
           <input
             type="checkbox"
             checked={isAllChecked}

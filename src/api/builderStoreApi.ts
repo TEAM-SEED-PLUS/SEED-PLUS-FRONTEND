@@ -88,6 +88,9 @@ type PagedCommercialAreaResponse = {
   pageInfo: PageInfo;
 };
 
+/** 저장=PRIVATE, 공유=PUBLIC. 서버 enum은 DELETED까지 포함하지만 FE에서는 쓰지 않는다. */
+export type BuilderStoreVisibility = 'PUBLIC' | 'PRIVATE';
+
 export type CreateBuilderStoreRequest = {
   regionId: number;
   commercialAreaId: number;
@@ -112,7 +115,7 @@ export type CreateBuilderStoreRequest = {
     investmentAmount: number;
   };
   description?: string;
-  visibilityStatus: 'PUBLIC';
+  visibilityStatus: BuilderStoreVisibility;
   imageUrls?: string[];
 };
 
@@ -199,12 +202,25 @@ export const getCommercialAreas = async (regionId: number) => {
 export const createBuilderStore = async (
   payload: CreateBuilderStoreRequest
 ) => {
-  const response = await apiClient.post<ApiResponse<unknown>>(
-    '/api/v1/builder-stores',
-    payload,
-    {
-      headers: await getCsrfHeaders(),
-    }
+  const response = await apiClient.post<
+    ApiResponse<BuilderStoreDetailResponse>
+  >('/api/v1/builder-stores', payload, {
+    headers: await getCsrfHeaders(),
+  });
+  return response.data.data;
+};
+
+/** 저장한 상가를 '내 상가 만들기' 목록에 공개(공유)한다. */
+export const updateBuilderStoreVisibility = async (
+  builderStoreId: number,
+  visibilityStatus: BuilderStoreVisibility
+) => {
+  const response = await apiClient.patch<
+    ApiResponse<BuilderStoreDetailResponse>
+  >(
+    `/api/v1/builder-stores/${builderStoreId}`,
+    { visibilityStatus },
+    { headers: await getCsrfHeaders() }
   );
   return response.data.data;
 };

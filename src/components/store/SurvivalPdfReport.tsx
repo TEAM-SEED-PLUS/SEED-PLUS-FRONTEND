@@ -5,13 +5,15 @@ import { SurvivalGauge } from './SurvivalEstimateModal';
 export type PdfScoreRow = {
   label: string;
   description: string;
-  score: number;
+  /** 미산출 상태는 null로 두고 리포트에도 '?'로 출력한다. */
+  score: number | null;
   positive: boolean;
 };
 
 export type PdfComparisonDistrict = {
   name: string;
-  score: number;
+  /** 아직 산출되지 않은 값은 null로 두고 리포트에도 '?'로 출력한다. */
+  score: number | null;
   active: boolean;
 };
 
@@ -19,7 +21,7 @@ interface SurvivalPdfReportProps {
   ref: Ref<HTMLDivElement>;
   dataBadges: string[];
   inputSummary: [string, string][];
-  totalScore: number;
+  totalScore: number | null;
   survival1Year: string;
   survival3Year: string;
   scoreRows: PdfScoreRow[];
@@ -30,7 +32,8 @@ interface SurvivalPdfReportProps {
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
-const signedScore = (value: number) => `${value >= 0 ? '+' : ''}${value}`;
+const signedScore = (value: number | null) =>
+  value === null ? '?' : `${value >= 0 ? '+' : ''}${value}`;
 const getLevel = (score: number) => {
   if (score >= 90) return '높음';
   if (score >= 70) return '보통';
@@ -148,7 +151,9 @@ const SurvivalPdfReport = ({
                     </p>
                     <p
                       className={`text-[20px] font-bold ${
-                        item.score < 0 ? 'text-[#e33639]' : 'text-blue-600'
+                        item.score !== null && item.score < 0
+                          ? 'text-[#e33639]'
+                          : 'text-blue-600'
                       }`}
                     >
                       {signedScore(item.score)}점
@@ -174,9 +179,9 @@ const SurvivalPdfReport = ({
               </span>
             </div>
             <div className="mt-3 grid grid-cols-3 gap-3">
-              {comparisonDistricts.map((district) => (
+              {comparisonDistricts.map((district, index) => (
                 <div
-                  key={`${district.name}-${district.active ? 'active' : 'neighbor'}`}
+                  key={`comparison-${index}`}
                   className={`flex flex-col items-center gap-1 rounded-xl bg-[#f0f5ff] px-2 py-2 ${
                     district.active ? 'border border-blue-600' : ''
                   }`}
@@ -188,9 +193,11 @@ const SurvivalPdfReport = ({
                   )}
                   <p className="text-[15px] font-semibold">{district.name}</p>
                   <p className="text-[20px] font-semibold text-blue-600">
-                    {district.score}점
+                    {district.score === null ? '?' : district.score}점
                   </p>
-                  <p className="text-[15px]">{getLevel(district.score)}</p>
+                  <p className="text-[15px]">
+                    {district.score === null ? '?' : getLevel(district.score)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -214,14 +221,16 @@ const SurvivalPdfReport = ({
                 </p>
                 <div className="mt-2 flex items-center gap-1">
                   <div className="h-[19px] flex-1 overflow-hidden rounded-full bg-[#f7f8fa]">
-                    <div
-                      className={`h-full ${
-                        item.positive ? 'bg-blue-600' : 'bg-[#e33639]'
-                      }`}
-                      style={{
-                        width: `${clamp(Math.abs(item.score) * 5, 4, 100)}%`,
-                      }}
-                    />
+                    {item.score !== null && (
+                      <div
+                        className={`h-full ${
+                          item.positive ? 'bg-blue-600' : 'bg-[#e33639]'
+                        }`}
+                        style={{
+                          width: `${clamp(Math.abs(item.score) * 5, 4, 100)}%`,
+                        }}
+                      />
+                    )}
                   </div>
                   <p
                     className={`text-[15px] font-semibold ${

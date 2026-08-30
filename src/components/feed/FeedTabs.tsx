@@ -1,7 +1,10 @@
+import type { ReactElement } from 'react';
+import { CommentIcon, NewsIcon } from '@/components/ui/icons';
+
 type FeedTab = {
   id: 'news' | 'community';
   label: string;
-  icon: string;
+  Icon: (props: { className?: string }) => ReactElement;
 };
 
 interface FeedTabsProps {
@@ -10,8 +13,8 @@ interface FeedTabsProps {
 }
 
 const tabs: FeedTab[] = [
-  { id: 'news', label: '뉴스', icon: '📰' },
-  { id: 'community', label: '소통', icon: '💬' },
+  { id: 'news', label: '뉴스', Icon: NewsIcon },
+  { id: 'community', label: '소통', Icon: CommentIcon },
 ];
 
 const FeedTabs = ({ activeTab, onChange }: FeedTabsProps) => {
@@ -26,7 +29,7 @@ const FeedTabs = ({ activeTab, onChange }: FeedTabsProps) => {
             activeTab === tab.id ? 'text-blue-600' : 'text-gray-46'
           }`}
         >
-          <span>{tab.icon}</span>
+          <tab.Icon className="h-4 w-4" />
           <span>{tab.label}</span>
           {activeTab === tab.id && (
             <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-blue-600" />

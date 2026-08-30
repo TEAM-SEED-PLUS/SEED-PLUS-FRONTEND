@@ -1,4 +1,5 @@
 import type { NewsItem } from '@/types/types';
+import { ClockIcon, EyeIcon } from './icons';
 
 const NewsFeed = (news: NewsItem) => {
   const categoryStyles: Record<string, { bg: string; text: string }> = {
@@ -23,8 +24,14 @@ const NewsFeed = (news: NewsItem) => {
       <div className="mb-1.5 text-sm font-bold">{news.title}</div>
       <div className="text-xs text-gray-46">{news.content}</div>
       <div className="mt-2.5 flex gap-3 text-[11px] text-[#b0b8c1]">
-        <div>🕒 {news.recentTime}</div>
-        <div>👀 {news.viewer.toLocaleString()}명</div>
+        <div className="flex items-center gap-1">
+          <ClockIcon className="h-3.5 w-3.5" />
+          {news.recentTime}
+        </div>
+        <div className="flex items-center gap-1">
+          <EyeIcon className="h-3.5 w-3.5" />
+          {news.viewer.toLocaleString()}명
+        </div>
       </div>
     </article>
   );

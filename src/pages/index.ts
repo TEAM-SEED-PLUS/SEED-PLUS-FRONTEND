@@ -1,8 +1,10 @@
 export { default as FeedPage } from './Feed/FeedPage';
+export { default as HomePage } from './Home/HomePage';
 export { default as LandingPage } from './Landing/LandingPage';
 export { default as LoginPage } from './Login/LoginPage';
 export { default as MyPage } from './MyPage/MyPage';
 export { default as MyPageSettings } from './MyPage/MyPageSettings';
 export { default as NotFoundPage } from './NotFoundPage';
 export { default as SignupPage } from './Signup/SignupPage';
+export { default as WeatherPage } from './Weather/WeatherPage';
 export { default as StoreBuilderPage } from './StoreBuilder/StoreBuilderPage';

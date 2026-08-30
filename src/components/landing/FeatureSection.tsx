@@ -1,3 +1,4 @@
+import { CheckIcon } from '@/components/ui/icons';
 import dashboardPreview from '@/assets/landing/dashboard-preview.png';
 
 const strengths = [
@@ -23,9 +24,10 @@ const FeatureSection = () => {
             {strengths.map((strength) => (
               <li
                 key={strength}
-                className="border-b border-[#e5e7eb] pt-3 pb-4 text-xl font-semibold text-white md:text-[25px]"
+                className="flex items-center gap-2 border-b border-[#e5e7eb] pt-3 pb-4 text-xl font-semibold text-white md:text-[25px]"
               >
-                ✔ {strength}
+                <CheckIcon className="h-5 w-5 shrink-0 md:h-6 md:w-6" />
+                {strength}
               </li>
             ))}
           </ul>

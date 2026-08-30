@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { FEATURE_FLAGS } from '@/config/featureFlags';
 import logoHeader from '@/assets/landing/logo-header.png';
 
 const navItems = [
@@ -41,12 +42,23 @@ const LandingHeader = () => {
           >
             로그인
           </Link>
-          <Link
-            to="/store-builder"
-            className="rounded-lg border border-blue-600 bg-white px-3 py-2 text-xs font-semibold whitespace-nowrap text-[#191f28] transition-colors hover:bg-blue-300 sm:rounded-xl sm:px-7 sm:py-3 sm:text-lg"
-          >
-            기능 둘러보기
-          </Link>
+          {/*
+            비회원 둘러보기 진입점.
+            내 상가 만들기(/store-builder)는 BUILDER 명세 BLD-09에 따라 비회원 조회가
+            막혀 있어, 이 버튼을 그리로 보내면 곧바로 /login으로 튕겨 '로그인' 버튼과
+            동작이 같아진다. 그래서 비회원에게 열려 있는 홈으로 보낸다.
+
+            다만 홈이 아직 mock 데이터라 프로덕션에서는 홈 탭과 함께 감춰둔다.
+            둘은 같은 플래그로 묶여 있어 한 번에 되살아난다.
+          */}
+          {FEATURE_FLAGS.HOME_TAB && (
+            <Link
+              to="/home"
+              className="rounded-lg border border-blue-600 bg-white px-3 py-2 text-xs font-semibold whitespace-nowrap text-[#191f28] transition-colors hover:bg-blue-300 sm:rounded-xl sm:px-7 sm:py-3 sm:text-lg"
+            >
+              기능 둘러보기
+            </Link>
+          )}
         </div>
       </div>
     </header>

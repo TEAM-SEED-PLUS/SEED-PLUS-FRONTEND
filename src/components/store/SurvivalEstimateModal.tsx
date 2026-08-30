@@ -9,7 +9,12 @@ import {
   type SurvivalAnalysisResponse,
 } from '@/api';
 import WarningIcon from '@/assets/icons/warning-icon.svg';
-import SurvivalPdfReport from './SurvivalPdfReport';
+import Skeleton from '@/components/ui/Skeleton';
+import { SpinnerIcon } from '@/components/ui/icons';
+import SurvivalPdfReport, {
+  type PdfComparisonDistrict,
+  type PdfScoreRow,
+} from './SurvivalPdfReport';
 
 interface SurvivalEstimateModalProps {
   industries: IndustryResponse[];
@@ -90,59 +95,52 @@ const variableFactors: {
   { field: 'churn', label: '휴·폐업 변동 빈도' },
 ];
 
+// description은 '무엇을 보는 지표인지'만 설명한다.
+// 계산 전부터 '상권 평균 매출 상위권'·'임차부담도 53%'처럼 결과를 단정하던 문구는 제거했다.
 const scoreRowMeta: {
   field: ScoreField;
   label: string;
   description: string;
-  fallback: number;
 }[] = [
   {
     field: 's1_salesStability',
     label: '매출 안정성',
-    description: '상권 평균 매출 상위권',
-    fallback: 20,
+    description: '상권 평균 매출 수준',
   },
   {
     field: 's2_salesGrowth',
     label: '상권 성장성',
-    description: '최근 매출 상승',
-    fallback: 9,
+    description: '최근 매출 성장률',
   },
   {
     field: 's3_competition',
     label: '경쟁 강도',
-    description: '동일업종 밀도 과밀',
-    fallback: -20,
+    description: '동일업종 점포 밀도',
   },
   {
     field: 's4_vacancyRisk',
     label: '공실 리스크',
-    description: '공실률 낮음',
-    fallback: 0,
+    description: '상권 공실률',
   },
   {
     field: 's5_traffic',
     label: '유동인구',
-    description: '유동인구 매우 많음',
-    fallback: -20,
+    description: '유동인구 수준',
   },
   {
     field: 's6_rentBurden',
     label: '임차 부담',
-    description: '임차부담도 53%',
-    fallback: 0,
+    description: '월세 대비 상권평균매출 비중',
   },
   {
     field: 's7_churn',
     label: '상권 안정성',
-    description: '휴폐업 변동 안정',
-    fallback: 20,
+    description: '휴·폐업 변동 빈도',
   },
   {
     field: 's8_startupTypeBonus',
     label: '창업 형태',
-    description: '신규창업',
-    fallback: 0,
+    description: '신규·양수 구분',
   },
 ];
 
@@ -156,7 +154,8 @@ const formatNumber = (value?: number, digits = 0) =>
         maximumFractionDigits: digits,
         minimumFractionDigits: digits,
       });
-const signedScore = (value: number) => `${value >= 0 ? '+' : ''}${value}`;
+const signedScore = (value: number | null) =>
+  value === null ? '?' : `${value >= 0 ? '+' : ''}${value}`;
 const getLevel = (score: number) => {
   if (score >= 90) return '높음';
   if (score >= 70) return '보통';
@@ -285,6 +284,65 @@ export const SurvivalGauge = ({ score }: { score: number | null }) => {
   );
 };
 
+/**
+ * 계산이 도는 동안 결과 영역을 덮는 스켈레톤.
+ * 실제 결과(게이지 / 분해지표 / 지표카드 / 위험요인 / 유사상권)와 같은 골격을 써서
+ * 계산이 끝났을 때 레이아웃이 튀지 않게 한다.
+ */
+const SurvivalResultSkeleton = () => (
+  <div className="mt-4 space-y-4">
+    <div className="rounded-lg bg-blue-600 p-4">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(96px,120px)] gap-3 sm:grid-cols-[1fr_140px] sm:gap-4">
+        <div className="min-w-0">
+          <Skeleton tone="onDark" className="h-4 w-24" />
+          <div className="mt-4 flex justify-center">
+            <Skeleton tone="onDark" className="h-20 w-40 rounded-t-full" />
+          </div>
+        </div>
+        <div className="flex flex-col justify-center gap-3">
+          <Skeleton tone="onDark" className="h-14 rounded-sm" />
+          <Skeleton tone="onDark" className="h-14 rounded-sm" />
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <Skeleton className="h-4 w-32" />
+      <div className="mt-4 grid grid-cols-1 gap-x-7 gap-y-4 md:grid-cols-2">
+        {Array.from({ length: 8 }, (_, index) => (
+          <div key={index}>
+            <Skeleton className="mb-2 h-3 w-40" />
+            <Skeleton className="h-2 w-full rounded-full" />
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        {Array.from({ length: 4 }, (_, index) => (
+          <Skeleton key={index} className="h-20 rounded-md" />
+        ))}
+      </div>
+    </div>
+
+    <div className="rounded-md border border-[#e5e8eb] p-4">
+      <Skeleton className="h-4 w-28" />
+      <div className="mt-3 space-y-3">
+        {Array.from({ length: 3 }, (_, index) => (
+          <Skeleton key={index} className="h-16 rounded-md" />
+        ))}
+      </div>
+    </div>
+
+    <div className="rounded-md border border-[#e5e8eb] p-4">
+      <Skeleton className="h-4 w-32" />
+      <div className="mt-3 grid grid-cols-3 gap-3">
+        {Array.from({ length: 3 }, (_, index) => (
+          <Skeleton key={index} className="h-20 rounded-md" />
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
 const SurvivalEstimateModal = ({
   industries,
   districts,
@@ -326,11 +384,12 @@ const SurvivalEstimateModal = ({
     form.avgSalesAmt
   );
 
-  const displayScoreRows = useMemo(
+  // 계산 전에는 폴백 수치를 채우지 않고 null로 둔다(SVC-02: 미산출은 '?').
+  const displayScoreRows: PdfScoreRow[] = useMemo(
     () =>
       scoreRowMeta.map((row) => {
-        const value = result?.scoreBreakdown[row.field] ?? row.fallback;
-        return { ...row, score: value, positive: value >= 0 };
+        const value = result?.scoreBreakdown[row.field] ?? null;
+        return { ...row, score: value, positive: value !== null && value >= 0 };
       }),
     [result]
   );
@@ -338,41 +397,39 @@ const SurvivalEstimateModal = ({
   const topRisks = useMemo(
     () =>
       displayScoreRows
-        .filter((row) => row.score < 0)
-        .sort((left, right) => left.score - right.score)
+        .filter((row) => row.score !== null && row.score < 0)
+        .sort((left, right) => (left.score ?? 0) - (right.score ?? 0))
         .slice(0, 3),
     [displayScoreRows]
   );
 
-  const totalScore = Math.round(result?.scoreBreakdown.totalScore ?? 50);
-  const competitionRatio = result?.derived.competitionRatio ?? 100;
-  const rentBurden = result?.derived.rentBurden ?? 53;
-  const vitalityScore = result?.derived.vitalityScore ?? 88;
-  const stabilityIndex = result?.derived.stabilityIndex ?? 75;
+  const totalScore = result
+    ? Math.round(result.scoreBreakdown.totalScore)
+    : null;
 
   const resolvedTopRisks =
-    hasResult && topRisks.length > 0 ? topRisks : displayScoreRows.slice(2, 5);
+    topRisks.length > 0 ? topRisks : displayScoreRows.slice(0, 3);
 
   const metricCards: [string, string, string][] = [
     [
       '경쟁강도',
       '동일업종 점포수 / 전체 점포수',
-      hasResult ? `${formatNumber(competitionRatio, 0)}%` : '?',
+      result ? `${formatNumber(result.derived.competitionRatio, 0)}%` : '?',
     ],
     [
       '임차부담도',
       '월세 / 상권평균매출',
-      hasResult ? `${formatNumber(rentBurden, 0)}%` : '?',
+      result ? `${formatNumber(result.derived.rentBurden, 0)}%` : '?',
     ],
     [
       '상권활력도',
       '유동인구증가율 + 매출증가율',
-      hasResult ? `${formatNumber(vitalityScore, 0)}점` : '?',
+      result ? `${formatNumber(result.derived.vitalityScore, 0)}점` : '?',
     ],
     [
       '안정성지수',
       '1 - 공실률',
-      hasResult ? `${formatNumber(stabilityIndex, 0)}점` : '?',
+      result ? `${formatNumber(result.derived.stabilityIndex, 0)}점` : '?',
     ],
   ];
 
@@ -411,44 +468,21 @@ const SurvivalEstimateModal = ({
     printPdfReport();
   };
 
-  const comparisonDistricts = useMemo(() => {
-    if (districts.length === 0) {
-      return [
-        { name: '성동구', score: 83, active: false },
-        { name: '마포구', score: totalScore, active: true },
-        { name: '강남구', score: 77, active: false },
-      ];
-    }
-
-    const activeIndex = Math.max(
-      districts.findIndex(
-        (district) => String(district.code) === form.regionCode
-      ),
-      0
-    );
-    const previous =
-      districts[(activeIndex - 1 + districts.length) % districts.length];
-    const active = districts[activeIndex];
-    const next = districts[(activeIndex + 1) % districts.length];
-
-    return [
+  // 유사 상권 비교값은 아직 API(SVC-04 peers[])가 제공하지 않는다.
+  // 임의로 가감한 숫자를 실제 비교치처럼 노출하지 않도록, 내 상권만 산출값을 쓰고
+  // 나머지 두 칸은 계산 전과 동일하게 '?'로 둔다.
+  const comparisonDistricts: PdfComparisonDistrict[] = useMemo(
+    () => [
+      { name: '유사 상권', score: null, active: false },
       {
-        name: previous?.sigungu ?? '인접 상권',
-        score: clamp(totalScore + 5, 0, 100),
-        active: false,
-      },
-      {
-        name: active?.sigungu ?? selectedDistrict?.sigungu ?? '내 상권',
+        name: selectedDistrict?.sigungu ?? '내 상권',
         score: totalScore,
         active: true,
       },
-      {
-        name: next?.sigungu ?? '인접 상권',
-        score: clamp(totalScore - 1, 0, 100),
-        active: false,
-      },
-    ];
-  }, [districts, form.regionCode, selectedDistrict?.sigungu, totalScore]);
+      { name: '유사 상권', score: null, active: false },
+    ],
+    [selectedDistrict?.sigungu, totalScore]
+  );
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -724,14 +758,16 @@ const SurvivalEstimateModal = ({
             <button
               type="submit"
               disabled={isSubmitting || !isFormComplete}
-              className="mt-5 h-11 w-full rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
+              className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
             >
+              {isSubmitting && <SpinnerIcon className="h-4 w-4" />}
               {isSubmitting ? '생존율 계산 중...' : '생존율 계산하기'}
             </button>
           </form>
         </section>
 
         <section
+          aria-busy={isSubmitting}
           className={`rounded-lg bg-white p-5 shadow-sm lg:block ${
             mobileStep === 'input' ? 'hidden' : 'block'
           }`}
@@ -785,189 +821,221 @@ const SurvivalEstimateModal = ({
             </div>
           )}
 
-          <div className="mt-4 rounded-lg bg-blue-600 p-4 text-white">
-            <div className="grid grid-cols-[minmax(0,1fr)_minmax(96px,120px)] gap-3 sm:grid-cols-[1fr_140px] sm:gap-4">
-              <div className="min-w-0">
-                <p className="text-xs font-bold">Survival Score</p>
-                <div className="mt-2 flex justify-center overflow-hidden px-1">
-                  <SurvivalGauge score={hasResult ? totalScore : null} />
+          {isSubmitting ? (
+            <SurvivalResultSkeleton />
+          ) : (
+            <>
+              <div className="mt-4 rounded-lg bg-blue-600 p-4 text-white">
+                <div className="grid grid-cols-[minmax(0,1fr)_minmax(96px,120px)] gap-3 sm:grid-cols-[1fr_140px] sm:gap-4">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold">Survival Score</p>
+                    <div className="mt-2 flex justify-center overflow-hidden px-1">
+                      <SurvivalGauge score={totalScore} />
+                    </div>
+                  </div>
+                  <div className="flex min-w-0 flex-col justify-center gap-3">
+                    <div className="rounded-sm bg-white/20 px-2 py-3 text-right ring-1 ring-white/20 sm:px-3">
+                      <p className="text-[10px] text-white/80">
+                        1년 생존 가능성
+                      </p>
+                      <p className="mt-1 whitespace-nowrap text-base font-extrabold sm:text-lg">
+                        {result?.survival.survival1Year ?? '?'}
+                      </p>
+                    </div>
+                    <div className="rounded-sm bg-white/20 px-2 py-3 text-right ring-1 ring-white/20 sm:px-3">
+                      <p className="text-[10px] text-white/80">
+                        3년 생존 가능성
+                      </p>
+                      <p className="mt-1 whitespace-nowrap text-base font-extrabold sm:text-lg">
+                        {result?.survival.survival3Year ?? '?'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="flex min-w-0 flex-col justify-center gap-3">
-                <div className="rounded-sm bg-white/20 px-2 py-3 text-right ring-1 ring-white/20 sm:px-3">
-                  <p className="text-[10px] text-white/80">1년 생존 가능성</p>
-                  <p className="mt-1 whitespace-nowrap text-base font-extrabold sm:text-lg">
-                    {result?.survival.survival1Year ?? '?'}
-                  </p>
-                </div>
-                <div className="rounded-sm bg-white/20 px-2 py-3 text-right ring-1 ring-white/20 sm:px-3">
-                  <p className="text-[10px] text-white/80">3년 생존 가능성</p>
-                  <p className="mt-1 whitespace-nowrap text-base font-extrabold sm:text-lg">
-                    {result?.survival.survival3Year ?? '?'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="mt-5">
-            <h3 className="text-sm font-extrabold text-[#191f28]">
-              Survival Score 분해
-            </h3>
-            <p className="mt-1 text-[11px] text-[#4e5968]">
-              6개 변수별 점수 기여도
-            </p>
-            <div className="mt-4 grid grid-cols-1 gap-x-7 gap-y-4 md:grid-cols-2">
-              {displayScoreRows.map((item) => (
-                <div key={item.label}>
-                  <p className="mb-1 text-[10px] font-bold text-[#191f28]">
-                    {item.label}{' '}
-                    <span className="font-medium text-[#8b95a1]">
-                      {item.description}
-                    </span>
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 min-w-0 flex-1 rounded-full bg-[#e5e8eb]">
-                      {hasResult && (
-                        <div
-                          className={`h-2 rounded-full ${
-                            item.positive ? 'bg-blue-600' : 'bg-[#e5484d]'
+              <div className="mt-5">
+                <h3 className="text-sm font-extrabold text-[#191f28]">
+                  Survival Score 분해
+                </h3>
+                <p className="mt-1 text-[11px] text-[#4e5968]">
+                  6개 변수별 점수 기여도
+                </p>
+                <div className="mt-4 grid grid-cols-1 gap-x-7 gap-y-4 md:grid-cols-2">
+                  {displayScoreRows.map((item) => (
+                    <div key={item.label}>
+                      <p className="mb-1 text-[10px] font-bold text-[#191f28]">
+                        {item.label}{' '}
+                        <span className="font-medium text-[#8b95a1]">
+                          {item.description}
+                        </span>
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 min-w-0 flex-1 rounded-full bg-[#e5e8eb]">
+                          {item.score !== null && (
+                            <div
+                              className={`h-2 rounded-full ${
+                                item.positive ? 'bg-blue-600' : 'bg-[#e5484d]'
+                              }`}
+                              style={{
+                                width: `${clamp(Math.abs(item.score) * 5, 4, 100)}%`,
+                              }}
+                            />
+                          )}
+                        </div>
+                        <span
+                          className={`text-[10px] ${
+                            item.score === null
+                              ? 'text-[#8b95a1]'
+                              : item.positive
+                                ? 'text-blue-600'
+                                : 'text-[#e5484d]'
                           }`}
-                          style={{
-                            width: `${clamp(Math.abs(item.score) * 5, 4, 100)}%`,
-                          }}
-                        />
-                      )}
+                        >
+                          {signedScore(item.score)}
+                        </span>
+                      </div>
                     </div>
-                    <span
-                      className={`text-[10px] ${
-                        !hasResult
-                          ? 'text-[#8b95a1]'
-                          : item.positive
-                            ? 'text-blue-600'
-                            : 'text-[#e5484d]'
+                  ))}
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  {metricCards.map(([label, description, value]) => (
+                    <div key={label} className="rounded-md bg-[#f2f6ff] p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-xs font-bold text-[#4e5968]">
+                          {label}
+                        </p>
+                        <p className="text-[10px] text-[#8b95a1]">
+                          {description}
+                        </p>
+                      </div>
+                      <p className="mt-1 text-right text-xl font-extrabold text-blue-600">
+                        {value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-md border border-[#e5e8eb] p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-extrabold text-[#191f28]">
+                    위험 요인 TOP 3
+                  </h3>
+                  <span className="flex items-center gap-1 text-[10px] text-[#e5484d]">
+                    <img src={WarningIcon} alt="" className="h-3 w-3" />
+                    생존율에 가장 큰 영향을 미치는 요인
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {resolvedTopRisks.map((item, index) => (
+                    <div
+                      key={item.label}
+                      className="rounded-md bg-[#f7f8fa] p-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <strong className="flex items-center gap-1 text-xs text-[#191f28]">
+                          {item.score !== null && index === 0 && (
+                            <img src={WarningIcon} alt="" className="h-3 w-3" />
+                          )}
+                          {index + 1}위 {item.score === null ? '?' : item.label}
+                        </strong>
+                        <span
+                          className={`text-lg font-extrabold ${
+                            item.score === null
+                              ? 'text-[#8b95a1]'
+                              : item.score < 0
+                                ? 'text-[#e5484d]'
+                                : 'text-blue-600'
+                          }`}
+                        >
+                          {signedScore(item.score)}점
+                        </span>
+                      </div>
+                      <p className="mt-2 text-[11px] leading-relaxed text-[#4e5968]">
+                        {item.score === null
+                          ? '생존율 계산 후 위험 요인이 표시됩니다.'
+                          : `${item.description} 항목이 생존 가능성 산정에 반영됩니다. 수익성 악화 위험이 높을수록 감점 폭이 커집니다.`}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-md border border-[#e5e8eb] p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-extrabold text-[#191f28]">
+                    유사 상권 대비 위치
+                  </h3>
+                  <span className="flex items-center gap-1 text-[10px] text-[#e5484d]">
+                    <img src={WarningIcon} alt="" className="h-3 w-3" />
+                    동일 업종 기준 상권별 생존율 비교
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {comparisonDistricts.map((district, index) => (
+                    <div
+                      key={`comparison-${index}`}
+                      className={`rounded-md border p-3 text-center ${
+                        district.active
+                          ? 'border-blue-600 bg-[#eef4ff]'
+                          : 'border-transparent bg-[#f2f6ff]'
                       }`}
                     >
-                      {hasResult ? signedScore(item.score) : '?'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {metricCards.map(([label, description, value]) => (
-                <div key={label} className="rounded-md bg-[#f2f6ff] p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs font-bold text-[#4e5968]">{label}</p>
-                    <p className="text-[10px] text-[#8b95a1]">{description}</p>
-                  </div>
-                  <p className="mt-1 text-right text-xl font-extrabold text-blue-600">
-                    {value}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 rounded-md border border-[#e5e8eb] p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="text-sm font-extrabold text-[#191f28]">
-                위험 요인 TOP 3
-              </h3>
-              <span className="flex items-center gap-1 text-[10px] text-[#e5484d]">
-                <img src={WarningIcon} alt="" className="h-3 w-3" />
-                생존율에 가장 큰 영향을 미치는 요인
-              </span>
-            </div>
-            <div className="space-y-3">
-              {resolvedTopRisks.map((item, index) => (
-                <div key={item.label} className="rounded-md bg-[#f7f8fa] p-3">
-                  <div className="flex items-center justify-between">
-                    <strong className="flex items-center gap-1 text-xs text-[#191f28]">
-                      {hasResult && index === 0 && (
-                        <img src={WarningIcon} alt="" className="h-3 w-3" />
+                      {district.active && (
+                        <div className="mx-auto mb-1 w-fit rounded-full bg-blue-600 px-2 py-0.5 text-[9px] font-bold text-white">
+                          내 상권
+                        </div>
                       )}
-                      {index + 1}위 {hasResult ? item.label : '?'}
-                    </strong>
-                    <span
-                      className={`text-lg font-extrabold ${
-                        !hasResult
-                          ? 'text-[#8b95a1]'
-                          : item.score < 0
-                            ? 'text-[#e5484d]'
+                      <p className="text-[11px] font-bold text-[#4e5968]">
+                        {district.name}
+                      </p>
+                      <p
+                        className={`mt-1 text-xl font-extrabold ${
+                          district.score === null
+                            ? 'text-[#8b95a1]'
                             : 'text-blue-600'
-                      }`}
-                    >
-                      {hasResult ? `${signedScore(item.score)}점` : '?점'}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-[11px] leading-relaxed text-[#4e5968]">
-                    {hasResult
-                      ? `${item.description} 항목이 생존 가능성 산정에 반영됩니다. 수익성 악화 위험이 높을수록 감점 폭이 커집니다.`
-                      : '생존율 계산 후 위험 요인이 표시됩니다.'}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 rounded-md border border-[#e5e8eb] p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="text-sm font-extrabold text-[#191f28]">
-                유사 상권 대비 위치
-              </h3>
-              <span className="flex items-center gap-1 text-[10px] text-[#e5484d]">
-                <img src={WarningIcon} alt="" className="h-3 w-3" />
-                동일 업종 기준 상권별 생존율 비교
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {comparisonDistricts.map((district) => (
-                <div
-                  key={`${district.name}-${district.active ? 'active' : 'neighbor'}`}
-                  className={`rounded-md border p-3 text-center ${
-                    district.active
-                      ? 'border-blue-600 bg-[#eef4ff]'
-                      : 'border-transparent bg-[#f2f6ff]'
-                  }`}
-                >
-                  {district.active && (
-                    <div className="mx-auto mb-1 w-fit rounded-full bg-blue-600 px-2 py-0.5 text-[9px] font-bold text-white">
-                      내 상권
+                        }`}
+                      >
+                        {district.score === null
+                          ? '?점'
+                          : `${district.score}점`}
+                      </p>
+                      <p className="mt-1 text-[10px] text-[#4e5968]">
+                        {district.score === null
+                          ? '?'
+                          : getLevel(district.score)}
+                      </p>
                     </div>
-                  )}
-                  <p className="text-[11px] font-bold text-[#4e5968]">
-                    {district.name}
-                  </p>
-                  <p className="mt-1 text-xl font-extrabold text-blue-600">
-                    {hasResult ? `${district.score}점` : '?점'}
-                  </p>
-                  <p className="mt-1 text-[10px] text-[#4e5968]">
-                    {hasResult ? getLevel(district.score) : '?'}
-                  </p>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-
+                <p className="mt-3 text-[10px] text-[#8b95a1]">
+                  유사 상권 비교 데이터는 준비 중입니다. 연동 완료 후 실제
+                  상권명과 점수가 표시됩니다.
+                </p>
+              </div>
+            </>
+          )}
           <div className="mt-4 grid grid-cols-2 gap-2">
             <button
               type="button"
+              disabled={isSubmitting}
               onClick={() => {
                 setResult(null);
                 setIsStale(false);
                 setPdfNotice('');
                 setMobileStep('input');
               }}
-              className="h-11 rounded-md border border-blue-600 bg-white text-sm font-extrabold text-blue-600 transition hover:bg-[#e8f1ff]"
+              className="h-11 rounded-md border border-blue-600 bg-white text-sm font-extrabold text-blue-600 transition hover:bg-[#e8f1ff] disabled:cursor-not-allowed disabled:opacity-50"
             >
               다시 계산하기
             </button>
             <button
               type="button"
+              disabled={isSubmitting}
               onClick={handlePdfClick}
-              className={`h-11 rounded-md text-sm font-extrabold text-white transition ${
+              className={`h-11 rounded-md text-sm font-extrabold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
                 hasResult ? 'bg-blue-600 hover:bg-blue-700' : 'bg-[#b0c4f5]'
               }`}
             >

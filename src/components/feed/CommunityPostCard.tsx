@@ -1,3 +1,10 @@
+import {
+  CommentIcon,
+  HeartIcon,
+  RepeatIcon,
+  ShareIcon,
+} from '@/components/ui/icons';
+
 export interface CommunityPost {
   author: string;
   initial: string;
@@ -26,7 +33,7 @@ const CommunityPostCard = ({ post }: CommunityPostCardProps) => {
         </div>
         <div>
           <h3 className="text-base font-bold text-[#191f28]">{post.title}</h3>
-          <p className="mt-1 text-sm text-gray-46">📍 {post.district}</p>
+          <p className="mt-1 text-sm text-gray-46">{post.district}</p>
         </div>
       </div>
 
@@ -44,11 +51,21 @@ const CommunityPostCard = ({ post }: CommunityPostCardProps) => {
       </div>
 
       <div className="mt-5 flex gap-5 border-t border-[#e5e8eb] pt-4 text-sm text-gray-46">
-        <span>🤍 {post.likes}</span>
-        <span>💬 {post.comments}</span>
-        <span>🔁 {post.saves}</span>
-        <button type="button" className="font-medium">
-          📤 공유
+        <span className="flex items-center gap-1.5">
+          <HeartIcon className="h-4 w-4" />
+          {post.likes}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <CommentIcon className="h-4 w-4" />
+          {post.comments}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <RepeatIcon className="h-4 w-4" />
+          {post.saves}
+        </span>
+        <button type="button" className="flex items-center gap-1.5 font-medium">
+          <ShareIcon className="h-4 w-4" />
+          공유
         </button>
       </div>
     </article>
