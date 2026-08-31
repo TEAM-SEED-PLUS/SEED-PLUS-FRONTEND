@@ -10,18 +10,22 @@ const steps = [
 
 const UsageSection = () => {
   return (
-    <section id="usage" className="w-full scroll-mt-[88px] bg-white py-30">
+    <section
+      id="usage"
+      className="w-full snap-start scroll-mt-[88px] bg-white py-30 md:flex md:min-h-[calc(100dvh-88px)] md:items-center"
+    >
       <div className="mx-auto w-full max-w-[1200px] px-6">
         <h2 className="text-center text-[34px] font-bold text-[#191f28] md:text-[52px]">
           SEED+는 이렇게 작동합니다
         </h2>
         <p className="mt-3 text-center text-lg leading-[30px] font-medium text-black md:text-xl">
-          실거래 데이터와 AI 분석자료를 바탕으로
+          실거래 데이터와 AI 분석자료를 활용해
           <br />
-          <strong className="font-bold">전문적인 창업 컨설턴트형 중개사</strong>
-          <span>로</span>
+          <strong className="font-bold">
+            “전문적인 창업 컨설턴트형 중개사”
+          </strong>
           <br />
-          차별화된 브랜드 이미지를 만들 수 있습니다.
+          이미지 형성이 가능합니다.
         </p>
         <div className="mt-[70px] flex flex-col items-center justify-center gap-10 md:flex-row md:gap-[60px]">
           {steps.map((step, index) => (
@@ -41,7 +45,7 @@ const UsageSection = () => {
                 {step.bare ? (
                   <img src={step.icon} alt="" className="size-[181px]" />
                 ) : (
-                  <div className="flex size-[181px] items-center justify-center rounded-full border-2 border-[#dbe7ff]">
+                  <div className="flex size-[181px] items-center justify-center rounded-[59px] border-2 border-[#dbe7ff]">
                     <img src={step.icon} alt="" className="size-[92px]" />
                   </div>
                 )}
