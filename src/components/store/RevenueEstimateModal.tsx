@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import {
   calculateProfitAnalysis,
   createBuilderStore,
+  getCommercialAreas,
   getApiErrorMessage,
   type IndustryResponse,
   type ProfitAnalysisResponse,
@@ -47,7 +48,6 @@ const initialForm: RevenueForm = {
   premium: '',
 };
 
-const FIXED_COMMERCIAL_AREA_ID = 1;
 const inputClass =
   'h-11 w-full rounded-md border border-[#d8dde5] bg-white px-3 text-sm text-[#191f28] outline-none placeholder:text-[#8b95a1] focus:border-blue-600';
 const selectClass = `${inputClass} app-select`;
@@ -192,17 +192,36 @@ const RevenueEstimateModal = ({
       const expectedProfitRate = result.result.profitRate;
       const investmentPaybackMonths = result.result.paybackMonths;
 
+      // 선택한 동(법정동)의 지역 정보 — 저장 상가의 지역·주소 정밀도를 동 단위로 맞춘다.
+      const selectedDong = legalDongs.find(
+        (dong) => String(dong.code) === form.dongCode
+      );
+      const saveRegionId = selectedDong?.regionId ?? selectedDistrict.regionId;
+
+      // commercialAreaId는 계약상 필수인데 임의 값(과거 하드코딩 1)은 404가 난다.
+      // 지역의 실제 상권을 조회해 첫 번째를 쓰고, 없으면 저장 불가를 명확히 안내한다.
+      // TODO(BE): 상권 데이터 시딩 전까지 저장 기능이 막혀 있다. 시딩 또는 필드 optional화 필요.
+      const commercialAreas = await getCommercialAreas(saveRegionId);
+      const commercialAreaId = commercialAreas[0]?.commercialAreaId;
+      if (!commercialAreaId) {
+        setSaveMessage(
+          '이 지역의 상권 정보가 아직 등록되지 않아 저장할 수 없습니다. 데이터 준비 중입니다.'
+        );
+        return;
+      }
+
       const created = await createBuilderStore({
-        regionId: selectedDistrict.regionId,
-        commercialAreaId: FIXED_COMMERCIAL_AREA_ID,
+        regionId: saveRegionId,
+        commercialAreaId,
         industryId: selectedIndustry.industryId,
         name: form.storeName.trim(),
         building: {
-          address: `${selectedDistrict.sido} ${selectedDistrict.sigungu}`,
-          name: 'Seed Building',
-          floor: 15,
+          // 위치는 사용자가 고른 행정구역까지만 사실이다 — 건물명·층수는 지어내지 않는다.
+          address: `${selectedDistrict.sido} ${selectedDistrict.sigungu} ${
+            selectedDong?.dong ?? ''
+          }`.trim(),
           totalArea: toNumber(form.area),
-          locationComplete: true,
+          locationComplete: false,
         },
         metrics: {
           area: toNumber(form.area),
@@ -211,6 +230,9 @@ const RevenueEstimateModal = ({
           investmentAmount: toWon(toNumber(form.invest)),
           investmentPaybackMonths: Math.round(investmentPaybackMonths),
           monthlyRent: toWon(toNumber(form.rent)),
+          // TODO(BE): 계약의 deposit은 보증금인데 계산기 입력에는 권리금(premium)뿐이다.
+          //   metrics에 premium 필드가 없어 임시로 여기 싣는다(기존 화면들도 이 값을
+          //   권리금으로 표시 중). 서버에 premium 필드가 생기면 분리할 것.
           deposit: toWon(toNumber(form.premium)),
         },
         description: '수익률 추정 계산기로 생성한 가상 점포',
