@@ -180,7 +180,23 @@ export const getSeoulDistricts = async () => {
   const response = await apiClient.get<RegionResponse[]>('/api/v1/regions', {
     params: { sido: '서울특별시', codeType: 'SIGUNGU' },
   });
-  return response.data;
+
+  if (response.data.length > 0) {
+    return response.data;
+  }
+
+  // 폴백: dev DB에 자치구(SIGUNGU)가 아직 시딩되지 않아 빈 배열이 온다(2026-09-01 기준).
+  // 법정동 467건에는 구 정보가 있으므로 구별 첫 법정동을 대표로 삼아 25개 구를 유도한다.
+  // 유도된 행의 regionId·code는 법정동 것이지만, 계산기의 구→법정동 코드 변환은
+  // sigungu 이름 매칭이라 그대로 동작한다. SIGUNGU가 시딩되면 이 경로는 타지 않는다.
+  const legalDongs = await getSeoulLegalDongs();
+  const representativeBySigungu = new Map<string, RegionResponse>();
+  for (const dong of legalDongs) {
+    if (!representativeBySigungu.has(dong.sigungu)) {
+      representativeBySigungu.set(dong.sigungu, dong);
+    }
+  }
+  return [...representativeBySigungu.values()];
 };
 
 export const getSeoulLegalDongs = async () => {
