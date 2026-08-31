@@ -14,11 +14,15 @@
    * 랜딩 전용 세로 스냅.
    * 섹션이 각각 한 화면 높이라, 스냅이 없으면 스크롤 위치에 따라 이전 섹션 꼬리가
    * 위에 걸쳐 보인다. LandingPage에서만 html에 .landing-snap을 붙였다 뗀다.
-   * mandatory 대신 proximity: 뷰포트보다 긴 섹션(주요기능 카드 4개 등)에서
-   * 스크롤이 갇히지 않게 하기 위함.
+   *
+   * mandatory인 이유: proximity는 스냅 지점 근처에서만 당겨줘서, 중간에 멈추면
+   * 이전 섹션 꼬리가 여전히 보였다. mandatory는 항상 경계에 정렬된다.
+   * 뷰포트보다 긴 섹션(낮은 화면의 주요기능 등)은 CSS 스펙상 snap area가
+   * 뷰포트를 덮는 동안 자유 스크롤이 허용되므로 갇히지 않는다.
+   * 대신 문서 끝(푸터)이 스냅 지점이 아니면 끝까지 못 가므로 푸터에 snap-end를 둔다.
    */
   html.landing-snap {
-    scroll-snap-type: y proximity;
+    scroll-snap-type: y mandatory;
   }
 
   html,

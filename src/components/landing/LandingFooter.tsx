@@ -27,7 +27,7 @@ const linkGroups = [
 
 const LandingFooter = () => {
   return (
-    <footer className="w-full border-t border-[#e5e8eb] bg-white py-20">
+    <footer className="w-full snap-end border-t border-[#e5e8eb] bg-white py-20">
       <div className="mx-auto w-full max-w-[1200px] px-6">
         <div className="flex flex-col justify-between gap-12 md:flex-row">
           <div>
