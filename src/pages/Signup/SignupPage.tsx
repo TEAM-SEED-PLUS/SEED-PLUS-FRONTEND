@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@/api';
 import { useAuth } from '@/auth';
 import { HeaderUser } from '@/components/layout';
@@ -9,6 +9,7 @@ import SignupTermsModal from '@/components/signup/SignupTermsModal';
 import type { TermsAgreement } from '@/components/signup/SignupTermsModal';
 import { signupTermsDocuments } from '@/components/signup/signupTermsContent';
 import { useDocumentTitle } from '@/hooks';
+import { trackEvent } from '@/utils/analytics';
 import {
   normalizePhoneNumber,
   validateBirthDate,
@@ -21,6 +22,10 @@ import {
   validateEmail,
   validateLoginId,
 } from '@/utils/authValidation';
+
+type SignupLocationState = {
+  signupSource?: string;
+};
 
 type SignupStage = 'form' | 'onboarding';
 
@@ -52,6 +57,7 @@ const toApiBirthDate = (value: string) => {
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const routeLocation = useLocation();
   const { signup } = useAuth();
   useDocumentTitle('회원가입');
   const [stage, setStage] = useState<SignupStage>('form');
@@ -75,6 +81,14 @@ const SignupPage = () => {
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // GA4 가입 전환 경로 추적: 회원가입 폼 노출 시 진입 경로(location)와 함께 전송
+  useEffect(() => {
+    const source =
+      (routeLocation.state as SignupLocationState | null)?.signupSource ??
+      'direct';
+    trackEvent('view_signup_form', { location: source });
+  }, [routeLocation.state]);
 
   const handleComplete = () => {
     navigate('/login', { state: { signupComplete: true } });
@@ -130,6 +144,8 @@ const SignupPage = () => {
         phoneNumber: normalizePhoneNumber(phoneNumber),
         password,
       });
+      // GA4 전환 완료 이벤트 (가입 전환 퍼널 끝단)
+      trackEvent('sign_up', { method: 'login_id' });
       setStage('onboarding');
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error));

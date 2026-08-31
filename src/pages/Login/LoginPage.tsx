@@ -5,6 +5,7 @@ import { getApiErrorMessage } from '@/api';
 import { useAuth } from '@/auth';
 import { HeaderUser } from '@/components/layout';
 import { useDocumentTitle } from '@/hooks';
+import { trackEvent } from '@/utils/analytics';
 import { validatePassword } from '@/utils/formValidation';
 import { validateLoginId } from '@/utils/authValidation';
 
@@ -52,6 +53,8 @@ const LoginPage = () => {
         loginId: loginId.trim(),
         password,
       });
+      // GA4 로그인 완료 이벤트
+      trackEvent('login', { method: 'login_id' });
       navigate('/store-builder');
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error));
@@ -196,7 +199,11 @@ const LoginPage = () => {
               아직 회원이 아니신가요?{' '}
               <button
                 type="button"
-                onClick={() => navigate('/signup')}
+                onClick={() =>
+                  navigate('/signup', {
+                    state: { signupSource: 'login_page' },
+                  })
+                }
                 className="inline-flex min-h-11 items-center px-1 font-bold text-blue-600"
               >
                 가입하기
