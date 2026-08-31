@@ -27,8 +27,12 @@ const HeroSection = () => {
         },
       };
 
+  // 첫 진입에서 히어로가 화면을 정확히 채우도록 뷰포트 높이에 맞춘다.
+  // 헤더가 sticky h-[88px]로 흐름에 남아 있어 그만큼 빼야 헤더+히어로 = 한 화면이 된다.
+  // dvh를 쓰는 이유는 모바일 브라우저 주소창 높이 변화 대응(100vh는 잘림).
+  // 모바일에서는 우측 로고가 숨겨져 여백만 늘어나므로 md 이상에서만 적용한다.
   return (
-    <section className="relative w-full overflow-hidden bg-white py-[100px]">
+    <section className="relative w-full overflow-hidden bg-white py-[100px] md:flex md:min-h-[calc(100dvh-88px)] md:items-center">
       <div
         aria-hidden
         className="absolute -top-14 right-[-120px] size-[392px] rounded-full bg-gradient-to-br from-blue-300 to-[#c9e0ff] opacity-70"
