@@ -1,31 +1,31 @@
-import CloudIcon from '@/assets/weather/cloud-02.svg';
 import appScreen1 from '@/assets/landing/app-screen-1.png';
 import appScreen2 from '@/assets/landing/app-screen-2.png';
 import appScreen3 from '@/assets/landing/app-screen-3.png';
+import weatherCardPreview from '@/assets/landing/weather-card-preview.png';
 
 const features = [
   {
-    title: '1. 생존율 계산기',
+    title: '1.생존율 계산기',
     description:
       '최근 상권 성장률과 매출 데이터를 기반으로 3년 · 5년 생존 가능성을 분석합니다.',
     image: appScreen1,
   },
   {
-    title: '2. 내 상가 만들기',
+    title: '2.내 상가 만들기',
     description:
       '상가명, 업종, 임대료, 직원 수 등을 입력하여 예상 매출과 수익률을 계산합니다.',
     image: appScreen2,
   },
   {
-    title: '3. 전문가 원클릭 연결',
+    title: '3.전문가 원클릭 연결',
     description: '회계사, 변호사 등 전문가와 클릭 한 번으로 빠르게 연결됩니다.',
     image: appScreen3,
   },
   {
-    title: '4. 상권 날씨',
+    title: '4.상권 날씨',
     description:
       '지역별 유동 인구와 소비 트렌드를 실시간으로 분석하여, 현재 상권의 활성 상태를 날씨처럼 한눈에 보여줍니다.',
-    image: null,
+    image: weatherCardPreview,
   },
 ];
 
@@ -49,20 +49,11 @@ const ProcessSection = () => {
               className="flex flex-col rounded-3xl bg-[#ebf3ff] p-8"
             >
               <div className="flex h-[220px] items-center justify-center">
-                {feature.image ? (
-                  <img
-                    src={feature.image}
-                    alt={`${feature.title} 화면 미리보기`}
-                    className="max-h-full max-w-full rounded-[5px] object-contain"
-                  />
-                ) : (
-                  <img
-                    src={CloudIcon}
-                    alt=""
-                    aria-hidden
-                    className="h-20 w-20"
-                  />
-                )}
+                <img
+                  src={feature.image}
+                  alt={`${feature.title} 화면 미리보기`}
+                  className="max-h-full max-w-full rounded-[5px] object-contain"
+                />
               </div>
               <h3 className="pt-6 text-center text-lg font-bold text-[#191f28]">
                 {feature.title}

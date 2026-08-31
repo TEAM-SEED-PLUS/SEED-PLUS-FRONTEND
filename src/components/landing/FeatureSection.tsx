@@ -1,5 +1,5 @@
 import { CheckIcon } from '@/components/ui/icons';
-import dashboardPreview from '@/assets/landing/dashboard-preview.png';
+import storeBuilderPreview from '@/assets/landing/store-builder-preview.png';
 
 const strengths = [
   '전문가로서의 신뢰 강화',
@@ -36,8 +36,8 @@ const FeatureSection = () => {
           </ul>
         </div>
         <img
-          src={dashboardPreview}
-          alt="SEED+ 상권 분석 대시보드 미리보기"
+          src={storeBuilderPreview}
+          alt="SEED+ 내 상가 만들기 대시보드 미리보기"
           className="w-full max-w-[678px] rounded-[5px] object-cover"
         />
       </div>

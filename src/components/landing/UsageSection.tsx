@@ -45,7 +45,7 @@ const UsageSection = () => {
                 {step.bare ? (
                   <img src={step.icon} alt="" className="size-[181px]" />
                 ) : (
-                  <div className="flex size-[181px] items-center justify-center rounded-full border-2 border-[#dbe7ff]">
+                  <div className="flex size-[181px] items-center justify-center rounded-[59px] border-2 border-[#dbe7ff]">
                     <img src={step.icon} alt="" className="size-[92px]" />
                   </div>
                 )}
