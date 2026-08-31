@@ -56,7 +56,7 @@ const LandingHeader = () => {
               to="/home"
               className="rounded-lg border border-blue-600 bg-white px-3 py-2 text-xs font-semibold whitespace-nowrap text-[#191f28] transition-colors hover:bg-blue-300 sm:rounded-xl sm:px-7 sm:py-3 sm:text-lg"
             >
-              기능 둘러보기
+              비회원으로 둘러보기
             </Link>
           )}
         </div>
