@@ -27,6 +27,8 @@ type RevenueForm = {
   staff: string;
   industryCode: string;
   regionCode: string;
+  /** 법정동 코드 — 서버 regionCode로 그대로 전송된다 */
+  dongCode: string;
   area: string;
   invest: string;
   rent: string;
@@ -38,6 +40,7 @@ const initialForm: RevenueForm = {
   staff: '2',
   industryCode: '',
   regionCode: '',
+  dongCode: '',
   area: '',
   invest: '',
   rent: '',
@@ -47,6 +50,7 @@ const initialForm: RevenueForm = {
 const FIXED_COMMERCIAL_AREA_ID = 1;
 const inputClass =
   'h-11 w-full rounded-md border border-[#d8dde5] bg-white px-3 text-sm text-[#191f28] outline-none placeholder:text-[#8b95a1] focus:border-blue-600';
+const selectClass = `${inputClass} app-select`;
 const labelClass = 'mb-2 block text-sm font-medium text-[#333d4b]';
 
 const toNumber = (value: string) => Number(value.trim());
@@ -58,21 +62,6 @@ const formatNumber = (value?: number, digits = 0) =>
         maximumFractionDigits: digits,
         minimumFractionDigits: digits,
       });
-
-const getRepresentativeLegalDongCode = (
-  districtCode: string,
-  districts: RegionResponse[],
-  legalDongs: RegionResponse[]
-) => {
-  const selectedDistrict = districts.find(
-    (district) => String(district.code) === districtCode
-  );
-
-  return (
-    legalDongs.find((dong) => dong.sigungu === selectedDistrict?.sigungu)
-      ?.code ?? ''
-  );
-};
 
 const RevenueEstimateModal = ({
   industries,
@@ -117,6 +106,19 @@ const RevenueEstimateModal = ({
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  /** 구가 바뀌면 동 선택을 초기화한다 */
+  const handleDistrictChange = (value: string) => {
+    setErrorMessage('');
+    setSaveMessage('');
+    setForm((current) => ({ ...current, regionCode: value, dongCode: '' }));
+  };
+
+  const dongOptions = legalDongs
+    .filter((dong) => dong.sigungu === selectedDistrict?.sigungu)
+    .sort((left, right) =>
+      (left.dong ?? '').localeCompare(right.dong ?? '', 'ko-KR')
+    );
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -125,6 +127,7 @@ const RevenueEstimateModal = ({
       !form.storeName.trim() ||
       !form.industryCode ||
       !form.regionCode ||
+      !form.dongCode ||
       !form.area ||
       !form.invest ||
       !form.rent ||
@@ -137,24 +140,13 @@ const RevenueEstimateModal = ({
       return;
     }
 
-    const legalDongCode = getRepresentativeLegalDongCode(
-      form.regionCode,
-      districts,
-      legalDongs
-    );
-
-    if (!legalDongCode) {
-      setErrorMessage('선택한 구에 해당하는 법정동 코드를 찾을 수 없습니다.');
-      return;
-    }
-
     setIsSubmitting(true);
     setErrorMessage('');
     try {
       const response = await calculateProfitAnalysis({
         storeName: form.storeName.trim(),
         industryCode: form.industryCode,
-        regionCode: legalDongCode,
+        regionCode: form.dongCode,
         area: toNumber(form.area),
         invest: toNumber(form.invest),
         rent: toNumber(form.rent),
@@ -327,7 +319,7 @@ const RevenueEstimateModal = ({
                 onChange={(event) =>
                   updateField('industryCode', event.target.value)
                 }
-                className={inputClass}
+                className={selectClass}
               >
                 <option value="" disabled>
                   업종을 선택하세요
@@ -345,22 +337,44 @@ const RevenueEstimateModal = ({
 
             <label className="block">
               <span className={labelClass}>지역 선택</span>
-              <select
-                value={form.regionCode}
-                onChange={(event) =>
-                  updateField('regionCode', event.target.value)
-                }
-                className={inputClass}
-              >
-                <option value="" disabled>
-                  지역을 선택하세요
-                </option>
-                {districts.map((district) => (
-                  <option key={district.regionId} value={String(district.code)}>
-                    {district.sigungu}
+              <div className="flex gap-2">
+                <select
+                  value={form.regionCode}
+                  onChange={(event) => handleDistrictChange(event.target.value)}
+                  aria-label="자치구 선택"
+                  className={selectClass}
+                >
+                  <option value="" disabled>
+                    구 선택
                   </option>
-                ))}
-              </select>
+                  {districts.map((district) => (
+                    <option
+                      key={district.regionId}
+                      value={String(district.code)}
+                    >
+                      {district.sigungu}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={form.dongCode}
+                  onChange={(event) =>
+                    updateField('dongCode', event.target.value)
+                  }
+                  disabled={!form.regionCode}
+                  aria-label="법정동 선택"
+                  className={`${selectClass} disabled:bg-[#f2f4f6] disabled:text-[#b0b8c1]`}
+                >
+                  <option value="" disabled>
+                    동 선택
+                  </option>
+                  {dongOptions.map((dong) => (
+                    <option key={dong.code} value={String(dong.code)}>
+                      {dong.dong}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </label>
 
             <label className="block">

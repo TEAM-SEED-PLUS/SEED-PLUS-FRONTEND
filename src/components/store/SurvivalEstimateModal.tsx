@@ -29,6 +29,8 @@ interface SurvivalEstimateModalProps {
 type SurvivalForm = {
   storeName: string;
   regionCode: string;
+  /** 법정동 코드 — 서버 regionCode로 그대로 전송된다 */
+  dongCode: string;
   industryCode: string;
   area: string;
   rent: string;
@@ -50,6 +52,7 @@ type ScoreField =
 const initialForm: SurvivalForm = {
   storeName: '',
   regionCode: '',
+  dongCode: '',
   industryCode: '',
   area: '',
   rent: '',
@@ -60,6 +63,7 @@ const initialForm: SurvivalForm = {
 
 const inputClass =
   'h-10 w-full rounded-sm border border-[#e5e8eb] bg-white px-3 text-xs text-[#191f28] outline-none placeholder:text-[#b0b8c1] focus:border-blue-600';
+const selectClass = `${inputClass} app-select`;
 const labelClass = 'mb-2 block text-[11px] font-bold text-[#4e5968]';
 
 const dataBadges = [
@@ -152,21 +156,6 @@ const getLevel = (score: number) => {
   if (score >= 70) return '보통';
   if (score >= 50) return '주의';
   return '위험';
-};
-
-const getRepresentativeLegalDongCode = (
-  districtCode: string,
-  districts: RegionResponse[],
-  legalDongs: RegionResponse[]
-) => {
-  const selectedDistrict = districts.find(
-    (district) => String(district.code) === districtCode
-  );
-
-  return (
-    legalDongs.find((dong) => dong.sigungu === selectedDistrict?.sigungu)
-      ?.code ?? ''
-  );
 };
 
 const sliderStatusLabels = ['매우 낮음', '낮음', '보통', '높음', '매우 높음'];
@@ -368,9 +357,30 @@ const SurvivalEstimateModal = ({
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  /** 구가 바뀌면 동 선택을 초기화한다 */
+  const handleDistrictChange = (value: string) => {
+    setErrorMessage('');
+    setPdfNotice('');
+    if (result) {
+      setIsStale(true);
+    }
+    setForm((current) => ({ ...current, regionCode: value, dongCode: '' }));
+  };
+
+  const dongOptions = useMemo(
+    () =>
+      legalDongs
+        .filter((dong) => dong.sigungu === selectedDistrict?.sigungu)
+        .sort((left, right) =>
+          (left.dong ?? '').localeCompare(right.dong ?? '', 'ko-KR')
+        ),
+    [legalDongs, selectedDistrict?.sigungu]
+  );
+
   const isFormComplete = Boolean(
     form.storeName.trim() &&
     form.regionCode &&
+    form.dongCode &&
     form.industryCode &&
     form.area &&
     form.rent &&
@@ -434,7 +444,15 @@ const SurvivalEstimateModal = ({
 
   const inputSummary: [string, string][] = [
     ['상가명', form.storeName.trim() || '-'],
-    ['지역', selectedDistrict?.sigungu ?? '-'],
+    [
+      '지역',
+      selectedDistrict
+        ? `${selectedDistrict.sigungu} ${
+            dongOptions.find((dong) => String(dong.code) === form.dongCode)
+              ?.dong ?? ''
+          }`.trim()
+        : '-',
+    ],
     ['업종', selectedIndustryName ?? '-'],
     ['면적', form.area ? `${form.area}m²` : '-'],
     ['월 임대료', form.rent ? `${form.rent}만원` : '-'],
@@ -486,6 +504,7 @@ const SurvivalEstimateModal = ({
     if (
       !form.storeName.trim() ||
       !form.regionCode ||
+      !form.dongCode ||
       !form.industryCode ||
       !form.area ||
       !form.rent ||
@@ -497,23 +516,12 @@ const SurvivalEstimateModal = ({
       return;
     }
 
-    const legalDongCode = getRepresentativeLegalDongCode(
-      form.regionCode,
-      districts,
-      legalDongs
-    );
-
-    if (!legalDongCode) {
-      setErrorMessage('선택한 구에 해당하는 법정동 코드를 찾을 수 없습니다.');
-      return;
-    }
-
     setIsSubmitting(true);
     setErrorMessage('');
     try {
       const response = await calculateSurvivalAnalysis({
         storeName: form.storeName.trim(),
-        regionCode: legalDongCode,
+        regionCode: form.dongCode,
         industryCode: form.industryCode,
         area: toNumber(form.area),
         rent: toNumber(form.rent),
@@ -601,25 +609,46 @@ const SurvivalEstimateModal = ({
                     공공데이터 연동
                   </span>
                 </div>
-                <select
-                  value={form.regionCode}
-                  onChange={(event) =>
-                    updateField('regionCode', event.target.value)
-                  }
-                  className={inputClass}
-                >
-                  <option value="" disabled>
-                    지역을 선택하세요
-                  </option>
-                  {districts.map((district) => (
-                    <option
-                      key={district.regionId}
-                      value={String(district.code)}
-                    >
-                      {district.sigungu}
+                <div className="flex gap-2">
+                  <select
+                    value={form.regionCode}
+                    onChange={(event) =>
+                      handleDistrictChange(event.target.value)
+                    }
+                    aria-label="자치구 선택"
+                    className={selectClass}
+                  >
+                    <option value="" disabled>
+                      구 선택
                     </option>
-                  ))}
-                </select>
+                    {districts.map((district) => (
+                      <option
+                        key={district.regionId}
+                        value={String(district.code)}
+                      >
+                        {district.sigungu}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={form.dongCode}
+                    onChange={(event) =>
+                      updateField('dongCode', event.target.value)
+                    }
+                    disabled={!form.regionCode}
+                    aria-label="법정동 선택"
+                    className={`${selectClass} disabled:bg-[#f2f4f6] disabled:text-[#b0b8c1]`}
+                  >
+                    <option value="" disabled>
+                      동 선택
+                    </option>
+                    {dongOptions.map((dong) => (
+                      <option key={dong.code} value={String(dong.code)}>
+                        {dong.dong}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </label>
 
               <label className="block">
@@ -636,7 +665,7 @@ const SurvivalEstimateModal = ({
                   onChange={(event) =>
                     updateField('industryCode', event.target.value)
                   }
-                  className={inputClass}
+                  className={selectClass}
                 >
                   <option value="" disabled>
                     업종을 선택하세요
