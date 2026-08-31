@@ -30,15 +30,18 @@ const useSavedStores = (enabled: boolean) => {
     setIsLoading(true);
     setErrorMessage('');
 
-    getMyBookmarkedStores({ size: 100, sort: 'uploadedAt,desc' })
+    getMyBookmarkedStores({ size: 100 })
       .then((response) => {
         if (!active) {
           return;
         }
         setStores(
-          response.content
-            .map(toStoreItem)
-            .map((store) => ({ ...store, saved: true }))
+          response.content.map((bookmark, index) => ({
+            ...toStoreItem(bookmark.store, index),
+            saved: true,
+            // 최신화 표기는 저장 시점(savedAt) 기준으로 보여준다.
+            uploadedAt: bookmark.savedAt,
+          }))
         );
       })
       .catch(() => {

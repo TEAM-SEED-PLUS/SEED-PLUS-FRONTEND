@@ -120,7 +120,9 @@ const RevenueEstimateModal = ({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    // storeName은 신계약(2026-09-01)에서 계산 요청 필수값이 됐다.
     if (
+      !form.storeName.trim() ||
       !form.industryCode ||
       !form.regionCode ||
       !form.area ||
@@ -129,7 +131,9 @@ const RevenueEstimateModal = ({
       !form.premium ||
       !form.staff
     ) {
-      setErrorMessage('수익률 추정에 필요한 값을 모두 입력해주세요.');
+      setErrorMessage(
+        '상가명 포함, 수익률 추정에 필요한 값을 모두 입력해주세요.'
+      );
       return;
     }
 
@@ -148,6 +152,7 @@ const RevenueEstimateModal = ({
     setErrorMessage('');
     try {
       const response = await calculateProfitAnalysis({
+        storeName: form.storeName.trim(),
         industryCode: form.industryCode,
         regionCode: legalDongCode,
         area: toNumber(form.area),
@@ -452,6 +457,20 @@ const RevenueEstimateModal = ({
               시장 상황에 따라 달라질 수 있습니다.
             </p>
           </div>
+
+          {result?.fallbackUsed && (
+            <div className="mt-4 rounded-md border border-[#f5c518] bg-[#fff8e1] px-3 py-2 text-xs font-bold text-[#8a6d00]">
+              실시간 수집에 실패해 최근 캐시 데이터 기반으로 산출된 결과입니다.
+            </div>
+          )}
+
+          {(result?.warnings?.length ?? 0) > 0 && (
+            <ul className="mt-4 space-y-1 rounded-md bg-[#f7f8fa] px-3 py-2 text-xs font-medium text-[#4e5968]">
+              {result?.warnings?.map((warning) => (
+                <li key={warning}>· {warning}</li>
+              ))}
+            </ul>
+          )}
 
           <div className="mt-4 rounded-lg bg-blue-600 p-5 text-white">
             <p className="text-lg font-bold">나의 예상 월 매출은?</p>

@@ -7,6 +7,7 @@ import {
   type IndustryResponse,
   type RegionResponse,
   type SurvivalAnalysisResponse,
+  type SurvivalDynamicMetrics,
 } from '@/api';
 import WarningIcon from '@/assets/icons/warning-icon.svg';
 import Skeleton from '@/components/ui/Skeleton';
@@ -23,21 +24,17 @@ interface SurvivalEstimateModalProps {
   onClose: () => void;
 }
 
+// 신계약(2026-09-01): 상권 변수·보증금·창업형태 입력이 제거되고
+// 초기투자금·권리금·직원수·상가명이 필수 입력이 됐다.
 type SurvivalForm = {
   storeName: string;
   regionCode: string;
   industryCode: string;
   area: string;
   rent: string;
-  deposit: string;
-  avgSales: number;
-  salesGrowth: number;
-  density: number;
-  vacancy: number;
-  traffic: number;
-  churn: number;
-  startupType: 'new' | 'transfer';
-  avgSalesAmt: string;
+  invest: string;
+  premium: string;
+  staff: string;
 };
 
 type ScoreField =
@@ -56,15 +53,9 @@ const initialForm: SurvivalForm = {
   industryCode: '',
   area: '',
   rent: '',
-  deposit: '',
-  avgSales: 3,
-  salesGrowth: 3,
-  density: 3,
-  vacancy: 3,
-  traffic: 3,
-  churn: 3,
-  startupType: 'new',
-  avgSalesAmt: '4200',
+  invest: '',
+  premium: '',
+  staff: '2',
 };
 
 const inputClass =
@@ -82,7 +73,7 @@ const dataBadges = [
 
 const variableFactors: {
   field: keyof Pick<
-    SurvivalForm,
+    SurvivalDynamicMetrics,
     'avgSales' | 'salesGrowth' | 'density' | 'vacancy' | 'traffic' | 'churn'
   >;
   label: string;
@@ -180,19 +171,23 @@ const getRepresentativeLegalDongCode = (
 
 const sliderStatusLabels = ['매우 낮음', '낮음', '보통', '높음', '매우 높음'];
 
-const VariableSlider = ({
+/**
+ * 상권 변수 게이지 (읽기 전용).
+ * 과거에는 1~5 슬라이더 '입력'이었지만, 신계약(2026-09-01)부터 서버가
+ * 실시간 수집 데이터로 산출해 응답(dynamicMetrics)으로 내려준다.
+ * 계산 전(null)에는 잠금 상태로 표시한다.
+ * 서버 산출 스케일은 1~5 가정이며, 벗어나는 값은 반올림·클램프해 표시한다.
+ */
+const VariableGauge = ({
   label,
   value,
-  onChange,
 }: {
   label: string;
-  value: number;
-  onChange: (value: number) => void;
+  value: number | null;
 }) => {
-  const clampedValue = clamp(value, 1, 5);
-  const ratio = (clampedValue - 1) / 4;
+  const scaled = value === null ? null : clamp(Math.round(value), 1, 5);
+  const ratio = scaled === null ? 0 : (scaled - 1) / 4;
   const left = `${ratio * 100}%`;
-  const status = sliderStatusLabels[clampedValue - 1];
 
   return (
     <div className="rounded-md bg-[#f7f8fa] px-5 py-4">
@@ -203,29 +198,28 @@ const VariableSlider = ({
         <span className="text-[11px] text-[#4e5968]">하위</span>
         <div className="relative h-12 min-w-0 flex-1">
           <div className="absolute left-0 right-0 top-6 h-2 rounded-full bg-[#e5e8eb]" />
-          <div
-            className="absolute left-0 top-6 h-2 rounded-full bg-blue-600"
-            style={{ width: left }}
-          />
-          <input
-            type="range"
-            min="1"
-            max="5"
-            step="1"
-            value={clampedValue}
-            onChange={(event) => onChange(Number(event.target.value))}
-            className="absolute inset-x-0 top-3 h-7 cursor-pointer opacity-0"
-          />
-          <div
-            className="absolute -top-1 whitespace-nowrap rounded-sm bg-blue-600 px-2 py-0.5 text-center text-[10px] font-bold text-white"
-            style={{ left, transform: `translateX(-${ratio * 100}%)` }}
-          >
-            {status}
-          </div>
-          <div
-            className="absolute top-[19px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
-            style={{ left: `calc(${left} - ${ratio * 20}px)` }}
-          />
+          {scaled === null ? (
+            <div className="absolute inset-x-0 top-1 text-center text-[10px] font-bold text-[#8b95a1]">
+              계산 시 자동 산출
+            </div>
+          ) : (
+            <>
+              <div
+                className="absolute left-0 top-6 h-2 rounded-full bg-blue-600"
+                style={{ width: left }}
+              />
+              <div
+                className="absolute -top-1 whitespace-nowrap rounded-sm bg-blue-600 px-2 py-0.5 text-center text-[10px] font-bold text-white"
+                style={{ left, transform: `translateX(-${ratio * 100}%)` }}
+              >
+                {sliderStatusLabels[scaled - 1]}
+              </div>
+              <div
+                className="absolute top-[19px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
+                style={{ left: `calc(${left} - ${ratio * 20}px)` }}
+              />
+            </>
+          )}
         </div>
         <span className="text-[11px] text-[#4e5968]">상위</span>
       </div>
@@ -365,7 +359,7 @@ const SurvivalEstimateModal = ({
     [districts, form.regionCode]
   );
 
-  const updateField = (field: keyof SurvivalForm, value: string | number) => {
+  const updateField = (field: keyof SurvivalForm, value: string) => {
     setErrorMessage('');
     setPdfNotice('');
     if (result) {
@@ -380,8 +374,9 @@ const SurvivalEstimateModal = ({
     form.industryCode &&
     form.area &&
     form.rent &&
-    form.deposit &&
-    form.avgSalesAmt
+    form.invest &&
+    form.premium &&
+    form.staff
   );
 
   // 계산 전에는 폴백 수치를 채우지 않고 null로 둔다(SVC-02: 미산출은 '?').
@@ -443,8 +438,9 @@ const SurvivalEstimateModal = ({
     ['업종', selectedIndustryName ?? '-'],
     ['면적', form.area ? `${form.area}m²` : '-'],
     ['월 임대료', form.rent ? `${form.rent}만원` : '-'],
-    ['보증금', form.deposit ? `${form.deposit}만원` : '-'],
-    ['창업형태', form.startupType === 'new' ? '신규 창업' : '양수 창업'],
+    ['초기투자금', form.invest ? `${form.invest}만원` : '-'],
+    ['권리금', form.premium ? `${form.premium}만원` : '-'],
+    ['직원 수', form.staff ? `${form.staff}명` : '-'],
   ];
 
   const pdfReportRef = useRef<HTMLDivElement>(null);
@@ -493,8 +489,9 @@ const SurvivalEstimateModal = ({
       !form.industryCode ||
       !form.area ||
       !form.rent ||
-      !form.deposit ||
-      !form.avgSalesAmt
+      !form.invest ||
+      !form.premium ||
+      !form.staff
     ) {
       setErrorMessage('생존율 분석에 필요한 값을 모두 입력해주세요.');
       return;
@@ -515,19 +512,14 @@ const SurvivalEstimateModal = ({
     setErrorMessage('');
     try {
       const response = await calculateSurvivalAnalysis({
+        storeName: form.storeName.trim(),
         regionCode: legalDongCode,
         industryCode: form.industryCode,
         area: toNumber(form.area),
         rent: toNumber(form.rent),
-        deposit: toNumber(form.deposit),
-        avgSales: form.avgSales,
-        salesGrowth: form.salesGrowth,
-        density: form.density,
-        vacancy: form.vacancy,
-        traffic: form.traffic,
-        churn: form.churn,
-        startupType: form.startupType,
-        avgSalesAmt: toNumber(form.avgSalesAmt),
+        invest: toNumber(form.invest),
+        premium: toNumber(form.premium),
+        staff: Math.round(toNumber(form.staff)),
       });
       setResult(response);
       setIsStale(false);
@@ -685,46 +677,44 @@ const SurvivalEstimateModal = ({
               </label>
 
               <label className="block">
-                <span className={labelClass}>보증금(만원)</span>
+                <span className={labelClass}>초기 투자금(만원)</span>
                 <input
                   type="number"
                   min="0"
-                  value={form.deposit}
+                  value={form.invest}
                   onChange={(event) =>
-                    updateField('deposit', event.target.value)
+                    updateField('invest', event.target.value)
+                  }
+                  placeholder="예) 5000"
+                  className={inputClass}
+                />
+              </label>
+
+              <label className="block">
+                <span className={labelClass}>권리금(만원)</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.premium}
+                  onChange={(event) =>
+                    updateField('premium', event.target.value)
                   }
                   placeholder="예) 3000"
                   className={inputClass}
                 />
               </label>
 
-              <div className="block">
-                <span className={labelClass}>창업형태</span>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => updateField('startupType', 'new')}
-                    className={`h-9 rounded-full px-3 text-[11px] font-bold ${
-                      form.startupType === 'new'
-                        ? 'bg-blue-600 text-white'
-                        : 'border border-[#d8dde5] text-[#4e5968]'
-                    }`}
-                  >
-                    신규 창업
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateField('startupType', 'transfer')}
-                    className={`h-9 rounded-full px-3 text-[11px] font-bold ${
-                      form.startupType === 'transfer'
-                        ? 'bg-blue-600 text-white'
-                        : 'border border-[#d8dde5] text-[#4e5968]'
-                    }`}
-                  >
-                    양수 창업
-                  </button>
-                </div>
-              </div>
+              <label className="block">
+                <span className={labelClass}>예상 직원 수(명)</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.staff}
+                  onChange={(event) => updateField('staff', event.target.value)}
+                  placeholder="예) 2"
+                  className={inputClass}
+                />
+              </label>
             </div>
 
             <div className="mt-5 border-t border-[#e5e8eb] pt-5">
@@ -734,16 +724,15 @@ const SurvivalEstimateModal = ({
                 </h4>
                 <span className="flex items-center gap-1 text-[10px] font-medium text-[#e5484d]">
                   <img src={WarningIcon} alt="" className="h-3 w-3" />
-                  지역, 업종 선택 시 자동 반영됩니다. 직접 조정도 가능합니다.
+                  계산 시 실시간 상권 데이터로 자동 산출됩니다.
                 </span>
               </div>
               <div className="space-y-3">
                 {variableFactors.map((factor) => (
-                  <VariableSlider
+                  <VariableGauge
                     key={factor.field}
                     label={factor.label}
-                    value={form[factor.field]}
-                    onChange={(value) => updateField(factor.field, value)}
+                    value={result?.dynamicMetrics?.[factor.field] ?? null}
                   />
                 ))}
               </div>
@@ -819,6 +808,20 @@ const SurvivalEstimateModal = ({
               재계산 필요 — 입력값이 변경되었습니다. [생존율 계산하기]를 다시
               눌러주세요.
             </div>
+          )}
+
+          {hasResult && result.fallbackUsed && (
+            <div className="mt-4 rounded-md border border-[#f5c518] bg-[#fff8e1] px-3 py-2 text-[11px] font-bold text-[#8a6d00]">
+              실시간 수집에 실패해 최근 캐시 데이터 기반으로 산출된 결과입니다.
+            </div>
+          )}
+
+          {hasResult && (result.warnings?.length ?? 0) > 0 && (
+            <ul className="mt-4 space-y-1 rounded-md bg-[#f7f8fa] px-3 py-2 text-[11px] font-medium text-[#4e5968]">
+              {result.warnings?.map((warning) => (
+                <li key={warning}>· {warning}</li>
+              ))}
+            </ul>
           )}
 
           {isSubmitting ? (
