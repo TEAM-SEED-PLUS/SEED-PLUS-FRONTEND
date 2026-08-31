@@ -32,7 +32,7 @@ const HeroSection = () => {
   // dvh를 쓰는 이유는 모바일 브라우저 주소창 높이 변화 대응(100vh는 잘림).
   // 모바일에서는 우측 로고가 숨겨져 여백만 늘어나므로 md 이상에서만 적용한다.
   return (
-    <section className="relative w-full snap-start overflow-hidden bg-white py-[100px] md:flex md:min-h-[calc(100dvh-88px)] md:items-center">
+    <section className="relative w-full snap-start scroll-mt-[88px] overflow-hidden bg-white py-[100px] md:flex md:min-h-[calc(100dvh-88px)] md:items-center">
       <div
         aria-hidden
         className="absolute -top-14 right-[-120px] size-[392px] rounded-full bg-gradient-to-br from-blue-300 to-[#c9e0ff] opacity-70"
