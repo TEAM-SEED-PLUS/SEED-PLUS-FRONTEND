@@ -148,8 +148,14 @@ export const clearAuthToken = () => {
 
 export const getApiErrorMessage = (error: unknown) => {
   if (axios.isAxiosError<ApiErrorResponse>(error)) {
+    // response가 아예 없으면 서버에 닿지 못한 것(다운·네트워크 단절)이다.
+    // 입력 문제로 오해하지 않도록 연결 실패임을 명시한다.
+    if (!error.response) {
+      return '서버에 연결할 수 없습니다. 네트워크 상태를 확인하거나 잠시 후 다시 시도해주세요.';
+    }
+
     return (
-      error.response?.data?.message ??
+      error.response.data?.message ??
       '요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.'
     );
   }
