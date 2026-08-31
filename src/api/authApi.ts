@@ -2,13 +2,33 @@ import axios from 'axios';
 import { apiClient, setAccessToken } from './httpClient';
 
 export type LoginRequest = {
-  phoneNumber: string;
+  /** 영문과 숫자로 구성된 로그인 ID */
+  loginId: string;
   password: string;
 };
 
-export type SignupRequest = LoginRequest & {
+export type SignupRequest = {
+  loginId: string;
+  email: string;
+  /** 하이픈 없는 휴대폰 번호 */
+  phoneNumber: string;
+  /** 백엔드는 BCrypt 제한으로 8~72자 검증. FE는 명세 V-02(8~64자)로 더 좁게 검증한다 */
+  password: string;
   name: string;
+  /** YYYY-MM-DD */
   birthDate: string;
+};
+
+export type PasswordResetRequest = {
+  email: string;
+  currentPassword: string;
+  newPassword: string;
+  newPasswordConfirmation: string;
+};
+
+export type UserUpdateRequest = {
+  name?: string;
+  password?: string;
 };
 
 export type TokenResponse = {
@@ -24,6 +44,8 @@ export type CsrfTokenResponse = {
 };
 
 export type UserMeResponse = {
+  loginId?: string;
+  email?: string;
   name: string;
   role: 'OWNER' | 'GENERAL' | 'VISITOR' | 'ADMIN';
   status: 'ACTIVE' | 'INACTIVE' | 'DELETED';
@@ -72,6 +94,24 @@ export const signup = async (payload: SignupRequest) => {
   });
 };
 
+/** 비밀번호 변경 — 비로그인 상태에서 email+현재 비밀번호로 본인 확인 */
+export const resetPassword = async (payload: PasswordResetRequest) => {
+  await apiClient.post('/api/v1/auth/password/reset', payload, {
+    headers: await getCsrfHeaders(),
+    skipAuthRefresh: true,
+  });
+};
+
+/** 내 정보 수정 (이름·비밀번호) */
+export const updateMyProfile = async (payload: UserUpdateRequest) => {
+  const response = await apiClient.patch<ApiResponse<UserMeResponse>>(
+    '/api/v1/users/me',
+    payload,
+    { headers: await getCsrfHeaders() }
+  );
+  return response.data.data;
+};
+
 export const reissue = async () => {
   const response = await apiClient.post<ApiResponse<TokenResponse>>(
     '/api/v1/auth/reissue',
@@ -108,8 +148,14 @@ export const clearAuthToken = () => {
 
 export const getApiErrorMessage = (error: unknown) => {
   if (axios.isAxiosError<ApiErrorResponse>(error)) {
+    // response가 아예 없으면 서버에 닿지 못한 것(다운·네트워크 단절)이다.
+    // 입력 문제로 오해하지 않도록 연결 실패임을 명시한다.
+    if (!error.response) {
+      return '서버에 연결할 수 없습니다. 네트워크 상태를 확인하거나 잠시 후 다시 시도해주세요.';
+    }
+
     return (
-      error.response?.data?.message ??
+      error.response.data?.message ??
       '요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.'
     );
   }

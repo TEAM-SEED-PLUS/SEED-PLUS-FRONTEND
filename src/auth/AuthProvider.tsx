@@ -89,6 +89,10 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       signup: async (payload) => {
         await requestSignup(payload);
       },
+      refreshUser: async () => {
+        const profile = await getMyProfile();
+        setUser(profile);
+      },
       logout: async () => {
         try {
           await requestLogout();

@@ -8,6 +8,7 @@ import {
   MyPage,
   MyPageSettings,
   NotFoundPage,
+  PasswordResetPage,
   SignupPage,
   StoreBuilderPage,
   WeatherPage,
@@ -23,6 +24,7 @@ const Router = () => {
         <Route path="/feed" element={<FeedPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/password-reset" element={<PasswordResetPage />} />
         <Route path="/store-builder" element={<StoreBuilderPage />} />
         <Route path="/weather" element={<WeatherPage />} />
         <Route path="/mypage" element={<MyPage />} />

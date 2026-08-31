@@ -16,6 +16,11 @@ import {
   validatePassword,
   validatePhoneNumber,
 } from '@/utils/formValidation';
+import {
+  normalizeEmail,
+  validateEmail,
+  validateLoginId,
+} from '@/utils/authValidation';
 
 type SignupStage = 'form' | 'onboarding';
 
@@ -50,6 +55,10 @@ const SignupPage = () => {
   const { signup } = useAuth();
   useDocumentTitle('회원가입');
   const [stage, setStage] = useState<SignupStage>('form');
+  const [loginId, setLoginId] = useState('');
+  const [loginIdError, setLoginIdError] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
   const [birthDate, setBirthDate] = useState('');
@@ -74,16 +83,22 @@ const SignupPage = () => {
   const submitSignup = async () => {
     setErrorMessage('');
 
+    const nextLoginIdError = validateLoginId(loginId);
+    const nextEmailError = validateEmail(email);
     const nextNameError = validateName(name);
     const nextBirthDateError = validateBirthDate(birthDate);
     const nextPhoneError = validatePhoneNumber(phoneNumber);
     const nextPasswordError = validatePassword(password);
+    setLoginIdError(nextLoginIdError);
+    setEmailError(nextEmailError);
     setNameError(nextNameError);
     setBirthDateError(nextBirthDateError);
     setPhoneError(nextPhoneError);
     setPasswordError(nextPasswordError);
 
     if (
+      nextLoginIdError ||
+      nextEmailError ||
       nextNameError ||
       nextBirthDateError ||
       nextPhoneError ||
@@ -108,6 +123,8 @@ const SignupPage = () => {
     setIsSubmitting(true);
     try {
       await signup({
+        loginId: loginId.trim(),
+        email: normalizeEmail(email),
         name: name.trim(),
         birthDate: formattedBirthDate,
         phoneNumber: normalizePhoneNumber(phoneNumber),
@@ -151,7 +168,7 @@ const SignupPage = () => {
               <>
                 <div className="mt-8 grid grid-cols-2 text-center text-sm font-medium text-[#191f28]">
                   <div className="border-b-2 border-blue-600 pb-3">
-                    휴대폰 번호로 가입
+                    아이디로 가입
                   </div>
                   <div className="border-b border-[#e5e8eb] pb-3 text-[#8b95a1]">
                     소셜계정으로 가입
@@ -160,6 +177,54 @@ const SignupPage = () => {
 
                 <form className="mt-5" onSubmit={handleSubmit}>
                   <label className="block">
+                    <span className={labelClass}>아이디</span>
+                    <input
+                      type="text"
+                      autoComplete="username"
+                      value={loginId}
+                      onChange={(event) => {
+                        setLoginId(event.target.value);
+                        if (loginIdError) {
+                          setLoginIdError(validateLoginId(event.target.value));
+                        }
+                      }}
+                      onBlur={() => setLoginIdError(validateLoginId(loginId))}
+                      placeholder="영문·숫자 4~20자 ex) seedplus01"
+                      className={`${inputClass} ${loginIdError ? errorInputClass : ''}`}
+                      aria-invalid={Boolean(loginIdError)}
+                    />
+                    {loginIdError && (
+                      <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                        {loginIdError}
+                      </p>
+                    )}
+                  </label>
+
+                  <label className="mt-4 block">
+                    <span className={labelClass}>이메일</span>
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(event) => {
+                        setEmail(event.target.value);
+                        if (emailError) {
+                          setEmailError(validateEmail(event.target.value));
+                        }
+                      }}
+                      onBlur={() => setEmailError(validateEmail(email))}
+                      placeholder="ex) seedplus@example.com"
+                      className={`${inputClass} ${emailError ? errorInputClass : ''}`}
+                      aria-invalid={Boolean(emailError)}
+                    />
+                    {emailError && (
+                      <p className="mt-1 text-xs font-medium text-[#e5484d]">
+                        {emailError}
+                      </p>
+                    )}
+                  </label>
+
+                  <label className="mt-4 block">
                     <span className={labelClass}>이름</span>
                     <input
                       type="text"

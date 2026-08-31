@@ -10,6 +10,8 @@ export type AuthContextValue = {
   login: (payload: LoginRequest) => Promise<void>;
   signup: (payload: SignupRequest) => Promise<void>;
   logout: () => Promise<void>;
+  /** 프로필 수정 후 전역 user 상태를 서버 기준으로 갱신한다 */
+  refreshUser: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
