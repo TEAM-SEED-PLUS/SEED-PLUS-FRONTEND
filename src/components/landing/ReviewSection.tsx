@@ -20,7 +20,7 @@ const ReviewSection = () => {
   return (
     <section
       id="reviews"
-      className="w-full scroll-mt-[88px] bg-[#fafbfc] py-30"
+      className="w-full snap-start scroll-mt-[88px] bg-[#fafbfc] py-30 md:flex md:min-h-[calc(100dvh-88px)] md:items-center"
     >
       <div className="mx-auto w-full max-w-[1200px] px-6">
         <h2 className="text-center text-[34px] font-bold text-[#191f28] md:text-[52px]">

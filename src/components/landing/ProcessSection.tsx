@@ -31,7 +31,10 @@ const features = [
 
 const ProcessSection = () => {
   return (
-    <section className="w-full bg-blue-600/10 py-30">
+    <section
+      id="features"
+      className="w-full snap-start scroll-mt-[88px] bg-blue-600/10 py-30 md:flex md:min-h-[calc(100dvh-88px)] md:items-center"
+    >
       <div className="mx-auto w-full max-w-[1200px] px-6">
         <h2 className="text-center text-[34px] font-bold text-[#191f28] md:text-[52px]">
           SEED+의 4가지 주요 기능

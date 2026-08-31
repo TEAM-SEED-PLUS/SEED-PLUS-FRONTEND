@@ -9,7 +9,10 @@ const strengths = [
 
 const FeatureSection = () => {
   return (
-    <section id="about" className="w-full scroll-mt-[88px] bg-blue-600 py-30">
+    <section
+      id="about"
+      className="w-full snap-start scroll-mt-[88px] bg-blue-600 py-30 md:flex md:min-h-[calc(100dvh-88px)] md:items-center"
+    >
       <div className="mx-auto flex w-full max-w-[1400px] flex-col items-center justify-between gap-14 px-6 lg:flex-row">
         <div className="max-w-[667px]">
           <h2 className="text-[34px] leading-[1.35] font-bold text-white md:text-5xl xl:text-[54px]">
