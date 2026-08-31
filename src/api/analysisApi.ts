@@ -8,7 +8,14 @@ type ApiResponse<T> = {
   data: T;
 };
 
+// 2026-09-01 계약: 분석이 정적 계산 → 실시간 외부 데이터 수집(B-10) 기반으로 전환됐다.
+// - 두 요청 모두 storeName·staff가 필수가 됐다.
+// - 생존율의 슬라이더 6종·보증금·창업형태·상권매출 '입력'은 제거됐고,
+//   서버가 산출한 값이 응답 dynamicMetrics로 돌아온다.
+// - 외부 수집 실패 시 502(code 9200)가 온다. collectionRunId는 그 재시도용.
+
 export type ProfitAnalysisRequest = {
+  storeName: string;
   industryCode: string;
   regionCode: string;
   area: number;
@@ -16,10 +23,13 @@ export type ProfitAnalysisRequest = {
   rent: number;
   premium: number;
   staff: number;
+  /** 수집 실패 후 재시도할 실행 ID. 최초 요청에서는 생략 */
+  collectionRunId?: number;
 };
 
 export type ProfitAnalysisResponse = {
   input: {
+    storeName: string;
     industry: string;
     region: string;
     area: number;
@@ -35,6 +45,15 @@ export type ProfitAnalysisResponse = {
     variableCostRate: number;
     fixedOverheadRate: number;
     staffCostPerPerson: number;
+  };
+  /** 실시간 수집 데이터로 산출된 상권 지표 */
+  dynamicMetrics?: {
+    baseRevenue: number;
+    regionMultiplier: number;
+    storeMarketFactor: number;
+    avgSalesAmt: number;
+    competitorCount: number;
+    competitorDensity: number;
   };
   result: {
     monthlyRev: number;
@@ -52,22 +71,35 @@ export type ProfitAnalysisResponse = {
     paybackMonths: number;
     propertyScore: number;
   };
+  dataSources?: string[];
+  warnings?: string[];
+  fallbackUsed?: boolean;
 };
 
 export type SurvivalAnalysisRequest = {
+  storeName: string;
   regionCode: string;
   industryCode: string;
   area: number;
   rent: number;
-  deposit: number;
+  invest: number;
+  premium: number;
+  staff: number;
+  /** 수집 실패 후 재시도할 실행 ID. 최초 요청에서는 생략 */
+  collectionRunId?: number;
+};
+
+/** 서버가 수집 데이터로 산출한 상권 변수 — 과거 슬라이더 입력값들이 여기로 이동했다 */
+export type SurvivalDynamicMetrics = {
+  avgSalesAmt: number;
   avgSales: number;
   salesGrowth: number;
   density: number;
   vacancy: number;
   traffic: number;
   churn: number;
-  startupType: string;
-  avgSalesAmt: number;
+  closureRate: number;
+  newBusinessRate: number;
 };
 
 export type SurvivalAnalysisResponse = {
@@ -76,15 +108,11 @@ export type SurvivalAnalysisResponse = {
     industry: string;
     area: number;
     rent: number;
-    deposit: number;
-    avgSales: number;
-    salesGrowth: number;
-    density: number;
-    vacancy: number;
-    traffic: number;
-    churn: number;
+    invest: number;
+    premium: number;
+    staff: number;
     startupType: string;
-    avgSalesAmt: number;
+    storeName: string;
   };
   derived: {
     estMonthlyRevenue: number;
@@ -93,6 +121,7 @@ export type SurvivalAnalysisResponse = {
     vitalityScore: number;
     stabilityIndex: number;
   };
+  dynamicMetrics?: SurvivalDynamicMetrics;
   scoreBreakdown: {
     s1_salesStability: number;
     s2_salesGrowth: number;
@@ -110,6 +139,9 @@ export type SurvivalAnalysisResponse = {
     survival1Year: string;
     survival3Year: string;
   };
+  dataSources?: string[];
+  warnings?: string[];
+  fallbackUsed?: boolean;
 };
 
 export const calculateProfitAnalysis = async (

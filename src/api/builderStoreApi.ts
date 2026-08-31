@@ -127,18 +127,46 @@ export const getBuilderStores = async (params: BuilderStoreListParams = {}) => {
   return response.data.data;
 };
 
-// 마이페이지 '저장한 상가 리스트' = 내가 북마크한 상가 목록.
-// TODO(BE): 2026-07-02 기준 '내 북마크 목록' 전용 엔드포인트 미구현.
-//   요청 스펙(제안): GET /api/v1/users/me/bookmarks?page&size&sort
-//   응답: ApiResponse<BuilderStoreListResponse> (content=BuilderStoreSummaryResponse[], 항목은 bookmarked=true)
-//   엔드포인트 확정되면 아래 경로만 교체.
+/** 저장 카드의 신선도 정보 — 저장 시점 데이터와 현재 수집 데이터의 차이 */
+export type BuilderStoreBookmarkFreshness = {
+  latestEstimatedSalesLabel?: string;
+  estimatedSalesUpdateAvailable?: boolean;
+  estimatedSalesUpdateMessage?: string;
+  otherDataUpdateAvailable?: boolean;
+  otherDataUpdateMessage?: string;
+};
+
+export type BuilderStoreBookmarkResponse = {
+  bookmarkId: number;
+  savedAt: string;
+  store: BuilderStoreSummaryResponse;
+  freshness?: BuilderStoreBookmarkFreshness;
+  collectionRunId?: number;
+};
+
+type BookmarkPageResponse = {
+  content: BuilderStoreBookmarkResponse[];
+  pageInfo: PageInfo;
+};
+
+/** 마이페이지 '저장한 상가 리스트' — 2026-09-01 신설된 전용 엔드포인트 */
 export const getMyBookmarkedStores = async (
-  params: BuilderStoreListParams = {}
+  params: { page?: number; size?: number } = {}
 ) => {
-  const response = await apiClient.get<ApiResponse<BuilderStoreListResponse>>(
-    '/api/v1/users/me/bookmarks',
+  const response = await apiClient.get<ApiResponse<BookmarkPageResponse>>(
+    '/api/v1/users/me/builder-stores/bookmarks',
     { params }
   );
+  return response.data.data;
+};
+
+/** 저장 카드에 최신 수집 데이터를 반영한다 */
+export const refreshBookmarkedStore = async (bookmarkId: number) => {
+  const response = await apiClient.post<
+    ApiResponse<BuilderStoreBookmarkResponse>
+  >(`/api/v1/users/me/builder-stores/bookmarks/${bookmarkId}/refresh`, undefined, {
+    headers: await getCsrfHeaders(),
+  });
   return response.data.data;
 };
 

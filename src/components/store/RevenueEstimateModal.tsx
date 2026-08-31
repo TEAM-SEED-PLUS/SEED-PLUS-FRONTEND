@@ -120,7 +120,9 @@ const RevenueEstimateModal = ({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    // storeName은 신계약(2026-09-01)에서 계산 요청 필수값이 됐다.
     if (
+      !form.storeName.trim() ||
       !form.industryCode ||
       !form.regionCode ||
       !form.area ||
@@ -129,7 +131,9 @@ const RevenueEstimateModal = ({
       !form.premium ||
       !form.staff
     ) {
-      setErrorMessage('수익률 추정에 필요한 값을 모두 입력해주세요.');
+      setErrorMessage(
+        '상가명 포함, 수익률 추정에 필요한 값을 모두 입력해주세요.'
+      );
       return;
     }
 
@@ -148,6 +152,7 @@ const RevenueEstimateModal = ({
     setErrorMessage('');
     try {
       const response = await calculateProfitAnalysis({
+        storeName: form.storeName.trim(),
         industryCode: form.industryCode,
         regionCode: legalDongCode,
         area: toNumber(form.area),
