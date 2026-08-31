@@ -164,9 +164,13 @@ export const getMyBookmarkedStores = async (
 export const refreshBookmarkedStore = async (bookmarkId: number) => {
   const response = await apiClient.post<
     ApiResponse<BuilderStoreBookmarkResponse>
-  >(`/api/v1/users/me/builder-stores/bookmarks/${bookmarkId}/refresh`, undefined, {
-    headers: await getCsrfHeaders(),
-  });
+  >(
+    `/api/v1/users/me/builder-stores/bookmarks/${bookmarkId}/refresh`,
+    undefined,
+    {
+      headers: await getCsrfHeaders(),
+    }
+  );
   return response.data.data;
 };
 
