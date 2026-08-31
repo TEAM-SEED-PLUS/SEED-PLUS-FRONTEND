@@ -11,7 +11,7 @@ const FeatureSection = () => {
   return (
     <section
       id="about"
-      className="w-full snap-start scroll-mt-[88px] bg-blue-600 py-30 md:flex md:min-h-[calc(100dvh-88px)] md:items-center"
+      className="w-full snap-start scroll-mt-[88px] bg-[#0038c5] py-30 md:flex md:min-h-[calc(100dvh-88px)] md:items-center"
     >
       <div className="mx-auto flex w-full max-w-[1400px] flex-col items-center justify-between gap-14 px-6 lg:flex-row">
         <div className="max-w-[667px]">
@@ -27,9 +27,9 @@ const FeatureSection = () => {
             {strengths.map((strength) => (
               <li
                 key={strength}
-                className="flex items-center gap-2 border-b border-[#e5e7eb] pt-3 pb-4 text-xl font-semibold text-white md:text-[25px]"
+                className="flex items-center gap-2 border-b border-white/25 pt-3 pb-4 text-xl font-semibold text-white md:text-[25px]"
               >
-                <CheckIcon className="h-5 w-5 shrink-0 md:h-6 md:w-6" />
+                <CheckIcon className="h-5 w-5 shrink-0 text-[#464646] md:h-6 md:w-6" />
                 {strength}
               </li>
             ))}
