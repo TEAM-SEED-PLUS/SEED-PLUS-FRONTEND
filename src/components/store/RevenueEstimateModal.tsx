@@ -458,6 +458,20 @@ const RevenueEstimateModal = ({
             </p>
           </div>
 
+          {result?.fallbackUsed && (
+            <div className="mt-4 rounded-md border border-[#f5c518] bg-[#fff8e1] px-3 py-2 text-xs font-bold text-[#8a6d00]">
+              실시간 수집에 실패해 최근 캐시 데이터 기반으로 산출된 결과입니다.
+            </div>
+          )}
+
+          {(result?.warnings?.length ?? 0) > 0 && (
+            <ul className="mt-4 space-y-1 rounded-md bg-[#f7f8fa] px-3 py-2 text-xs font-medium text-[#4e5968]">
+              {result?.warnings?.map((warning) => (
+                <li key={warning}>· {warning}</li>
+              ))}
+            </ul>
+          )}
+
           <div className="mt-4 rounded-lg bg-blue-600 p-5 text-white">
             <p className="text-lg font-bold">나의 예상 월 매출은?</p>
             <div className="mt-5 flex items-end gap-2">
