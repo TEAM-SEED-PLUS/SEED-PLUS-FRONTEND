@@ -63,6 +63,7 @@ const initialForm: SurvivalForm = {
 
 const inputClass =
   'h-10 w-full rounded-sm border border-[#e5e8eb] bg-white px-3 text-xs text-[#191f28] outline-none placeholder:text-[#b0b8c1] focus:border-blue-600';
+const selectClass = `${inputClass} app-select`;
 const labelClass = 'mb-2 block text-[11px] font-bold text-[#4e5968]';
 
 const dataBadges = [
@@ -615,7 +616,7 @@ const SurvivalEstimateModal = ({
                       handleDistrictChange(event.target.value)
                     }
                     aria-label="자치구 선택"
-                    className={inputClass}
+                    className={selectClass}
                   >
                     <option value="" disabled>
                       구 선택
@@ -636,7 +637,7 @@ const SurvivalEstimateModal = ({
                     }
                     disabled={!form.regionCode}
                     aria-label="법정동 선택"
-                    className={`${inputClass} disabled:bg-[#f2f4f6] disabled:text-[#b0b8c1]`}
+                    className={`${selectClass} disabled:bg-[#f2f4f6] disabled:text-[#b0b8c1]`}
                   >
                     <option value="" disabled>
                       동 선택
@@ -664,7 +665,7 @@ const SurvivalEstimateModal = ({
                   onChange={(event) =>
                     updateField('industryCode', event.target.value)
                   }
-                  className={inputClass}
+                  className={selectClass}
                 >
                   <option value="" disabled>
                     업종을 선택하세요

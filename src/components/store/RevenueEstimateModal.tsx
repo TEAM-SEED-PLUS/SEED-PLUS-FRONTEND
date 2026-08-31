@@ -50,6 +50,7 @@ const initialForm: RevenueForm = {
 const FIXED_COMMERCIAL_AREA_ID = 1;
 const inputClass =
   'h-11 w-full rounded-md border border-[#d8dde5] bg-white px-3 text-sm text-[#191f28] outline-none placeholder:text-[#8b95a1] focus:border-blue-600';
+const selectClass = `${inputClass} app-select`;
 const labelClass = 'mb-2 block text-sm font-medium text-[#333d4b]';
 
 const toNumber = (value: string) => Number(value.trim());
@@ -318,7 +319,7 @@ const RevenueEstimateModal = ({
                 onChange={(event) =>
                   updateField('industryCode', event.target.value)
                 }
-                className={inputClass}
+                className={selectClass}
               >
                 <option value="" disabled>
                   업종을 선택하세요
@@ -341,7 +342,7 @@ const RevenueEstimateModal = ({
                   value={form.regionCode}
                   onChange={(event) => handleDistrictChange(event.target.value)}
                   aria-label="자치구 선택"
-                  className={inputClass}
+                  className={selectClass}
                 >
                   <option value="" disabled>
                     구 선택
@@ -362,7 +363,7 @@ const RevenueEstimateModal = ({
                   }
                   disabled={!form.regionCode}
                   aria-label="법정동 선택"
-                  className={`${inputClass} disabled:bg-[#f2f4f6] disabled:text-[#b0b8c1]`}
+                  className={`${selectClass} disabled:bg-[#f2f4f6] disabled:text-[#b0b8c1]`}
                 >
                   <option value="" disabled>
                     동 선택
