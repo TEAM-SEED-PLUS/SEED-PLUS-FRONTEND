@@ -5,13 +5,10 @@ import { getApiErrorMessage } from '@/api';
 import { useAuth } from '@/auth';
 import { HeaderUser } from '@/components/layout';
 import { useDocumentTitle } from '@/hooks';
-import {
-  normalizePhoneNumber,
-  validatePassword,
-  validatePhoneNumber,
-} from '@/utils/formValidation';
+import { validatePassword } from '@/utils/formValidation';
+import { validateLoginId } from '@/utils/authValidation';
 
-type LoginMethod = 'phone' | 'social';
+type LoginMethod = 'loginId' | 'social';
 
 type LocationState = {
   signupComplete?: boolean;
@@ -26,9 +23,9 @@ const LoginPage = () => {
   const location = useLocation();
   const { login } = useAuth();
   useDocumentTitle('로그인');
-  const [loginMethod, setLoginMethod] = useState<LoginMethod>('phone');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [phoneError, setPhoneError] = useState('');
+  const [loginMethod, setLoginMethod] = useState<LoginMethod>('loginId');
+  const [loginId, setLoginId] = useState('');
+  const [loginIdError, setLoginIdError] = useState('');
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -40,19 +37,19 @@ const LoginPage = () => {
     event.preventDefault();
     setErrorMessage('');
 
-    const nextPhoneError = validatePhoneNumber(phoneNumber);
+    const nextLoginIdError = validateLoginId(loginId);
     const nextPasswordError = validatePassword(password);
-    setPhoneError(nextPhoneError);
+    setLoginIdError(nextLoginIdError);
     setPasswordError(nextPasswordError);
 
-    if (nextPhoneError || nextPasswordError) {
+    if (nextLoginIdError || nextPasswordError) {
       return;
     }
 
     setIsSubmitting(true);
     try {
       await login({
-        phoneNumber: normalizePhoneNumber(phoneNumber),
+        loginId: loginId.trim(),
         password,
       });
       navigate('/store-builder');
@@ -93,11 +90,11 @@ const LoginPage = () => {
           <div className="mt-8 grid grid-cols-2 text-center text-sm font-medium">
             <button
               type="button"
-              onClick={() => setLoginMethod('phone')}
-              className={tabClass('phone')}
-              aria-current={loginMethod === 'phone' ? 'page' : undefined}
+              onClick={() => setLoginMethod('loginId')}
+              className={tabClass('loginId')}
+              aria-current={loginMethod === 'loginId' ? 'page' : undefined}
             >
-              휴대폰 번호로 로그인
+              아이디로 로그인
             </button>
             <button
               type="button"
@@ -109,29 +106,30 @@ const LoginPage = () => {
             </button>
           </div>
 
-          {loginMethod === 'phone' ? (
+          {loginMethod === 'loginId' ? (
             <form className="mt-5" onSubmit={handleSubmit}>
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-gray-46">
-                  휴대폰 번호
+                  아이디
                 </span>
                 <input
-                  type="tel"
-                  value={phoneNumber}
+                  type="text"
+                  autoComplete="username"
+                  value={loginId}
                   onChange={(event) => {
-                    setPhoneNumber(event.target.value);
-                    if (phoneError) {
-                      setPhoneError(validatePhoneNumber(event.target.value));
+                    setLoginId(event.target.value);
+                    if (loginIdError) {
+                      setLoginIdError(validateLoginId(event.target.value));
                     }
                   }}
-                  onBlur={() => setPhoneError(validatePhoneNumber(phoneNumber))}
-                  placeholder="ex) 01012345678"
-                  className={`${inputClass} ${phoneError ? errorInputClass : ''}`}
-                  aria-invalid={Boolean(phoneError)}
+                  onBlur={() => setLoginIdError(validateLoginId(loginId))}
+                  placeholder="ex) seedplus01"
+                  className={`${inputClass} ${loginIdError ? errorInputClass : ''}`}
+                  aria-invalid={Boolean(loginIdError)}
                 />
-                {phoneError && (
+                {loginIdError && (
                   <p className="mt-1 text-xs font-medium text-[#e5484d]">
-                    {phoneError}
+                    {loginIdError}
                   </p>
                 )}
               </label>
@@ -184,6 +182,16 @@ const LoginPage = () => {
           )}
 
           <div className="mt-10 space-y-1.5 text-center text-sm font-medium">
+            <div className="text-gray-46">
+              비밀번호를 바꾸시겠어요?{' '}
+              <button
+                type="button"
+                onClick={() => navigate('/password-reset')}
+                className="inline-flex min-h-11 items-center px-1 font-bold text-blue-600"
+              >
+                비밀번호 변경
+              </button>
+            </div>
             <div className="text-gray-46">
               아직 회원이 아니신가요?{' '}
               <button

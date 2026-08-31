@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   getAge,
+  validateLoginId,
   getPasswordChecklist,
   getPasswordStrength,
   normalizeEmail,
@@ -185,5 +186,26 @@ describe('V-07 생년월일 · 만 14세', () => {
     expect(getAge('20000827', today)).toBe(26); // 생일 지남
     expect(getAge('20000828', today)).toBe(26); // 생일 당일
     expect(getAge('20000829', today)).toBe(25); // 생일 전
+  });
+});
+
+describe('validateLoginId', () => {
+  it('영문·숫자 4~20자를 허용한다', () => {
+    expect(validateLoginId('seedplus01')).toBe('');
+    expect(validateLoginId('abcd')).toBe('');
+    expect(validateLoginId('a'.repeat(20))).toBe('');
+  });
+
+  it('빈 값을 거부한다', () => {
+    expect(validateLoginId('')).not.toBe('');
+    expect(validateLoginId('   ')).not.toBe('');
+  });
+
+  it('길이·문자 제약을 벗어나면 거부한다', () => {
+    expect(validateLoginId('abc')).not.toBe(''); // 3자
+    expect(validateLoginId('a'.repeat(21))).not.toBe(''); // 21자
+    expect(validateLoginId('한글아이디1')).not.toBe('');
+    expect(validateLoginId('seed plus')).not.toBe(''); // 공백 포함
+    expect(validateLoginId('seed_plus')).not.toBe(''); // 특수문자
   });
 });
