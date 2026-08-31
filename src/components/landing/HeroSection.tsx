@@ -72,6 +72,7 @@ const HeroSection = () => {
             <m.div variants={item} className="mt-12 flex flex-wrap gap-4">
               <Link
                 to="/signup"
+                state={{ signupSource: 'landing_hero' }}
                 className="rounded-xl bg-blue-600 px-7 py-4 text-base font-semibold text-white transition-opacity hover:opacity-90"
               >
                 회원 가입 하러가기
