@@ -37,7 +37,7 @@ const ProcessSection = () => {
           SEED+의 4가지 주요 기능
         </h2>
         <p className="mt-3 text-center text-lg leading-[30px] font-medium text-black md:text-xl">
-          SEED+의 4가지 주요 기능을 확인해보세요!
+          SEED+의 4가지 주요 기능을 만나보세요!
         </p>
         <div className="mt-16 grid grid-cols-1 gap-[30px] sm:grid-cols-2 xl:grid-cols-4">
           {features.map((feature) => (

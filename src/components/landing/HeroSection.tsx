@@ -49,23 +49,21 @@ const HeroSection = () => {
               variants={item}
               className="text-[40px] leading-[1.5] font-bold text-[#191f28] md:text-[60px]"
             >
-              말이 아닌 <span className="text-blue-600">‘데이터’</span>로
+              창업에 <span className="text-blue-600">확신</span>을 더하다
               <br />
-              도장을 찍다.
+              시드플러스
             </m.h1>
             <m.p
               variants={item}
               className="mt-10 text-lg leading-[28.8px] font-semibold text-[#606060] md:text-[21px]"
             >
-              AI 기반 상권 분석부터
+              창업비용 비교, 예상매출, 입지조건 등
               <br />
-              수익률, 생존율 예측, 전문가 연결까지
-            </m.p>
-            <m.p
-              variants={item}
-              className="mt-4 text-lg leading-[28.8px] font-semibold text-[#606060] md:text-[21px]"
-            >
-              점포형 창업 의사결정을 위한 올인원 창업 플랫폼
+              복잡한 창업 고민들을 위한
+              <br />
+              올인원 솔루션 서비스{' '}
+              <strong className="font-bold text-[#191f28]">시드플러스</strong>
+              입니다
             </m.p>
             <m.div variants={item} className="mt-12 flex flex-wrap gap-4">
               <Link
