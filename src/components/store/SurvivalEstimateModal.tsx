@@ -7,6 +7,7 @@ import {
   type IndustryResponse,
   type RegionResponse,
   type SurvivalAnalysisResponse,
+  type SurvivalDynamicMetrics,
 } from '@/api';
 import WarningIcon from '@/assets/icons/warning-icon.svg';
 import Skeleton from '@/components/ui/Skeleton';
@@ -23,21 +24,19 @@ interface SurvivalEstimateModalProps {
   onClose: () => void;
 }
 
+// 신계약(2026-09-01): 상권 변수·보증금·창업형태 입력이 제거되고
+// 초기투자금·권리금·직원수·상가명이 필수 입력이 됐다.
 type SurvivalForm = {
   storeName: string;
   regionCode: string;
+  /** 법정동 코드 — 서버 regionCode로 그대로 전송된다 */
+  dongCode: string;
   industryCode: string;
   area: string;
   rent: string;
-  deposit: string;
-  avgSales: number;
-  salesGrowth: number;
-  density: number;
-  vacancy: number;
-  traffic: number;
-  churn: number;
-  startupType: 'new' | 'transfer';
-  avgSalesAmt: string;
+  invest: string;
+  premium: string;
+  staff: string;
 };
 
 type ScoreField =
@@ -53,22 +52,18 @@ type ScoreField =
 const initialForm: SurvivalForm = {
   storeName: '',
   regionCode: '',
+  dongCode: '',
   industryCode: '',
   area: '',
   rent: '',
-  deposit: '',
-  avgSales: 3,
-  salesGrowth: 3,
-  density: 3,
-  vacancy: 3,
-  traffic: 3,
-  churn: 3,
-  startupType: 'new',
-  avgSalesAmt: '4200',
+  invest: '',
+  premium: '',
+  staff: '2',
 };
 
 const inputClass =
   'h-10 w-full rounded-sm border border-[#e5e8eb] bg-white px-3 text-xs text-[#191f28] outline-none placeholder:text-[#b0b8c1] focus:border-blue-600';
+const selectClass = `${inputClass} app-select`;
 const labelClass = 'mb-2 block text-[11px] font-bold text-[#4e5968]';
 
 const dataBadges = [
@@ -82,7 +77,7 @@ const dataBadges = [
 
 const variableFactors: {
   field: keyof Pick<
-    SurvivalForm,
+    SurvivalDynamicMetrics,
     'avgSales' | 'salesGrowth' | 'density' | 'vacancy' | 'traffic' | 'churn'
   >;
   label: string;
@@ -163,36 +158,25 @@ const getLevel = (score: number) => {
   return '위험';
 };
 
-const getRepresentativeLegalDongCode = (
-  districtCode: string,
-  districts: RegionResponse[],
-  legalDongs: RegionResponse[]
-) => {
-  const selectedDistrict = districts.find(
-    (district) => String(district.code) === districtCode
-  );
-
-  return (
-    legalDongs.find((dong) => dong.sigungu === selectedDistrict?.sigungu)
-      ?.code ?? ''
-  );
-};
-
 const sliderStatusLabels = ['매우 낮음', '낮음', '보통', '높음', '매우 높음'];
 
-const VariableSlider = ({
+/**
+ * 상권 변수 게이지 (읽기 전용).
+ * 과거에는 1~5 슬라이더 '입력'이었지만, 신계약(2026-09-01)부터 서버가
+ * 실시간 수집 데이터로 산출해 응답(dynamicMetrics)으로 내려준다.
+ * 계산 전(null)에는 잠금 상태로 표시한다.
+ * 서버 산출 스케일은 1~5 가정이며, 벗어나는 값은 반올림·클램프해 표시한다.
+ */
+const VariableGauge = ({
   label,
   value,
-  onChange,
 }: {
   label: string;
-  value: number;
-  onChange: (value: number) => void;
+  value: number | null;
 }) => {
-  const clampedValue = clamp(value, 1, 5);
-  const ratio = (clampedValue - 1) / 4;
+  const scaled = value === null ? null : clamp(Math.round(value), 1, 5);
+  const ratio = scaled === null ? 0 : (scaled - 1) / 4;
   const left = `${ratio * 100}%`;
-  const status = sliderStatusLabels[clampedValue - 1];
 
   return (
     <div className="rounded-md bg-[#f7f8fa] px-5 py-4">
@@ -203,29 +187,28 @@ const VariableSlider = ({
         <span className="text-[11px] text-[#4e5968]">하위</span>
         <div className="relative h-12 min-w-0 flex-1">
           <div className="absolute left-0 right-0 top-6 h-2 rounded-full bg-[#e5e8eb]" />
-          <div
-            className="absolute left-0 top-6 h-2 rounded-full bg-blue-600"
-            style={{ width: left }}
-          />
-          <input
-            type="range"
-            min="1"
-            max="5"
-            step="1"
-            value={clampedValue}
-            onChange={(event) => onChange(Number(event.target.value))}
-            className="absolute inset-x-0 top-3 h-7 cursor-pointer opacity-0"
-          />
-          <div
-            className="absolute -top-1 whitespace-nowrap rounded-sm bg-blue-600 px-2 py-0.5 text-center text-[10px] font-bold text-white"
-            style={{ left, transform: `translateX(-${ratio * 100}%)` }}
-          >
-            {status}
-          </div>
-          <div
-            className="absolute top-[19px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
-            style={{ left: `calc(${left} - ${ratio * 20}px)` }}
-          />
+          {scaled === null ? (
+            <div className="absolute inset-x-0 top-1 text-center text-[10px] font-bold text-[#8b95a1]">
+              계산 시 자동 산출
+            </div>
+          ) : (
+            <>
+              <div
+                className="absolute left-0 top-6 h-2 rounded-full bg-blue-600"
+                style={{ width: left }}
+              />
+              <div
+                className="absolute -top-1 whitespace-nowrap rounded-sm bg-blue-600 px-2 py-0.5 text-center text-[10px] font-bold text-white"
+                style={{ left, transform: `translateX(-${ratio * 100}%)` }}
+              >
+                {sliderStatusLabels[scaled - 1]}
+              </div>
+              <div
+                className="absolute top-[19px] h-5 w-5 rounded-full border-2 border-white bg-blue-600 shadow"
+                style={{ left: `calc(${left} - ${ratio * 20}px)` }}
+              />
+            </>
+          )}
         </div>
         <span className="text-[11px] text-[#4e5968]">상위</span>
       </div>
@@ -365,7 +348,7 @@ const SurvivalEstimateModal = ({
     [districts, form.regionCode]
   );
 
-  const updateField = (field: keyof SurvivalForm, value: string | number) => {
+  const updateField = (field: keyof SurvivalForm, value: string) => {
     setErrorMessage('');
     setPdfNotice('');
     if (result) {
@@ -374,14 +357,36 @@ const SurvivalEstimateModal = ({
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  /** 구가 바뀌면 동 선택을 초기화한다 */
+  const handleDistrictChange = (value: string) => {
+    setErrorMessage('');
+    setPdfNotice('');
+    if (result) {
+      setIsStale(true);
+    }
+    setForm((current) => ({ ...current, regionCode: value, dongCode: '' }));
+  };
+
+  const dongOptions = useMemo(
+    () =>
+      legalDongs
+        .filter((dong) => dong.sigungu === selectedDistrict?.sigungu)
+        .sort((left, right) =>
+          (left.dong ?? '').localeCompare(right.dong ?? '', 'ko-KR')
+        ),
+    [legalDongs, selectedDistrict?.sigungu]
+  );
+
   const isFormComplete = Boolean(
     form.storeName.trim() &&
     form.regionCode &&
+    form.dongCode &&
     form.industryCode &&
     form.area &&
     form.rent &&
-    form.deposit &&
-    form.avgSalesAmt
+    form.invest &&
+    form.premium &&
+    form.staff
   );
 
   // 계산 전에는 폴백 수치를 채우지 않고 null로 둔다(SVC-02: 미산출은 '?').
@@ -439,12 +444,21 @@ const SurvivalEstimateModal = ({
 
   const inputSummary: [string, string][] = [
     ['상가명', form.storeName.trim() || '-'],
-    ['지역', selectedDistrict?.sigungu ?? '-'],
+    [
+      '지역',
+      selectedDistrict
+        ? `${selectedDistrict.sigungu} ${
+            dongOptions.find((dong) => String(dong.code) === form.dongCode)
+              ?.dong ?? ''
+          }`.trim()
+        : '-',
+    ],
     ['업종', selectedIndustryName ?? '-'],
     ['면적', form.area ? `${form.area}m²` : '-'],
     ['월 임대료', form.rent ? `${form.rent}만원` : '-'],
-    ['보증금', form.deposit ? `${form.deposit}만원` : '-'],
-    ['창업형태', form.startupType === 'new' ? '신규 창업' : '양수 창업'],
+    ['초기투자금', form.invest ? `${form.invest}만원` : '-'],
+    ['권리금', form.premium ? `${form.premium}만원` : '-'],
+    ['직원 수', form.staff ? `${form.staff}명` : '-'],
   ];
 
   const pdfReportRef = useRef<HTMLDivElement>(null);
@@ -484,30 +498,19 @@ const SurvivalEstimateModal = ({
     [selectedDistrict?.sigungu, totalScore]
   );
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const submitSurvival = async () => {
     if (
       !form.storeName.trim() ||
       !form.regionCode ||
+      !form.dongCode ||
       !form.industryCode ||
       !form.area ||
       !form.rent ||
-      !form.deposit ||
-      !form.avgSalesAmt
+      !form.invest ||
+      !form.premium ||
+      !form.staff
     ) {
       setErrorMessage('생존율 분석에 필요한 값을 모두 입력해주세요.');
-      return;
-    }
-
-    const legalDongCode = getRepresentativeLegalDongCode(
-      form.regionCode,
-      districts,
-      legalDongs
-    );
-
-    if (!legalDongCode) {
-      setErrorMessage('선택한 구에 해당하는 법정동 코드를 찾을 수 없습니다.');
       return;
     }
 
@@ -515,19 +518,14 @@ const SurvivalEstimateModal = ({
     setErrorMessage('');
     try {
       const response = await calculateSurvivalAnalysis({
-        regionCode: legalDongCode,
+        storeName: form.storeName.trim(),
+        regionCode: form.dongCode,
         industryCode: form.industryCode,
         area: toNumber(form.area),
         rent: toNumber(form.rent),
-        deposit: toNumber(form.deposit),
-        avgSales: form.avgSales,
-        salesGrowth: form.salesGrowth,
-        density: form.density,
-        vacancy: form.vacancy,
-        traffic: form.traffic,
-        churn: form.churn,
-        startupType: form.startupType,
-        avgSalesAmt: toNumber(form.avgSalesAmt),
+        invest: toNumber(form.invest),
+        premium: toNumber(form.premium),
+        staff: Math.round(toNumber(form.staff)),
       });
       setResult(response);
       setIsStale(false);
@@ -537,6 +535,11 @@ const SurvivalEstimateModal = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void submitSurvival();
   };
 
   return (
@@ -609,25 +612,46 @@ const SurvivalEstimateModal = ({
                     공공데이터 연동
                   </span>
                 </div>
-                <select
-                  value={form.regionCode}
-                  onChange={(event) =>
-                    updateField('regionCode', event.target.value)
-                  }
-                  className={inputClass}
-                >
-                  <option value="" disabled>
-                    지역을 선택하세요
-                  </option>
-                  {districts.map((district) => (
-                    <option
-                      key={district.regionId}
-                      value={String(district.code)}
-                    >
-                      {district.sigungu}
+                <div className="flex gap-2">
+                  <select
+                    value={form.regionCode}
+                    onChange={(event) =>
+                      handleDistrictChange(event.target.value)
+                    }
+                    aria-label="자치구 선택"
+                    className={selectClass}
+                  >
+                    <option value="" disabled>
+                      구 선택
                     </option>
-                  ))}
-                </select>
+                    {districts.map((district) => (
+                      <option
+                        key={district.regionId}
+                        value={String(district.code)}
+                      >
+                        {district.sigungu}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={form.dongCode}
+                    onChange={(event) =>
+                      updateField('dongCode', event.target.value)
+                    }
+                    disabled={!form.regionCode}
+                    aria-label="법정동 선택"
+                    className={`${selectClass} disabled:bg-[#f2f4f6] disabled:text-[#b0b8c1]`}
+                  >
+                    <option value="" disabled>
+                      동 선택
+                    </option>
+                    {dongOptions.map((dong) => (
+                      <option key={dong.code} value={String(dong.code)}>
+                        {dong.dong}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </label>
 
               <label className="block">
@@ -644,7 +668,7 @@ const SurvivalEstimateModal = ({
                   onChange={(event) =>
                     updateField('industryCode', event.target.value)
                   }
-                  className={inputClass}
+                  className={selectClass}
                 >
                   <option value="" disabled>
                     업종을 선택하세요
@@ -685,46 +709,44 @@ const SurvivalEstimateModal = ({
               </label>
 
               <label className="block">
-                <span className={labelClass}>보증금(만원)</span>
+                <span className={labelClass}>초기 투자금(만원)</span>
                 <input
                   type="number"
                   min="0"
-                  value={form.deposit}
+                  value={form.invest}
                   onChange={(event) =>
-                    updateField('deposit', event.target.value)
+                    updateField('invest', event.target.value)
+                  }
+                  placeholder="예) 5000"
+                  className={inputClass}
+                />
+              </label>
+
+              <label className="block">
+                <span className={labelClass}>권리금(만원)</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.premium}
+                  onChange={(event) =>
+                    updateField('premium', event.target.value)
                   }
                   placeholder="예) 3000"
                   className={inputClass}
                 />
               </label>
 
-              <div className="block">
-                <span className={labelClass}>창업형태</span>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => updateField('startupType', 'new')}
-                    className={`h-9 rounded-full px-3 text-[11px] font-bold ${
-                      form.startupType === 'new'
-                        ? 'bg-blue-600 text-white'
-                        : 'border border-[#d8dde5] text-[#4e5968]'
-                    }`}
-                  >
-                    신규 창업
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateField('startupType', 'transfer')}
-                    className={`h-9 rounded-full px-3 text-[11px] font-bold ${
-                      form.startupType === 'transfer'
-                        ? 'bg-blue-600 text-white'
-                        : 'border border-[#d8dde5] text-[#4e5968]'
-                    }`}
-                  >
-                    양수 창업
-                  </button>
-                </div>
-              </div>
+              <label className="block">
+                <span className={labelClass}>예상 직원 수(명)</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.staff}
+                  onChange={(event) => updateField('staff', event.target.value)}
+                  placeholder="예) 2"
+                  className={inputClass}
+                />
+              </label>
             </div>
 
             <div className="mt-5 border-t border-[#e5e8eb] pt-5">
@@ -734,16 +756,15 @@ const SurvivalEstimateModal = ({
                 </h4>
                 <span className="flex items-center gap-1 text-[10px] font-medium text-[#e5484d]">
                   <img src={WarningIcon} alt="" className="h-3 w-3" />
-                  지역, 업종 선택 시 자동 반영됩니다. 직접 조정도 가능합니다.
+                  계산 시 실시간 상권 데이터로 자동 산출됩니다.
                 </span>
               </div>
               <div className="space-y-3">
                 {variableFactors.map((factor) => (
-                  <VariableSlider
+                  <VariableGauge
                     key={factor.field}
                     label={factor.label}
-                    value={form[factor.field]}
-                    onChange={(value) => updateField(factor.field, value)}
+                    value={result?.dynamicMetrics?.[factor.field] ?? null}
                   />
                 ))}
               </div>
@@ -819,6 +840,14 @@ const SurvivalEstimateModal = ({
               재계산 필요 — 입력값이 변경되었습니다. [생존율 계산하기]를 다시
               눌러주세요.
             </div>
+          )}
+
+          {hasResult && (result.warnings?.length ?? 0) > 0 && (
+            <ul className="mt-4 space-y-1 rounded-md bg-[#f7f8fa] px-3 py-2 text-[11px] font-medium text-[#4e5968]">
+              {result.warnings?.map((warning) => (
+                <li key={warning}>· {warning}</li>
+              ))}
+            </ul>
           )}
 
           {isSubmitting ? (
@@ -1022,10 +1051,10 @@ const SurvivalEstimateModal = ({
               type="button"
               disabled={isSubmitting}
               onClick={() => {
-                setResult(null);
-                setIsStale(false);
+                // 현재 입력값 그대로 즉시 재계산한다. 계산 중에는 결과 영역이
+                // 스켈레톤으로 덮이고, 완료되면 새 결과로 교체된다.
                 setPdfNotice('');
-                setMobileStep('input');
+                void submitSurvival();
               }}
               className="h-11 rounded-md border border-blue-600 bg-white text-sm font-extrabold text-blue-600 transition hover:bg-[#e8f1ff] disabled:cursor-not-allowed disabled:opacity-50"
             >

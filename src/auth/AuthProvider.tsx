@@ -10,6 +10,7 @@ import {
   setRefreshHandler,
   signup as requestSignup,
 } from '@/api';
+import { setAnalyticsUserId } from '@/utils/analytics';
 import { AuthContext } from './AuthContext';
 import type { AuthContextValue, AuthStatus } from './AuthContext';
 import type { UserMeResponse } from '@/api';
@@ -25,6 +26,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       try {
         const token = await reissue();
         const profile = await getMyProfile();
+        setAnalyticsUserId(profile.loginId ?? null);
         if (active) {
           setUser(profile);
           setStatus('authenticated');
@@ -32,6 +34,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
         return token;
       } catch {
         clearAuthToken();
+        setAnalyticsUserId(null);
         if (active) {
           setUser(null);
           setStatus('guest');
@@ -46,6 +49,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       if (storedToken) {
         try {
           const profile = await getMyProfile(true);
+          setAnalyticsUserId(profile.loginId ?? null);
           if (active) {
             setUser(profile);
             setStatus('authenticated');
@@ -77,10 +81,13 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
         try {
           await requestLogin(payload);
           const profile = await getMyProfile();
+          // GA4 회원 행동 분석(User-ID) — loginId를 가명 식별자로 세팅
+          setAnalyticsUserId(profile.loginId ?? null);
           setUser(profile);
           setStatus('authenticated');
         } catch (error) {
           clearAuthToken();
+          setAnalyticsUserId(null);
           setUser(null);
           setStatus('guest');
           throw error;
@@ -89,11 +96,16 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       signup: async (payload) => {
         await requestSignup(payload);
       },
+      refreshUser: async () => {
+        const profile = await getMyProfile();
+        setUser(profile);
+      },
       logout: async () => {
         try {
           await requestLogout();
         } finally {
           clearAuthToken();
+          setAnalyticsUserId(null);
           setUser(null);
           setStatus('guest');
         }

@@ -29,6 +29,26 @@ export const MIN_SIGNUP_AGE = 14;
 /** 서버가 소문자로 정규화해 저장하므로 클라이언트도 동일하게 맞춘다 */
 export const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
+/**
+ * 로그인 ID — 백엔드 계약은 '영문과 숫자로 구성'만 명시한다.
+ * 길이 4~20자는 FE 정책(백엔드 미지정, 통상 범위)이며 백엔드 확정 시 맞춘다.
+ */
+const LOGIN_ID_PATTERN = /^[A-Za-z0-9]{4,20}$/;
+
+export const validateLoginId = (value: string) => {
+  const loginId = value.trim();
+
+  if (!loginId) {
+    return '아이디를 입력해주세요';
+  }
+
+  if (!LOGIN_ID_PATTERN.test(loginId)) {
+    return '아이디는 영문·숫자 4~20자로 입력해주세요';
+  }
+
+  return '';
+};
+
 /** V-01 */
 export const validateEmail = (value: string) => {
   const email = value.trim();

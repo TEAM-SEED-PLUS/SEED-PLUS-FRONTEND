@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import {
   calculateProfitAnalysis,
   createBuilderStore,
+  getCommercialAreas,
   getApiErrorMessage,
   type IndustryResponse,
   type ProfitAnalysisResponse,
@@ -27,6 +28,8 @@ type RevenueForm = {
   staff: string;
   industryCode: string;
   regionCode: string;
+  /** 법정동 코드 — 서버 regionCode로 그대로 전송된다 */
+  dongCode: string;
   area: string;
   invest: string;
   rent: string;
@@ -38,15 +41,16 @@ const initialForm: RevenueForm = {
   staff: '2',
   industryCode: '',
   regionCode: '',
+  dongCode: '',
   area: '',
   invest: '',
   rent: '',
   premium: '',
 };
 
-const FIXED_COMMERCIAL_AREA_ID = 1;
 const inputClass =
   'h-11 w-full rounded-md border border-[#d8dde5] bg-white px-3 text-sm text-[#191f28] outline-none placeholder:text-[#8b95a1] focus:border-blue-600';
+const selectClass = `${inputClass} app-select`;
 const labelClass = 'mb-2 block text-sm font-medium text-[#333d4b]';
 
 const toNumber = (value: string) => Number(value.trim());
@@ -58,21 +62,6 @@ const formatNumber = (value?: number, digits = 0) =>
         maximumFractionDigits: digits,
         minimumFractionDigits: digits,
       });
-
-const getRepresentativeLegalDongCode = (
-  districtCode: string,
-  districts: RegionResponse[],
-  legalDongs: RegionResponse[]
-) => {
-  const selectedDistrict = districts.find(
-    (district) => String(district.code) === districtCode
-  );
-
-  return (
-    legalDongs.find((dong) => dong.sigungu === selectedDistrict?.sigungu)
-      ?.code ?? ''
-  );
-};
 
 const RevenueEstimateModal = ({
   industries,
@@ -117,30 +106,37 @@ const RevenueEstimateModal = ({
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  /** 구가 바뀌면 동 선택을 초기화한다 */
+  const handleDistrictChange = (value: string) => {
+    setErrorMessage('');
+    setSaveMessage('');
+    setForm((current) => ({ ...current, regionCode: value, dongCode: '' }));
+  };
+
+  const dongOptions = legalDongs
+    .filter((dong) => dong.sigungu === selectedDistrict?.sigungu)
+    .sort((left, right) =>
+      (left.dong ?? '').localeCompare(right.dong ?? '', 'ko-KR')
+    );
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    // storeName은 신계약(2026-09-01)에서 계산 요청 필수값이 됐다.
     if (
+      !form.storeName.trim() ||
       !form.industryCode ||
       !form.regionCode ||
+      !form.dongCode ||
       !form.area ||
       !form.invest ||
       !form.rent ||
       !form.premium ||
       !form.staff
     ) {
-      setErrorMessage('수익률 추정에 필요한 값을 모두 입력해주세요.');
-      return;
-    }
-
-    const legalDongCode = getRepresentativeLegalDongCode(
-      form.regionCode,
-      districts,
-      legalDongs
-    );
-
-    if (!legalDongCode) {
-      setErrorMessage('선택한 구에 해당하는 법정동 코드를 찾을 수 없습니다.');
+      setErrorMessage(
+        '상가명 포함, 수익률 추정에 필요한 값을 모두 입력해주세요.'
+      );
       return;
     }
 
@@ -148,8 +144,9 @@ const RevenueEstimateModal = ({
     setErrorMessage('');
     try {
       const response = await calculateProfitAnalysis({
+        storeName: form.storeName.trim(),
         industryCode: form.industryCode,
-        regionCode: legalDongCode,
+        regionCode: form.dongCode,
         area: toNumber(form.area),
         invest: toNumber(form.invest),
         rent: toNumber(form.rent),
@@ -195,17 +192,36 @@ const RevenueEstimateModal = ({
       const expectedProfitRate = result.result.profitRate;
       const investmentPaybackMonths = result.result.paybackMonths;
 
+      // 선택한 동(법정동)의 지역 정보 — 저장 상가의 지역·주소 정밀도를 동 단위로 맞춘다.
+      const selectedDong = legalDongs.find(
+        (dong) => String(dong.code) === form.dongCode
+      );
+      const saveRegionId = selectedDong?.regionId ?? selectedDistrict.regionId;
+
+      // commercialAreaId는 계약상 필수인데 임의 값(과거 하드코딩 1)은 404가 난다.
+      // 지역의 실제 상권을 조회해 첫 번째를 쓰고, 없으면 저장 불가를 명확히 안내한다.
+      // TODO(BE): 상권 데이터 시딩 전까지 저장 기능이 막혀 있다. 시딩 또는 필드 optional화 필요.
+      const commercialAreas = await getCommercialAreas(saveRegionId);
+      const commercialAreaId = commercialAreas[0]?.commercialAreaId;
+      if (!commercialAreaId) {
+        setSaveMessage(
+          '이 지역의 상권 정보가 아직 등록되지 않아 저장할 수 없습니다. 데이터 준비 중입니다.'
+        );
+        return;
+      }
+
       const created = await createBuilderStore({
-        regionId: selectedDistrict.regionId,
-        commercialAreaId: FIXED_COMMERCIAL_AREA_ID,
+        regionId: saveRegionId,
+        commercialAreaId,
         industryId: selectedIndustry.industryId,
         name: form.storeName.trim(),
         building: {
-          address: `${selectedDistrict.sido} ${selectedDistrict.sigungu}`,
-          name: 'Seed Building',
-          floor: 15,
+          // 위치는 사용자가 고른 행정구역까지만 사실이다 — 건물명·층수는 지어내지 않는다.
+          address: `${selectedDistrict.sido} ${selectedDistrict.sigungu} ${
+            selectedDong?.dong ?? ''
+          }`.trim(),
           totalArea: toNumber(form.area),
-          locationComplete: true,
+          locationComplete: false,
         },
         metrics: {
           area: toNumber(form.area),
@@ -214,6 +230,9 @@ const RevenueEstimateModal = ({
           investmentAmount: toWon(toNumber(form.invest)),
           investmentPaybackMonths: Math.round(investmentPaybackMonths),
           monthlyRent: toWon(toNumber(form.rent)),
+          // TODO(BE): 계약의 deposit은 보증금인데 계산기 입력에는 권리금(premium)뿐이다.
+          //   metrics에 premium 필드가 없어 임시로 여기 싣는다(기존 화면들도 이 값을
+          //   권리금으로 표시 중). 서버에 premium 필드가 생기면 분리할 것.
           deposit: toWon(toNumber(form.premium)),
         },
         description: '수익률 추정 계산기로 생성한 가상 점포',
@@ -322,7 +341,7 @@ const RevenueEstimateModal = ({
                 onChange={(event) =>
                   updateField('industryCode', event.target.value)
                 }
-                className={inputClass}
+                className={selectClass}
               >
                 <option value="" disabled>
                   업종을 선택하세요
@@ -340,22 +359,44 @@ const RevenueEstimateModal = ({
 
             <label className="block">
               <span className={labelClass}>지역 선택</span>
-              <select
-                value={form.regionCode}
-                onChange={(event) =>
-                  updateField('regionCode', event.target.value)
-                }
-                className={inputClass}
-              >
-                <option value="" disabled>
-                  지역을 선택하세요
-                </option>
-                {districts.map((district) => (
-                  <option key={district.regionId} value={String(district.code)}>
-                    {district.sigungu}
+              <div className="flex gap-2">
+                <select
+                  value={form.regionCode}
+                  onChange={(event) => handleDistrictChange(event.target.value)}
+                  aria-label="자치구 선택"
+                  className={selectClass}
+                >
+                  <option value="" disabled>
+                    구 선택
                   </option>
-                ))}
-              </select>
+                  {districts.map((district) => (
+                    <option
+                      key={district.regionId}
+                      value={String(district.code)}
+                    >
+                      {district.sigungu}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={form.dongCode}
+                  onChange={(event) =>
+                    updateField('dongCode', event.target.value)
+                  }
+                  disabled={!form.regionCode}
+                  aria-label="법정동 선택"
+                  className={`${selectClass} disabled:bg-[#f2f4f6] disabled:text-[#b0b8c1]`}
+                >
+                  <option value="" disabled>
+                    동 선택
+                  </option>
+                  {dongOptions.map((dong) => (
+                    <option key={dong.code} value={String(dong.code)}>
+                      {dong.dong}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </label>
 
             <label className="block">
@@ -452,6 +493,14 @@ const RevenueEstimateModal = ({
               시장 상황에 따라 달라질 수 있습니다.
             </p>
           </div>
+
+          {(result?.warnings?.length ?? 0) > 0 && (
+            <ul className="mt-4 space-y-1 rounded-md bg-[#f7f8fa] px-3 py-2 text-xs font-medium text-[#4e5968]">
+              {result?.warnings?.map((warning) => (
+                <li key={warning}>· {warning}</li>
+              ))}
+            </ul>
+          )}
 
           <div className="mt-4 rounded-lg bg-blue-600 p-5 text-white">
             <p className="text-lg font-bold">나의 예상 월 매출은?</p>
