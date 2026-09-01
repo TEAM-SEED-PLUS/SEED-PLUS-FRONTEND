@@ -543,7 +543,7 @@ const SurvivalEstimateModal = ({
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-14 z-30 flex items-start justify-center overflow-y-auto bg-[#f5f6f8] px-4 py-6 md:px-8">
+    <div className="scrollbar-hide fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-white/75 px-8 py-6 pt-[calc(var(--header-height)+24px)] backdrop-blur-[1px]">
       <section className="relative grid w-full max-w-[1120px] grid-cols-1 gap-8 lg:grid-cols-[500px_1fr]">
         <button
           type="button"
@@ -571,7 +571,7 @@ const SurvivalEstimateModal = ({
           </div>
 
           <form
-            className="rounded-lg bg-white p-5 shadow-sm"
+            className="rounded-lg border border-[#d8dde5] bg-white p-5"
             onSubmit={handleSubmit}
           >
             <h3 className="text-sm font-extrabold text-[#191f28]">
@@ -789,7 +789,7 @@ const SurvivalEstimateModal = ({
 
         <section
           aria-busy={isSubmitting}
-          className={`rounded-lg bg-white p-5 shadow-sm lg:block ${
+          className={`rounded-lg border border-[#d8dde5] bg-white p-5 lg:block ${
             mobileStep === 'input' ? 'hidden' : 'block'
           }`}
         >
