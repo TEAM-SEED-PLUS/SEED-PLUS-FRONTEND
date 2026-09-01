@@ -149,6 +149,16 @@ type BookmarkPageResponse = {
   pageInfo: PageInfo;
 };
 
+/** 내가 생성한 가상 점포 목록 — 계산기 '저장하기'로 만든 상가는 여기에 쌓인다 */
+export const getMyBuilderStores = async (
+  params: { page?: number; size?: number } = {}
+) => {
+  const response = await apiClient.get<
+    ApiResponse<{ content: BuilderStoreSummaryResponse[]; pageInfo: PageInfo }>
+  >('/api/v1/users/me/builder-stores', { params });
+  return response.data.data;
+};
+
 /** 마이페이지 '저장한 상가 리스트' — 2026-09-01 신설된 전용 엔드포인트 */
 export const getMyBookmarkedStores = async (
   params: { page?: number; size?: number } = {}
