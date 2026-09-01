@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { HeaderUser } from '@/components/layout';
 import {
   ExpertMatchSidebar,
@@ -101,6 +101,15 @@ const StoreBuilderPage = () => {
   const [activeRangeFilter, setActiveRangeFilter] =
     useState<StoreRangeFilterKey | null>(null);
   useDocumentTitle('상가 분석');
+  // 로고·'내 상가 만들기' 내비는 같은 라우트로의 Link라 페이지가 리마운트되지
+  // 않는다. 같은 경로여도 클릭마다 location.key는 바뀌므로 그때 오버레이를 닫는다.
+  const { key: locationKey } = useLocation();
+  useEffect(() => {
+    setIsRevenueModalOpen(false);
+    setIsSurvivalModalOpen(false);
+    setIsMobileSidebarOpen(false);
+    setActiveRangeFilter(null);
+  }, [locationKey]);
   const { isAuthenticated, status } = useAuth();
   const {
     stores,
