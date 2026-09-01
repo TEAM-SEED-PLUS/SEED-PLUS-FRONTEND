@@ -543,7 +543,7 @@ const SurvivalEstimateModal = ({
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-14 z-30 flex items-start justify-center overflow-y-auto bg-[#f5f6f8] px-4 py-6 md:px-8">
+    <div className="scrollbar-hide fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-white/75 px-8 py-6 pt-[calc(var(--header-height)+24px)] backdrop-blur-[1px]">
       <section className="relative grid w-full max-w-[1120px] grid-cols-1 gap-8 lg:grid-cols-[500px_1fr]">
         <button
           type="button"
@@ -555,9 +555,9 @@ const SurvivalEstimateModal = ({
         </button>
 
         <section
-          className={`lg:block ${mobileStep === 'result' ? 'hidden' : 'block'}`}
+          className={`rounded-lg border border-[#d8dde5] bg-white p-6 lg:block ${mobileStep === 'result' ? 'hidden' : 'block'}`}
         >
-          <div className="mb-5">
+          <div className="border-b border-[#e5e8eb] pb-4">
             <h2 className="text-base font-extrabold text-[#191f28]">
               생존율 계산기
             </h2>
@@ -570,10 +570,7 @@ const SurvivalEstimateModal = ({
             </p>
           </div>
 
-          <form
-            className="rounded-lg bg-white p-5 shadow-sm"
-            onSubmit={handleSubmit}
-          >
+          <form className="mt-5" onSubmit={handleSubmit}>
             <h3 className="text-sm font-extrabold text-[#191f28]">
               창업 정보 입력
             </h3>
@@ -749,6 +746,21 @@ const SurvivalEstimateModal = ({
               </label>
             </div>
 
+            {errorMessage && (
+              <p className="mt-4 text-xs font-bold text-[#e5484d]">
+                {errorMessage}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitting || !isFormComplete}
+              className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
+            >
+              {isSubmitting && <SpinnerIcon className="h-4 w-4" />}
+              {isSubmitting ? '생존율 계산 중...' : '생존율 계산하기'}
+            </button>
+
             <div className="mt-5 border-t border-[#e5e8eb] pt-5">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <h4 className="text-xs font-extrabold text-[#191f28]">
@@ -769,27 +781,12 @@ const SurvivalEstimateModal = ({
                 ))}
               </div>
             </div>
-
-            {errorMessage && (
-              <p className="mt-4 text-xs font-bold text-[#e5484d]">
-                {errorMessage}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isSubmitting || !isFormComplete}
-              className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
-            >
-              {isSubmitting && <SpinnerIcon className="h-4 w-4" />}
-              {isSubmitting ? '생존율 계산 중...' : '생존율 계산하기'}
-            </button>
           </form>
         </section>
 
         <section
           aria-busy={isSubmitting}
-          className={`rounded-lg bg-white p-5 shadow-sm lg:block ${
+          className={`rounded-lg border border-[#d8dde5] bg-white p-5 lg:block ${
             mobileStep === 'input' ? 'hidden' : 'block'
           }`}
         >
