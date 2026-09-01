@@ -43,6 +43,8 @@ const getLevel = (score: number) => {
 
 // Figma "생존율 계산기 -2 PDF 출력" 프레임(A4 595×842pt) 기준.
 // 인쇄 시 CSS 96dpi 기준 A4 폭 794px에 맞춰 시안 수치를 4/3 배율로 환산해 사용한다.
+// 높이는 고정하지 않는다 — 내용이 A4 한 장을 넘으면 다음 페이지로 흐르게 하고,
+// 카드가 페이지 경계에서 반토막 나지 않도록 블록마다 break-inside-avoid를 건다.
 const SurvivalPdfReport = ({
   ref,
   dataBadges,
@@ -58,7 +60,7 @@ const SurvivalPdfReport = ({
   return (
     <div
       ref={ref}
-      className="h-[296mm] w-[794px] overflow-hidden bg-white px-[37px] pt-[24px] text-[#222222] [print-color-adjust:exact]"
+      className="min-h-[296mm] w-[794px] bg-white px-[37px] py-[24px] text-[#222222] [print-color-adjust:exact]"
     >
       <style>
         {
@@ -83,7 +85,7 @@ const SurvivalPdfReport = ({
         ))}
       </div>
 
-      <div className="mt-3 flex items-center gap-3 rounded-xl border border-[#e33639] bg-[#fff6f5] p-3">
+      <div className="mt-3 flex break-inside-avoid items-center gap-3 rounded-xl border border-[#e33639] bg-[#fff6f5] p-3">
         <img src={WarningIcon} alt="" className="h-5 w-5 shrink-0" />
         <p className="text-[15px] leading-[1.4] font-medium text-[#e33639]">
           본 생존율은 공공데이터 기반 점수 모델로 산출된 참고용 추정치입니다.
@@ -93,7 +95,7 @@ const SurvivalPdfReport = ({
         </p>
       </div>
 
-      <div className="mt-3 flex rounded-xl bg-[#f7f8fa] px-4 py-2">
+      <div className="mt-3 flex break-inside-avoid rounded-xl bg-[#f7f8fa] px-4 py-2">
         {inputSummary.map(([label, value]) => (
           <div key={label} className="min-w-0 flex-1">
             <p className="text-[11px] text-[#9ca1a9]">{label}</p>
@@ -104,7 +106,7 @@ const SurvivalPdfReport = ({
 
       <div className="mt-3 grid grid-cols-[321px_1fr] gap-5">
         <div className="flex flex-col gap-4">
-          <div className="rounded-xl bg-blue-600 p-4 text-white">
+          <div className="break-inside-avoid rounded-xl bg-blue-600 p-4 text-white">
             <p className="text-[20px] font-bold">Survival Score</p>
             <div className="mt-2 grid grid-cols-[1fr_124px] items-center gap-3">
               <SurvivalGauge score={totalScore} />
@@ -125,7 +127,7 @@ const SurvivalPdfReport = ({
             </div>
           </div>
 
-          <div className="rounded-xl border border-[#e1e4eb] p-4">
+          <div className="break-inside-avoid rounded-xl border border-[#e1e4eb] p-4">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-[17px] font-semibold whitespace-nowrap">
                 위험 요인 TOP 3
@@ -139,7 +141,7 @@ const SurvivalPdfReport = ({
               {topRisks.map((item, index) => (
                 <div
                   key={item.label}
-                  className="rounded-xl bg-[#f7f8fa] px-3 py-2"
+                  className="break-inside-avoid rounded-xl bg-[#f7f8fa] px-3 py-2"
                 >
                   <div className="flex items-center justify-between">
                     <p className="flex items-center gap-1 text-[15px]">
@@ -168,7 +170,7 @@ const SurvivalPdfReport = ({
             </div>
           </div>
 
-          <div className="rounded-xl border border-[#e1e4eb] p-4">
+          <div className="break-inside-avoid rounded-xl border border-[#e1e4eb] p-4">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-[17px] font-semibold whitespace-nowrap">
                 유사 상권 대비 위치
@@ -214,7 +216,7 @@ const SurvivalPdfReport = ({
 
           <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
             {scoreRows.map((item) => (
-              <div key={item.label}>
+              <div key={item.label} className="break-inside-avoid">
                 <p className="text-[17px] font-semibold">{item.label}</p>
                 <p className="mt-1 text-[15px] font-light text-[#9ca1a9]">
                   {item.description}
@@ -246,7 +248,10 @@ const SurvivalPdfReport = ({
 
           <div className="mt-4 grid grid-cols-2 gap-4">
             {metricCards.map(([label, description, value]) => (
-              <div key={label} className="rounded-xl bg-[#f0f5ff] p-4">
+              <div
+                key={label}
+                className="break-inside-avoid rounded-xl bg-[#f0f5ff] p-4"
+              >
                 <p className="text-[15px] font-semibold text-[#596170]">
                   {label}
                 </p>
