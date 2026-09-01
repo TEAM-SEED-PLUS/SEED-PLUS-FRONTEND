@@ -746,6 +746,21 @@ const SurvivalEstimateModal = ({
               </label>
             </div>
 
+            {errorMessage && (
+              <p className="mt-4 text-xs font-bold text-[#e5484d]">
+                {errorMessage}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitting || !isFormComplete}
+              className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
+            >
+              {isSubmitting && <SpinnerIcon className="h-4 w-4" />}
+              {isSubmitting ? '생존율 계산 중...' : '생존율 계산하기'}
+            </button>
+
             <div className="mt-5 border-t border-[#e5e8eb] pt-5">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <h4 className="text-xs font-extrabold text-[#191f28]">
@@ -766,21 +781,6 @@ const SurvivalEstimateModal = ({
                 ))}
               </div>
             </div>
-
-            {errorMessage && (
-              <p className="mt-4 text-xs font-bold text-[#e5484d]">
-                {errorMessage}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isSubmitting || !isFormComplete}
-              className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-blue-600 text-sm font-extrabold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-[#b0c4f5]"
-            >
-              {isSubmitting && <SpinnerIcon className="h-4 w-4" />}
-              {isSubmitting ? '생존율 계산 중...' : '생존율 계산하기'}
-            </button>
           </form>
         </section>
 
