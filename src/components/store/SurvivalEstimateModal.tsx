@@ -839,12 +839,6 @@ const SurvivalEstimateModal = ({
             </div>
           )}
 
-          {hasResult && result.fallbackUsed && (
-            <div className="mt-4 rounded-md border border-[#f5c518] bg-[#fff8e1] px-3 py-2 text-[11px] font-bold text-[#8a6d00]">
-              실시간 수집에 실패해 최근 캐시 데이터 기반으로 산출된 결과입니다.
-            </div>
-          )}
-
           {hasResult && (result.warnings?.length ?? 0) > 0 && (
             <ul className="mt-4 space-y-1 rounded-md bg-[#f7f8fa] px-3 py-2 text-[11px] font-medium text-[#4e5968]">
               {result.warnings?.map((warning) => (
