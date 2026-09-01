@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
@@ -13,11 +13,13 @@ import { StoreGrid } from '@/components/store';
 import type { StoreItem } from '@/components/store';
 import useSavedStores from './useSavedStores';
 
-// 저장 카테고리·소통 활동 내역은 아직 API가 없다.
+// 소통 활동 내역은 아직 API가 없다.
 // 값을 지어내지 않고 빈 목록으로 두고, 화면에서는 빈 상태 문구를 노출한다.
-// TODO(BE): 카테고리 CRUD·내가 쓴 글 목록 엔드포인트 확정 시 연동.
-const categories: string[] = [];
+// TODO(BE): 내가 쓴 글 목록 엔드포인트 확정 시 연동.
 const activityPosts: ActivityPost[] = [];
+
+// 저장 리스트 출처 필터 — 생성 상가와 북마크 상가를 병합해 보여주므로 구분 탭 제공.
+const savedFilters = ['전체', '내가 만든 상가', '북마크한 상가'];
 
 type MobileView = 'overview' | 'saved' | 'posts';
 
@@ -58,10 +60,11 @@ const SectionHeading = ({
 const MyPage = () => {
   const navigate = useNavigate();
   const { user, status, isAuthenticated } = useAuth();
-  const [activeCategory, setActiveCategory] = useState(0);
+  const [activeSavedFilter, setActiveSavedFilter] = useState(0);
   const [mobileView, setMobileView] = useState<MobileView>('overview');
   const {
     stores: savedStores,
+    createdIds,
     isLoading: isSavedLoading,
     errorMessage: savedError,
     pendingBookmarkIds,
@@ -70,15 +73,24 @@ const MyPage = () => {
     toggleLike,
   } = useSavedStores(isAuthenticated);
 
-  const renderCategoryTabs = (className?: string) =>
-    categories.length > 0 ? (
-      <CategoryTabs
-        categories={categories}
-        activeIndex={activeCategory}
-        onSelect={setActiveCategory}
-        className={className}
-      />
-    ) : null;
+  const filteredSavedStores = useMemo(() => {
+    if (activeSavedFilter === 1) {
+      return savedStores.filter((store) => createdIds.has(store.id));
+    }
+    if (activeSavedFilter === 2) {
+      return savedStores.filter((store) => store.saved);
+    }
+    return savedStores;
+  }, [savedStores, createdIds, activeSavedFilter]);
+
+  const renderCategoryTabs = (className?: string) => (
+    <CategoryTabs
+      categories={savedFilters}
+      activeIndex={activeSavedFilter}
+      onSelect={setActiveSavedFilter}
+      className={className}
+    />
+  );
 
   const renderActivityPosts = () =>
     activityPosts.length > 0 ? (
@@ -148,7 +160,7 @@ const MyPage = () => {
               description="관심 있는 상가를 카테고리별로 관리해보세요."
             />
             {renderCategoryTabs()}
-            <div className="mt-5">{renderSavedStores(savedStores)}</div>
+            <div className="mt-5">{renderSavedStores(filteredSavedStores)}</div>
           </section>
 
           {FEATURE_FLAGS.MYPAGE_ACTIVITY_POSTS && (
@@ -187,7 +199,7 @@ const MyPage = () => {
               </h2>
             </div>
             {renderCategoryTabs('mb-5')}
-            {renderSavedStores(savedStores)}
+            {renderSavedStores(filteredSavedStores)}
           </section>
         ) : mobileView === 'posts' && FEATURE_FLAGS.MYPAGE_ACTIVITY_POSTS ? (
           <section>
@@ -216,7 +228,7 @@ const MyPage = () => {
                 onAction={() => setMobileView('saved')}
               />
               {renderCategoryTabs('mb-5')}
-              {renderSavedStores(savedStores.slice(0, 1))}
+              {renderSavedStores(filteredSavedStores.slice(0, 1))}
             </section>
 
             {FEATURE_FLAGS.MYPAGE_ACTIVITY_POSTS && (
