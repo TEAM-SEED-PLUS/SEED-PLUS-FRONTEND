@@ -555,9 +555,9 @@ const SurvivalEstimateModal = ({
         </button>
 
         <section
-          className={`lg:block ${mobileStep === 'result' ? 'hidden' : 'block'}`}
+          className={`rounded-lg border border-[#d8dde5] bg-white p-6 lg:block ${mobileStep === 'result' ? 'hidden' : 'block'}`}
         >
-          <div className="mb-5">
+          <div className="border-b border-[#e5e8eb] pb-4">
             <h2 className="text-base font-extrabold text-[#191f28]">
               생존율 계산기
             </h2>
@@ -570,10 +570,7 @@ const SurvivalEstimateModal = ({
             </p>
           </div>
 
-          <form
-            className="rounded-lg border border-[#d8dde5] bg-white p-5"
-            onSubmit={handleSubmit}
-          >
+          <form className="mt-5" onSubmit={handleSubmit}>
             <h3 className="text-sm font-extrabold text-[#191f28]">
               창업 정보 입력
             </h3>
