@@ -498,9 +498,7 @@ const SurvivalEstimateModal = ({
     [selectedDistrict?.sigungu, totalScore]
   );
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const submitSurvival = async () => {
     if (
       !form.storeName.trim() ||
       !form.regionCode ||
@@ -537,6 +535,11 @@ const SurvivalEstimateModal = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void submitSurvival();
   };
 
   return (
@@ -1048,10 +1051,10 @@ const SurvivalEstimateModal = ({
               type="button"
               disabled={isSubmitting}
               onClick={() => {
-                setResult(null);
-                setIsStale(false);
+                // 현재 입력값 그대로 즉시 재계산한다. 계산 중에는 결과 영역이
+                // 스켈레톤으로 덮이고, 완료되면 새 결과로 교체된다.
                 setPdfNotice('');
-                setMobileStep('input');
+                void submitSurvival();
               }}
               className="h-11 rounded-md border border-blue-600 bg-white text-sm font-extrabold text-blue-600 transition hover:bg-[#e8f1ff] disabled:cursor-not-allowed disabled:opacity-50"
             >
