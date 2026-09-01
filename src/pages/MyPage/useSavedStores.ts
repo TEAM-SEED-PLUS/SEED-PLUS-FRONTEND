@@ -152,6 +152,7 @@ const useSavedStores = (enabled: boolean) => {
 
   return {
     stores,
+    createdIds,
     isLoading,
     errorMessage,
     pendingBookmarkIds,
