@@ -32,7 +32,7 @@ const CalculationLoadingOverlay = ({
   return (
     <div
       role="status"
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[#191f28]/50 px-6 text-center"
+      className="fixed inset-0 z-50 flex touch-none flex-col items-center justify-center gap-4 overscroll-contain bg-[#191f28]/50 px-6 text-center"
     >
       <SpinnerIcon className="h-12 w-12 text-white" />
       <p className="text-sm leading-relaxed font-bold text-white">

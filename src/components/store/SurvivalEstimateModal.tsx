@@ -559,7 +559,11 @@ const SurvivalEstimateModal = ({
   };
 
   return (
-    <div className="scrollbar-hide fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-white/75 px-8 py-6 pt-[calc(var(--header-height)+24px)] backdrop-blur-[1px]">
+    <div
+      className={`scrollbar-hide fixed inset-0 z-40 flex items-start justify-center bg-white/75 px-8 py-6 pt-[calc(var(--header-height)+24px)] backdrop-blur-[1px] ${
+        isSubmitting ? 'overflow-hidden' : 'overflow-y-auto'
+      }`}
+    >
       {isSubmitting && (
         <CalculationLoadingOverlay
           onCancel={() => calcAbortRef.current?.abort()}
