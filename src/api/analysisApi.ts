@@ -145,23 +145,25 @@ export type SurvivalAnalysisResponse = {
 };
 
 export const calculateProfitAnalysis = async (
-  payload: ProfitAnalysisRequest
+  payload: ProfitAnalysisRequest,
+  signal?: AbortSignal
 ) => {
   const response = await apiClient.post<ApiResponse<ProfitAnalysisResponse>>(
     '/api/v1/analysis/profit',
     payload,
-    { headers: await getCsrfHeaders() }
+    { headers: await getCsrfHeaders(), signal }
   );
   return response.data.data;
 };
 
 export const calculateSurvivalAnalysis = async (
-  payload: SurvivalAnalysisRequest
+  payload: SurvivalAnalysisRequest,
+  signal?: AbortSignal
 ) => {
   const response = await apiClient.post<ApiResponse<SurvivalAnalysisResponse>>(
     '/api/v1/analysis/survival',
     payload,
-    { headers: await getCsrfHeaders() }
+    { headers: await getCsrfHeaders(), signal }
   );
   return response.data.data;
 };

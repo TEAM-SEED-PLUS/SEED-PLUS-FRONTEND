@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { isCancel } from 'axios';
 import type { FormEvent } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@/api';
 import WarningIcon from '@/assets/icons/warning-icon.svg';
 import Skeleton from '@/components/ui/Skeleton';
+import CalculationLoadingOverlay from './CalculationLoadingOverlay';
 import { SpinnerIcon } from '@/components/ui/icons';
 import SurvivalPdfReport, {
   type PdfComparisonDistrict,
@@ -339,6 +341,11 @@ const SurvivalEstimateModal = ({
   const [mobileStep, setMobileStep] = useState<'input' | 'result'>('input');
   const [isStale, setIsStale] = useState(false);
   const [pdfNotice, setPdfNotice] = useState('');
+  const calcAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => calcAbortRef.current?.abort();
+  }, []);
 
   const hasResult = result !== null;
 
@@ -514,25 +521,34 @@ const SurvivalEstimateModal = ({
       return;
     }
 
+    const abortController = new AbortController();
+    calcAbortRef.current = abortController;
     setIsSubmitting(true);
     setErrorMessage('');
     try {
-      const response = await calculateSurvivalAnalysis({
-        storeName: form.storeName.trim(),
-        regionCode: form.dongCode,
-        industryCode: form.industryCode,
-        area: toNumber(form.area),
-        rent: toNumber(form.rent),
-        invest: toNumber(form.invest),
-        premium: toNumber(form.premium),
-        staff: Math.round(toNumber(form.staff)),
-      });
+      const response = await calculateSurvivalAnalysis(
+        {
+          storeName: form.storeName.trim(),
+          regionCode: form.dongCode,
+          industryCode: form.industryCode,
+          area: toNumber(form.area),
+          rent: toNumber(form.rent),
+          invest: toNumber(form.invest),
+          premium: toNumber(form.premium),
+          staff: Math.round(toNumber(form.staff)),
+        },
+        abortController.signal
+      );
       setResult(response);
       setIsStale(false);
       setMobileStep('result');
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error));
+      // 사용자가 취소한 요청은 오류가 아니다.
+      if (!isCancel(error)) {
+        setErrorMessage(getApiErrorMessage(error));
+      }
     } finally {
+      calcAbortRef.current = null;
       setIsSubmitting(false);
     }
   };
@@ -543,7 +559,16 @@ const SurvivalEstimateModal = ({
   };
 
   return (
-    <div className="scrollbar-hide fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-white/75 px-8 py-6 pt-[calc(var(--header-height)+24px)] backdrop-blur-[1px]">
+    <div
+      className={`scrollbar-hide fixed inset-0 z-40 flex items-start justify-center bg-white/75 px-8 py-6 pt-[calc(var(--header-height)+24px)] backdrop-blur-[1px] ${
+        isSubmitting ? 'overflow-hidden' : 'overflow-y-auto'
+      }`}
+    >
+      {isSubmitting && (
+        <CalculationLoadingOverlay
+          onCancel={() => calcAbortRef.current?.abort()}
+        />
+      )}
       <section className="relative grid w-full max-w-[1120px] grid-cols-1 gap-8 lg:grid-cols-[500px_1fr]">
         <button
           type="button"

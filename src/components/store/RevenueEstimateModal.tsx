@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { isCancel } from 'axios';
 import type { FormEvent } from 'react';
 import {
   calculateProfitAnalysis,
@@ -12,6 +13,7 @@ import {
 } from '@/api';
 import { useAuth } from '@/auth';
 import Skeleton from '@/components/ui/Skeleton';
+import CalculationLoadingOverlay from './CalculationLoadingOverlay';
 import { SpinnerIcon } from '@/components/ui/icons';
 
 interface RevenueEstimateModalProps {
@@ -73,6 +75,11 @@ const RevenueEstimateModal = ({
   const [form, setForm] = useState<RevenueForm>(initialForm);
   const [result, setResult] = useState<ProfitAnalysisResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const calcAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => calcAbortRef.current?.abort();
+  }, []);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
@@ -140,25 +147,34 @@ const RevenueEstimateModal = ({
       return;
     }
 
+    const abortController = new AbortController();
+    calcAbortRef.current = abortController;
     setIsSubmitting(true);
     setErrorMessage('');
     try {
-      const response = await calculateProfitAnalysis({
-        storeName: form.storeName.trim(),
-        industryCode: form.industryCode,
-        regionCode: form.dongCode,
-        area: toNumber(form.area),
-        invest: toNumber(form.invest),
-        rent: toNumber(form.rent),
-        premium: toNumber(form.premium),
-        staff: Math.round(toNumber(form.staff)),
-      });
+      const response = await calculateProfitAnalysis(
+        {
+          storeName: form.storeName.trim(),
+          industryCode: form.industryCode,
+          regionCode: form.dongCode,
+          area: toNumber(form.area),
+          invest: toNumber(form.invest),
+          rent: toNumber(form.rent),
+          premium: toNumber(form.premium),
+          staff: Math.round(toNumber(form.staff)),
+        },
+        abortController.signal
+      );
 
       setResult(response);
       setMobileStep('result');
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error));
+      // 사용자가 취소한 요청은 오류가 아니다.
+      if (!isCancel(error)) {
+        setErrorMessage(getApiErrorMessage(error));
+      }
     } finally {
+      calcAbortRef.current = null;
       setIsSubmitting(false);
     }
   };
@@ -280,7 +296,16 @@ const RevenueEstimateModal = ({
   };
 
   return (
-    <div className="scrollbar-hide fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-white/75 px-8 py-6 pt-[calc(var(--header-height)+24px)] backdrop-blur-[1px]">
+    <div
+      className={`scrollbar-hide fixed inset-0 z-40 flex items-start justify-center bg-white/75 px-8 py-6 pt-[calc(var(--header-height)+24px)] backdrop-blur-[1px] ${
+        isSubmitting ? 'overflow-hidden' : 'overflow-y-auto'
+      }`}
+    >
+      {isSubmitting && (
+        <CalculationLoadingOverlay
+          onCancel={() => calcAbortRef.current?.abort()}
+        />
+      )}
       <section className="relative grid w-full max-w-[1120px] grid-cols-1 gap-8 lg:grid-cols-2">
         <button
           type="button"
