@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { SpinnerIcon } from '@/components/ui/icons';
 
 const formatElapsed = (totalSeconds: number) => {
@@ -15,6 +16,8 @@ interface CalculationLoadingOverlayProps {
  * 계산기 공통 로딩 오버레이.
  * 실시간 수집 기반 분석은 최대 5분까지 걸릴 수 있어, 화면을 덮고
  * 경과 시간과 취소 수단을 함께 제공해 오류로 오인하지 않게 한다.
+ * 모달 컨테이너의 backdrop-filter가 fixed의 기준을 컨테이너로 바꿔
+ * 스크롤 시 오버레이가 밀려나므로, body 포털로 뷰포트에 직접 붙인다.
  */
 const CalculationLoadingOverlay = ({
   onCancel,
@@ -29,7 +32,7 @@ const CalculationLoadingOverlay = ({
     return () => window.clearInterval(timerId);
   }, []);
 
-  return (
+  return createPortal(
     <div
       role="status"
       className="fixed inset-0 z-50 flex touch-none flex-col items-center justify-center gap-4 overscroll-contain bg-[#191f28]/50 px-6 text-center"
@@ -50,7 +53,8 @@ const CalculationLoadingOverlay = ({
       >
         취소
       </button>
-    </div>
+    </div>,
+    document.body
   );
 };
 
