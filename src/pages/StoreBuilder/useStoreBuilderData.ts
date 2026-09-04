@@ -49,6 +49,15 @@ export const compareByLikes = (
   right.likeCount - left.likeCount ||
   (right.uploadedAt ?? '').localeCompare(left.uploadedAt ?? '');
 
+export type StoreSortKey = 'likes' | 'latest';
+
+const compareItems =
+  (sortKey: StoreSortKey) => (left: StoreItem, right: StoreItem) =>
+    sortKey === 'likes'
+      ? right.likes - left.likes ||
+        (right.uploadedAt ?? '').localeCompare(left.uploadedAt ?? '')
+      : (right.uploadedAt ?? '').localeCompare(left.uploadedAt ?? '');
+
 /** 전체 목록 기준 좋아요 랭킹 맵 — 화면(목록·마이페이지)마다 같은 랭킹을 쓰기 위함 */
 export const buildRankByStoreId = (stores: BuilderStoreSummaryResponse[]) =>
   new Map(
@@ -146,6 +155,7 @@ const useStoreBuilderData = (enabled: boolean) => {
   const [rankByStoreId, setRankByStoreId] = useState<Map<number, number>>(
     new Map()
   );
+  const [sortKey, setSortKey] = useState<StoreSortKey>('likes');
   const [industries, setIndustries] = useState<IndustryResponse[]>([]);
   const [analysisIndustries, setAnalysisIndustries] = useState<
     IndustryResponse[]
@@ -235,7 +245,7 @@ const useStoreBuilderData = (enabled: boolean) => {
         }
 
         const nextStores = await applyStoreInteractionState(
-          [...response.content].sort(compareByLikes).map(toStoreItem)
+          response.content.map(toStoreItem)
         );
 
         if (!active) {
@@ -279,6 +289,7 @@ const useStoreBuilderData = (enabled: boolean) => {
     () =>
       rawStores
         .map((store) => ({ ...store, rank: rankByStoreId.get(store.id) }))
+        .sort(compareItems(sortKey))
         .filter(
           (store) =>
             (!selectedDistrict ||
@@ -296,7 +307,7 @@ const useStoreBuilderData = (enabled: boolean) => {
               Math.round(value / 10000)
             )
         ),
-    [rawStores, rangeFilters, selectedDistrict, rankByStoreId]
+    [rawStores, rangeFilters, selectedDistrict, rankByStoreId, sortKey]
   );
 
   const selectedIndustry = useMemo(
@@ -451,6 +462,8 @@ const useStoreBuilderData = (enabled: boolean) => {
     pendingLikeIds,
     selectIndustry,
     selectDistrict,
+    sortKey,
+    setSortKey,
     applyRangeFilter,
     resetRangeFilter,
     resetFilters,

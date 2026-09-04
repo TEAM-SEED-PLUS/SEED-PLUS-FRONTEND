@@ -133,6 +133,8 @@ const StoreBuilderPage = () => {
     pendingLikeIds,
     selectIndustry,
     selectDistrict,
+    sortKey,
+    setSortKey,
     applyRangeFilter,
     resetRangeFilter,
     resetFilters,
@@ -208,6 +210,8 @@ const StoreBuilderPage = () => {
 
         <div className="mb-5 flex items-center justify-between">
           <StoreToolbar
+            sortKey={sortKey}
+            onChangeSort={setSortKey}
             industryLabel={selectedIndustry?.name ?? '전체'}
             districtLabel={selectedDistrict?.sigungu ?? '지역'}
             filterLabels={{
