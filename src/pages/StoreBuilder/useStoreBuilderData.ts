@@ -202,7 +202,10 @@ const useStoreBuilderData = (enabled: boolean) => {
       size: 100,
       sort: 'uploadedAt,desc',
       industryId: selectedIndustryId ?? undefined,
-      regionId: selectedRegionId ?? undefined,
+      // regionId는 보내지 않는다: 상가는 법정동 행에 연결되는데 사이드바는
+      // 자치구(SIGUNGU) id라 서버 exact-match 필터가 항상 0건을 돌려준다.
+      // 구 필터는 아래 stores 메모에서 sigungu 이름으로 클라이언트 필터링한다.
+      // TODO(BE): regionId 계층(구→동) 매칭 지원 시 서버 필터로 복귀.
       minArea: rangeFilters.area.min,
       maxArea: rangeFilters.area.max,
     })
@@ -243,13 +246,21 @@ const useStoreBuilderData = (enabled: boolean) => {
     rangeFilters.area.min,
     reloadKey,
     selectedIndustryId,
-    selectedRegionId,
   ]);
+
+  const selectedDistrict = useMemo(
+    () =>
+      districts.find((district) => district.regionId === selectedRegionId) ??
+      null,
+    [districts, selectedRegionId]
+  );
 
   const stores = useMemo(
     () =>
       rawStores.filter(
         (store) =>
+          (!selectedDistrict ||
+            store.district.startsWith(selectedDistrict.sigungu)) &&
           isInRange(
             store.expectedMonthlySalesValue,
             rangeFilters.sales,
@@ -263,7 +274,7 @@ const useStoreBuilderData = (enabled: boolean) => {
             Math.round(value / 10000)
           )
       ),
-    [rawStores, rangeFilters]
+    [rawStores, rangeFilters, selectedDistrict]
   );
 
   const selectedIndustry = useMemo(
@@ -273,13 +284,6 @@ const useStoreBuilderData = (enabled: boolean) => {
       ) ?? null,
     [industries, selectedIndustryId]
   );
-  const selectedDistrict = useMemo(
-    () =>
-      districts.find((district) => district.regionId === selectedRegionId) ??
-      null,
-    [districts, selectedRegionId]
-  );
-
   const selectIndustry = (industryId: number | null) => {
     if (industryId === selectedIndustryId) {
       return;
@@ -295,7 +299,7 @@ const useStoreBuilderData = (enabled: boolean) => {
       return;
     }
 
-    setIsStoreLoading(true);
+    // 구 필터는 클라이언트 필터링이라 리페치가 없다 — 로딩을 켜면 안 꺼진다.
     setErrorMessage('');
     setSelectedRegionId(regionId);
   };
