@@ -587,7 +587,7 @@ const RevenueEstimateModal = ({
                 )}
               </div>
               <div className="rounded-md border border-white/25 bg-white/15 p-3">
-                <p className="text-xs text-white/80">Property Score</p>
+                <p className="text-xs text-white/80">상가 매력도</p>
                 {isSubmitting ? (
                   <Skeleton tone="onDark" className="mt-2 ml-auto h-7 w-16" />
                 ) : (
