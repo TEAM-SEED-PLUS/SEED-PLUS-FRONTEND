@@ -1,4 +1,10 @@
 import downChevron from '@/assets/icons/down-chevron-icon.svg';
+import type { StoreSortKey } from '@/pages/StoreBuilder/useStoreBuilderData';
+
+const sortOptions: { key: StoreSortKey; label: string }[] = [
+  { key: 'likes', label: '좋아요 많은 순' },
+  { key: 'latest', label: '최신순' },
+];
 
 type StoreRangeFilterKey = 'area' | 'sales' | 'profit' | 'premium' | 'rent';
 
@@ -11,6 +17,8 @@ const filterButtons: { key: StoreRangeFilterKey; baseLabel: string }[] = [
 ];
 
 interface StoreToolbarProps {
+  sortKey: StoreSortKey;
+  onChangeSort: (key: StoreSortKey) => void;
   industryLabel: string;
   districtLabel: string;
   filterLabels: Record<StoreRangeFilterKey, string>;
@@ -20,6 +28,8 @@ interface StoreToolbarProps {
 }
 
 const StoreToolbar = ({
+  sortKey,
+  onChangeSort,
   industryLabel,
   districtLabel,
   filterLabels,
@@ -67,6 +77,24 @@ const StoreToolbar = ({
           <img src={downChevron} alt="" />
         </button>
       ))}
+
+      <div className="ml-auto flex items-center gap-1 rounded-lg border border-[#d8dde5] bg-white p-1">
+        {sortOptions.map((option) => (
+          <button
+            key={option.key}
+            type="button"
+            onClick={() => onChangeSort(option.key)}
+            aria-pressed={sortKey === option.key}
+            className={`rounded-md px-3 py-1.5 text-xs font-bold transition ${
+              sortKey === option.key
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-46 hover:text-blue-600'
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

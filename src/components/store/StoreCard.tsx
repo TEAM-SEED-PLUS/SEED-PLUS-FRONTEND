@@ -48,7 +48,6 @@ const StoreCard = ({
   onToggleLike,
   showUpdatedAt = false,
 }: StoreCardProps) => {
-  const [isScoreExpanded, setIsScoreExpanded] = useState(false);
   const [isScoreInfoOpen, setIsScoreInfoOpen] = useState(false);
   const updatedAtLabel = showUpdatedAt ? formatUpdatedAt(store.uploadedAt) : '';
 
@@ -57,7 +56,7 @@ const StoreCard = ({
       <div className="px-5 py-5">
         <div className="mb-5 flex items-center justify-between">
           {store.rank !== undefined ? (
-            <span className="flex gap-2 rounded-full bg-[#fff3e0] px-3 py-1 text-xs font-bold text-[#f36f28]">
+            <span className="flex items-center gap-2 rounded-full bg-[#fff3e0] px-3 py-1 text-xs font-bold text-[#f36f28]">
               <img src={trophy} alt="트로피 아이콘" />{' '}
               <span>이달 랭킹 #{store.rank}</span>
             </span>
@@ -139,14 +138,7 @@ const StoreCard = ({
       <div className="mx-5 mt-3">
         <div className="flex items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600">
           <span className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setIsScoreExpanded((prev) => !prev)}
-              aria-expanded={isScoreExpanded}
-              className="flex items-center gap-2 transition hover:brightness-95"
-            >
-              상가 매력도
-            </button>
+            상가 매력도
             <button
               type="button"
               onClick={() => setIsScoreInfoOpen(true)}
@@ -156,25 +148,7 @@ const StoreCard = ({
               <img src={questionMark} alt="질문 아이콘" />
             </button>
           </span>
-          <button
-            type="button"
-            onClick={() => setIsScoreExpanded((prev) => !prev)}
-            aria-expanded={isScoreExpanded}
-            className="text-xs font-bold transition hover:brightness-95"
-          >
-            {isScoreExpanded ? '접기' : '펼치기'}
-          </button>
         </div>
-
-        {isScoreExpanded && (
-          <div className="mt-2 flex items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600">
-            <span className="flex gap-2">
-              상가 매력도
-              <img src={questionMark} alt="질문 아이콘" />
-            </span>
-            <span>{/*{store.score}*/}? 점</span>
-          </div>
-        )}
       </div>
 
       <div className="flex gap-5 px-5 py-4 text-sm font-medium text-[#4e5968]">
