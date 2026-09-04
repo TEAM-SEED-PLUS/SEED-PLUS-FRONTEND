@@ -68,13 +68,11 @@ const inputClass =
 const selectClass = `${inputClass} app-select`;
 const labelClass = 'mb-2 block text-[11px] font-bold text-[#4e5968]';
 
+// 실제 계산에 활용 중인 데이터만 표기한다(BE 확인 2026-09-04).
 const dataBadges = [
-  '소상공인시장진흥공단 상권정보',
-  '서울시 열린데이터광장',
-  '국토교통부 실거래가',
-  '여신금융협회 카드 매출',
-  'KT 유동인구 데이터',
-  '행정안전부 인허가 데이터',
+  'KOSIS 기업생멸행정통계',
+  '서울시 S-DoT 유동인구 측정 정보',
+  'KOSIS 전국사업체조사',
 ];
 
 const variableFactors: {
@@ -587,8 +585,8 @@ const SurvivalEstimateModal = ({
               생존율 계산기
             </h2>
             <p className="mt-2 text-[11px] leading-relaxed text-[#4e5968]">
-              소상공인시장진흥공단 상권정보와 공공데이터 기반으로 창업 전 생존
-              가능성을 점수화합니다.
+              KOSIS 기업생멸행정통계와 서울시 유동인구 등 공공데이터 기반으로
+              창업 전 생존 가능성을 점수화합니다.
               <br />
               6개 핵심 변수와 Survival Score로 현실적인 1년·3년 생존 확률 구간을
               제시합니다.
@@ -606,8 +604,8 @@ const SurvivalEstimateModal = ({
             <div className="mt-4 rounded-md bg-[#e8f1ff] px-4 py-3 text-[11px] leading-relaxed text-blue-600">
               <strong>공공데이터 자동 연동</strong>
               <p className="mt-1">
-                지역·업종 선택 시 소상공인시장진흥공단 상권정보, 서울시
-                열린데이터광장, 국토교통부 실거래가 데이터가 자동 반영됩니다.
+                지역·업종 선택 시 KOSIS 기업생멸행정통계, 서울시 S-DoT 유동인구
+                측정 정보, KOSIS 전국사업체조사 데이터가 자동 반영됩니다.
               </p>
             </div>
 
