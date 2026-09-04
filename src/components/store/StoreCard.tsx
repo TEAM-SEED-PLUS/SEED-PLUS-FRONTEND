@@ -15,7 +15,8 @@ export interface StoreItem {
   sales: string;
   profit: string;
   payback: string;
-  rank: number;
+  /** 전체 목록 기준 좋아요 랭킹. 목록에 없는 상가(비공개 등)는 미표시 */
+  rank?: number;
   score: number;
   likes: number;
   reposts: number;
@@ -55,10 +56,14 @@ const StoreCard = ({
     <article className="overflow-hidden rounded-lg border border-[#fff4ee] bg-white">
       <div className="px-5 py-5">
         <div className="mb-5 flex items-center justify-between">
-          <span className="flex gap-2 rounded-full bg-[#fff3e0] px-3 py-1 text-xs font-bold text-[#f36f28]">
-            <img src={trophy} alt="트로피 아이콘" />{' '}
-            <span>이달 랭킹 #{store.rank}</span>
-          </span>
+          {store.rank !== undefined ? (
+            <span className="flex gap-2 rounded-full bg-[#fff3e0] px-3 py-1 text-xs font-bold text-[#f36f28]">
+              <img src={trophy} alt="트로피 아이콘" />{' '}
+              <span>이달 랭킹 #{store.rank}</span>
+            </span>
+          ) : (
+            <span />
+          )}
           <button
             type="button"
             onClick={() => onToggleBookmark(store)}

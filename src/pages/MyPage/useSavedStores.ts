@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   bookmarkBuilderStore,
   getBuilderStoreDetail,
+  getBuilderStores,
   getMyBookmarkedStores,
   getMyBuilderStores,
   likeBuilderStore,
@@ -9,7 +10,11 @@ import {
   unlikeBuilderStore,
 } from '@/api';
 import type { StoreItem } from '@/components/store';
-import { toStoreItem } from '@/pages/StoreBuilder/useStoreBuilderData';
+import {
+  applyStoreInteractionState,
+  buildRankByStoreId,
+  toStoreItem,
+} from '@/pages/StoreBuilder/useStoreBuilderData';
 
 /**
  * 마이페이지 '저장한 상가 리스트' 데이터 훅.
@@ -38,13 +43,17 @@ const useSavedStores = (enabled: boolean) => {
     Promise.all([
       getMyBuilderStores({ size: 100 }),
       getMyBookmarkedStores({ size: 100 }),
+      // '내 상가 만들기'와 같은 랭킹을 표시하기 위한 전체 목록(좋아요 랭킹 산정용)
+      getBuilderStores({ size: 100, sort: 'uploadedAt,desc' }),
     ])
-      .then(([mine, bookmarks]) => {
+      .then(async ([mine, bookmarks, allStores]) => {
         if (!active) {
           return;
         }
-        const bookmarked = bookmarks.content.map((bookmark, index) => ({
-          ...toStoreItem(bookmark.store, index),
+        const rankByStoreId = buildRankByStoreId(allStores.content);
+        const bookmarked = bookmarks.content.map((bookmark) => ({
+          ...toStoreItem(bookmark.store),
+          rank: rankByStoreId.get(bookmark.store.builderStoreId),
           saved: true,
           // 최신화 표기는 저장 시점(savedAt) 기준으로 보여준다.
           uploadedAt: bookmark.savedAt,
@@ -55,13 +64,24 @@ const useSavedStores = (enabled: boolean) => {
         );
         const created = mine.content
           .filter((store) => !bookmarkedIds.has(store.builderStoreId))
-          .map((store, index) => ({
-            ...toStoreItem(store, bookmarked.length + index),
+          .map((store) => ({
+            ...toStoreItem(store),
+            rank: rankByStoreId.get(store.builderStoreId),
             saved: false,
           }));
-        setStores(
+        // 목록 요약에는 liked가 없으므로 상세 조회로 하트 상태를 채운다.
+        // TODO(BE): 목록 응답에 liked 포함 시 이 보정 제거.
+        const merged = await applyStoreInteractionState(
           [...bookmarked, ...created].sort((left, right) =>
             (right.uploadedAt ?? '').localeCompare(left.uploadedAt ?? '')
+          )
+        );
+        if (!active) {
+          return;
+        }
+        setStores(
+          merged.map((store) =>
+            bookmarkedIds.has(store.id) ? { ...store, saved: true } : store
           )
         );
       })

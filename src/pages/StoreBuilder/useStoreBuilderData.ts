@@ -19,10 +19,7 @@ import type { StoreItem } from '@/components/store/StoreCard';
 const toManwonLabel = (amount: number) =>
   `${Math.round(amount / 10000).toLocaleString('ko-KR')}만원`;
 
-export const toStoreItem = (
-  store: BuilderStoreSummaryResponse,
-  index: number
-): StoreItem => ({
+export const toStoreItem = (store: BuilderStoreSummaryResponse): StoreItem => ({
   id: store.builderStoreId,
   name: store.name,
   category: store.industry.name,
@@ -31,7 +28,6 @@ export const toStoreItem = (
   sales: toManwonLabel(store.expectedMonthlySales),
   profit: `${store.expectedProfitRate}%`,
   payback: `${store.investmentPaybackMonths}개월`,
-  rank: index + 1,
   score: store.propertyScore,
   likes: store.likeCount,
   reposts: 0,
@@ -45,7 +41,23 @@ export const toStoreItem = (
   uploadedAt: store.uploadedAt,
 });
 
-const applyStoreInteractionState = async (stores: StoreItem[]) => {
+// 기획 확정(2026-09-04): '이달 랭킹'은 좋아요 많은 순. 동률은 최신 업로드 우선.
+export const compareByLikes = (
+  left: BuilderStoreSummaryResponse,
+  right: BuilderStoreSummaryResponse
+) =>
+  right.likeCount - left.likeCount ||
+  (right.uploadedAt ?? '').localeCompare(left.uploadedAt ?? '');
+
+/** 전체 목록 기준 좋아요 랭킹 맵 — 화면(목록·마이페이지)마다 같은 랭킹을 쓰기 위함 */
+export const buildRankByStoreId = (stores: BuilderStoreSummaryResponse[]) =>
+  new Map(
+    [...stores]
+      .sort(compareByLikes)
+      .map((store, index) => [store.builderStoreId, index + 1])
+  );
+
+export const applyStoreInteractionState = async (stores: StoreItem[]) => {
   const storesMissingInteractionState = stores.filter(
     (store) => store.liked === undefined || store.saved === undefined
   );
@@ -131,6 +143,9 @@ const useStoreBuilderData = (enabled: boolean) => {
   const [rangeFilters, setRangeFilters] =
     useState<StoreRangeFilters>(defaultRangeFilters);
   const [rawStores, setRawStores] = useState<StoreItem[]>([]);
+  const [rankByStoreId, setRankByStoreId] = useState<Map<number, number>>(
+    new Map()
+  );
   const [industries, setIndustries] = useState<IndustryResponse[]>([]);
   const [analysisIndustries, setAnalysisIndustries] = useState<
     IndustryResponse[]
@@ -214,8 +229,13 @@ const useStoreBuilderData = (enabled: boolean) => {
           return;
         }
 
+        // 업종 무필터 응답 = 전체 목록 → 전역 랭킹 맵 갱신
+        if (selectedIndustryId === null) {
+          setRankByStoreId(buildRankByStoreId(response.content));
+        }
+
         const nextStores = await applyStoreInteractionState(
-          response.content.map(toStoreItem)
+          [...response.content].sort(compareByLikes).map(toStoreItem)
         );
 
         if (!active) {
@@ -257,24 +277,26 @@ const useStoreBuilderData = (enabled: boolean) => {
 
   const stores = useMemo(
     () =>
-      rawStores.filter(
-        (store) =>
-          (!selectedDistrict ||
-            store.district.startsWith(selectedDistrict.sigungu)) &&
-          isInRange(
-            store.expectedMonthlySalesValue,
-            rangeFilters.sales,
-            (value) => Math.round(value / 10000)
-          ) &&
-          isInRange(store.expectedProfitRateValue, rangeFilters.profit) &&
-          isInRange(store.depositValue, rangeFilters.premium, (value) =>
-            Math.round(value / 10000)
-          ) &&
-          isInRange(store.monthlyRentValue, rangeFilters.rent, (value) =>
-            Math.round(value / 10000)
-          )
-      ),
-    [rawStores, rangeFilters, selectedDistrict]
+      rawStores
+        .map((store) => ({ ...store, rank: rankByStoreId.get(store.id) }))
+        .filter(
+          (store) =>
+            (!selectedDistrict ||
+              store.district.startsWith(selectedDistrict.sigungu)) &&
+            isInRange(
+              store.expectedMonthlySalesValue,
+              rangeFilters.sales,
+              (value) => Math.round(value / 10000)
+            ) &&
+            isInRange(store.expectedProfitRateValue, rangeFilters.profit) &&
+            isInRange(store.depositValue, rangeFilters.premium, (value) =>
+              Math.round(value / 10000)
+            ) &&
+            isInRange(store.monthlyRentValue, rangeFilters.rent, (value) =>
+              Math.round(value / 10000)
+            )
+        ),
+    [rawStores, rangeFilters, selectedDistrict, rankByStoreId]
   );
 
   const selectedIndustry = useMemo(
