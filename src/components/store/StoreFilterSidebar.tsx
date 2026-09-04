@@ -67,7 +67,7 @@ const StoreFilterSidebar = ({
                   }`}
                 >
                   <span>전체</span>
-                  {selectedRegionId === null && (
+                  {selectedIndustryId === null && (
                     <span>
                       {isLoading ? '-' : totalStores.toLocaleString('ko-KR')}
                     </span>
@@ -78,13 +78,18 @@ const StoreFilterSidebar = ({
                     key={industry.industryId}
                     type="button"
                     onClick={() => onSelectIndustry(industry.industryId)}
-                    className={`flex w-full items-start rounded-md px-3 py-2.5 text-left text-xs font-medium ${
+                    className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left text-xs font-medium ${
                       selectedIndustryId === industry.industryId
                         ? 'bg-blue-300 text-blue-600'
                         : 'text-gray-46 hover:bg-gray-500'
                     }`}
                   >
                     <span className="flex-1 text-left">{industry.name}</span>
+                    {selectedIndustryId === industry.industryId && (
+                      <span>
+                        {isLoading ? '-' : totalStores.toLocaleString('ko-KR')}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -113,6 +118,11 @@ const StoreFilterSidebar = ({
                   }`}
                 >
                   <span>전체</span>
+                  {selectedRegionId === null && (
+                    <span>
+                      {isLoading ? '-' : totalStores.toLocaleString('ko-KR')}
+                    </span>
+                  )}
                 </button>
                 {districts.map((district) => (
                   <button
@@ -126,6 +136,11 @@ const StoreFilterSidebar = ({
                     }`}
                   >
                     <span>{district.sigungu}</span>
+                    {selectedRegionId === district.regionId && (
+                      <span>
+                        {isLoading ? '-' : totalStores.toLocaleString('ko-KR')}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>

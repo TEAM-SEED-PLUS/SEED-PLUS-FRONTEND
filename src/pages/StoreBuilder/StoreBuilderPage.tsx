@@ -120,7 +120,6 @@ const StoreBuilderPage = () => {
     analysisIndustries,
     districts,
     legalDongs,
-    totalStores,
     selectedIndustry,
     selectedDistrict,
     selectedIndustryId,
@@ -165,7 +164,7 @@ const StoreBuilderPage = () => {
         onOpenSurvivalCalculator={() => setIsSurvivalModalOpen(true)}
         industries={industries}
         districts={districts}
-        totalStores={totalStores}
+        totalStores={stores.length}
         selectedIndustryId={selectedIndustryId}
         selectedRegionId={selectedRegionId}
         isLoading={isMetadataLoading || isStoreLoading}
@@ -188,7 +187,7 @@ const StoreBuilderPage = () => {
         }}
         industries={industries}
         districts={districts}
-        totalStores={totalStores}
+        totalStores={stores.length}
         selectedIndustryId={selectedIndustryId}
         selectedRegionId={selectedRegionId}
         isLoading={isMetadataLoading || isStoreLoading}
