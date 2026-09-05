@@ -51,13 +51,20 @@ const StoreCard = ({
   return (
     <article className="overflow-hidden rounded-lg border border-[#fff4ee] bg-white">
       <div className="px-5 py-5">
-        <div className="mb-5 flex items-center justify-between">
-          <span />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h2 className="text-base font-extrabold text-[#191f28]">
+              {store.name}
+            </h2>
+            <span className="text-xs font-bold text-gray-46">
+              {store.category}
+            </span>
+          </div>
           <button
             type="button"
             onClick={() => onToggleBookmark(store)}
             disabled={isBookmarkPending}
-            className="flex h-6 w-6 items-center justify-center disabled:opacity-50"
+            className="flex h-6 w-6 shrink-0 items-center justify-center disabled:opacity-50"
             aria-label={store.saved ? '북마크 해제' : '북마크 추가'}
             aria-pressed={store.saved ?? false}
           >
@@ -76,15 +83,6 @@ const StoreCard = ({
               />
             </svg>
           </button>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <h2 className="text-base font-extrabold text-[#191f28]">
-            {store.name}
-          </h2>
-          <span className="text-xs font-bold text-gray-46">
-            {store.category}
-          </span>
         </div>
 
         <div className="mt-5 flex gap-7 text-xs font-medium text-gray-46">
