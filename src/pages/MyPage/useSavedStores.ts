@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import {
   bookmarkBuilderStore,
   getBuilderStoreDetail,
-  getBuilderStores,
   getMyBookmarkedStores,
   getMyBuilderStores,
   likeBuilderStore,
@@ -12,7 +11,6 @@ import {
 import type { StoreItem } from '@/components/store';
 import {
   applyStoreInteractionState,
-  buildRankByStoreId,
   toStoreItem,
 } from '@/pages/StoreBuilder/useStoreBuilderData';
 
@@ -43,17 +41,13 @@ const useSavedStores = (enabled: boolean) => {
     Promise.all([
       getMyBuilderStores({ size: 100 }),
       getMyBookmarkedStores({ size: 100 }),
-      // '내 상가 만들기'와 같은 랭킹을 표시하기 위한 전체 목록(좋아요 랭킹 산정용)
-      getBuilderStores({ size: 100, sort: 'uploadedAt,desc' }),
     ])
-      .then(async ([mine, bookmarks, allStores]) => {
+      .then(async ([mine, bookmarks]) => {
         if (!active) {
           return;
         }
-        const rankByStoreId = buildRankByStoreId(allStores.content);
         const bookmarked = bookmarks.content.map((bookmark) => ({
           ...toStoreItem(bookmark.store),
-          rank: rankByStoreId.get(bookmark.store.builderStoreId),
           saved: true,
           // 최신화 표기는 저장 시점(savedAt) 기준으로 보여준다.
           uploadedAt: bookmark.savedAt,
@@ -66,7 +60,6 @@ const useSavedStores = (enabled: boolean) => {
           .filter((store) => !bookmarkedIds.has(store.builderStoreId))
           .map((store) => ({
             ...toStoreItem(store),
-            rank: rankByStoreId.get(store.builderStoreId),
             saved: false,
           }));
         // 목록 요약에는 liked가 없으므로 상세 조회로 하트 상태를 채운다.

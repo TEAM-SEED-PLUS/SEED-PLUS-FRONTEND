@@ -41,14 +41,6 @@ export const toStoreItem = (store: BuilderStoreSummaryResponse): StoreItem => ({
   uploadedAt: store.uploadedAt,
 });
 
-// 기획 확정(2026-09-04): '이달 랭킹'은 좋아요 많은 순. 동률은 최신 업로드 우선.
-export const compareByLikes = (
-  left: BuilderStoreSummaryResponse,
-  right: BuilderStoreSummaryResponse
-) =>
-  right.likeCount - left.likeCount ||
-  (right.uploadedAt ?? '').localeCompare(left.uploadedAt ?? '');
-
 export type StoreSortKey = 'likes' | 'latest';
 
 const compareItems =
@@ -57,14 +49,6 @@ const compareItems =
       ? right.likes - left.likes ||
         (right.uploadedAt ?? '').localeCompare(left.uploadedAt ?? '')
       : (right.uploadedAt ?? '').localeCompare(left.uploadedAt ?? '');
-
-/** 전체 목록 기준 좋아요 랭킹 맵 — 화면(목록·마이페이지)마다 같은 랭킹을 쓰기 위함 */
-export const buildRankByStoreId = (stores: BuilderStoreSummaryResponse[]) =>
-  new Map(
-    [...stores]
-      .sort(compareByLikes)
-      .map((store, index) => [store.builderStoreId, index + 1])
-  );
 
 export const applyStoreInteractionState = async (stores: StoreItem[]) => {
   const storesMissingInteractionState = stores.filter(
@@ -152,9 +136,6 @@ const useStoreBuilderData = (enabled: boolean) => {
   const [rangeFilters, setRangeFilters] =
     useState<StoreRangeFilters>(defaultRangeFilters);
   const [rawStores, setRawStores] = useState<StoreItem[]>([]);
-  const [rankByStoreId, setRankByStoreId] = useState<Map<number, number>>(
-    new Map()
-  );
   const [sortKey, setSortKey] = useState<StoreSortKey>('likes');
   const [industries, setIndustries] = useState<IndustryResponse[]>([]);
   const [analysisIndustries, setAnalysisIndustries] = useState<
@@ -239,11 +220,6 @@ const useStoreBuilderData = (enabled: boolean) => {
           return;
         }
 
-        // 업종 무필터 응답 = 전체 목록 → 전역 랭킹 맵 갱신
-        if (selectedIndustryId === null) {
-          setRankByStoreId(buildRankByStoreId(response.content));
-        }
-
         const nextStores = await applyStoreInteractionState(
           response.content.map(toStoreItem)
         );
@@ -287,8 +263,7 @@ const useStoreBuilderData = (enabled: boolean) => {
 
   const stores = useMemo(
     () =>
-      rawStores
-        .map((store) => ({ ...store, rank: rankByStoreId.get(store.id) }))
+      [...rawStores]
         .sort(compareItems(sortKey))
         .filter(
           (store) =>
@@ -307,7 +282,7 @@ const useStoreBuilderData = (enabled: boolean) => {
               Math.round(value / 10000)
             )
         ),
-    [rawStores, rangeFilters, selectedDistrict, rankByStoreId, sortKey]
+    [rawStores, rangeFilters, selectedDistrict, sortKey]
   );
 
   const selectedIndustry = useMemo(
