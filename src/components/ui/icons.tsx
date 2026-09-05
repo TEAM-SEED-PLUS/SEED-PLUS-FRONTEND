@@ -227,7 +227,9 @@ export const SpinnerIcon = ({ className = 'h-4 w-4', ...props }: IconProps) => (
     focusable="false"
     viewBox="0 0 24 24"
     fill="none"
-    className={`motion-safe:animate-spin ${className}`}
+    // 로딩 스피너는 장식이 아니라 '동작 중' 피드백이라 OS 동작 줄이기와
+    // 무관하게 항상 회전한다. 정지 시 오류로 오인된다는 리포트 반영.
+    className={`animate-spin ${className}`}
     {...props}
   >
     <circle
