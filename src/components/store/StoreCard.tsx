@@ -126,11 +126,11 @@ const StoreCard = ({
       <div className="mx-5 mt-3">
         <div className="flex items-center justify-between rounded-md bg-blue-300 px-5 py-3 text-sm font-bold text-blue-600">
           <span className="flex items-center gap-2">
-            상가 매력도
+            SEEDing the Property Score
             <button
               type="button"
               onClick={() => setIsScoreInfoOpen(true)}
-              aria-label="상가 매력도 안내"
+              aria-label="Property Score 안내"
               className="flex items-center transition hover:opacity-70"
             >
               <img src={questionMark} alt="질문 아이콘" />
@@ -166,7 +166,7 @@ const StoreCard = ({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6"
           role="dialog"
           aria-modal="true"
-          aria-label="상가 매력도 안내"
+          aria-label="Property Score 안내"
           onClick={() => setIsScoreInfoOpen(false)}
         >
           <div
@@ -174,12 +174,12 @@ const StoreCard = ({
             onClick={(event) => event.stopPropagation()}
           >
             <h3 className="text-base font-extrabold text-[#191f28]">
-              상가 매력도 안내
+              Property Score 안내
             </h3>
             <p className="mt-3 text-sm font-medium leading-relaxed text-[#4e5968]">
-              상가 매력도는 우리 SEED+ 사용자분들에게 더 정확한 정보를 제공하기
-              위해 지속적으로 고도화하고 있습니다. 추후 고도화가 완료가 되면
-              기재하겠습니다. 앞으로의 SEED+를 기대해주세요!
+              Property Score은 우리 SEED+ 사용자분들에게 더 정확한 정보를
+              제공하기 위해 지속적으로 고도화하고 있습니다. 추후 고도화가 완료가
+              되면 기재하겠습니다. 앞으로의 SEED+를 기대해주세요!
             </p>
             <button
               type="button"
