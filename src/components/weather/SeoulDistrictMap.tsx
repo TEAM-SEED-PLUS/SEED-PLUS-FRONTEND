@@ -4,10 +4,10 @@ import {
   SEOUL_MAP_BACKGROUND,
   SEOUL_MAP_VIEWBOX,
 } from './seoulMapPaths';
-import { GRADE_FILL } from './weatherGradeStyle';
+import { GRADE_FILL, resolveGrade } from './weatherGradeStyle';
 
 interface SeoulDistrictMapProps {
-  grades: Record<string, { grade: WeatherGrade } | undefined>;
+  grades: Record<string, { grade: WeatherGrade | string | null } | undefined>;
   selected: string;
   onSelect: (district: string) => void;
 }
@@ -34,7 +34,7 @@ const SeoulDistrictMap = ({
     ))}
 
     {SEOUL_DISTRICT_PATHS.map(({ name, d }) => {
-      const grade = grades[name]?.grade;
+      const grade = resolveGrade(grades[name]?.grade);
       const isSelected = name === selected;
 
       return (

@@ -28,3 +28,12 @@ export const GRADE_ICON: Record<WeatherGrade, string> = {
 
 /** 시안 범례에 노출되는 등급 (폭풍 제외) */
 export const LEGEND_GRADES: WeatherGrade[] = ['맑음', '구름', '흐림', '비'];
+
+/** 서버가 null이나 미지의 등급 문자열을 줄 수 있어 알려진 등급으로만 좁힌다 */
+export const resolveGrade = (
+  grade: string | null | undefined
+): WeatherGrade | undefined =>
+  grade && grade in GRADE_FILL ? (grade as WeatherGrade) : undefined;
+
+/** 등급을 산출하지 못한 자치구 채움색 */
+export const GRADE_FILL_UNKNOWN = '#eaecef';

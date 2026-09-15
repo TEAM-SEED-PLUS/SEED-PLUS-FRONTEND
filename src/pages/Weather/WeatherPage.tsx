@@ -1,13 +1,15 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  mockDistrictGrades,
-  mockWeatherContents,
-  mockWeatherFeed,
-  mockWeatherFeedLateNight,
-  mockWeatherFeedNoData,
-  mockWeatherFeedPartial,
-} from '@/api/weatherFeedMock';
-import type { TimeBand, WeatherFeed } from '@/api/weatherFeedTypes';
+  getWeatherApiErrorMessage,
+  getWeatherFeed,
+  getWeatherOverview,
+  toWeatherContentItems,
+} from '@/api/weatherFeedApi';
+import type {
+  MarketWeather,
+  TimeBand,
+  WeatherFeed,
+} from '@/api/weatherFeedTypes';
 import { HeaderUser } from '@/components/layout';
 import {
   SeoulDistrictMap,
@@ -27,52 +29,78 @@ const TIME_BANDS: { band: TimeBand; label: string }[] = [
   { band: '저녁', label: '저녁 20:00~24:00' },
 ];
 
-/**
- * Mock 응답 선택기.
- * 실제 API 연동 시 이 함수를 fetch 호출로 교체하면 화면 코드는 그대로 동작한다.
- */
-const selectMockFeed = (district: string, band: TimeBand): WeatherFeed => {
-  const base =
-    band === '심야'
-      ? mockWeatherFeedLateNight
-      : district === '금천구'
-        ? mockWeatherFeedNoData
-        : district === '중랑구'
-          ? mockWeatherFeedPartial
-          : mockWeatherFeed;
-
-  const grade = mockDistrictGrades[district] ?? base.market_weather;
-
-  return {
-    ...base,
-    query: { ...base.query, district, time_band: band },
-    opportunity_score: grade.score,
-    market_weather: grade,
-  };
-};
-
 const WeatherPage = () => {
   useDocumentTitle('상권날씨');
   const [district, setDistrict] = useState('종로구');
   const [timeBand, setTimeBand] = useState<TimeBand>('점심');
-  const [isLoading, setIsLoading] = useState(false);
-  const loadingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [districtGrades, setDistrictGrades] = useState<
+    Record<string, MarketWeather>
+  >({});
+  // 조회 결과를 '어떤 조건으로 받은 것인지'와 함께 들고 있으면
+  // 로딩 여부를 파생시킬 수 있어 effect 안에서 setState를 하지 않아도 된다.
+  const requestKey = `${district}|${timeBand}`;
+  const [result, setResult] = useState<{
+    key: string;
+    feed: WeatherFeed | null;
+    error: string;
+  } | null>(null);
 
-  // 실제 API 연동 시 이 부분이 fetch 호출로 바뀌면서 로딩 상태를 그대로 사용한다.
-  // Mock 단계에서는 선택이 바뀔 때 짧은 로딩 UI만 노출한다.
-  const runWithLoading = (apply: () => void) => {
-    apply();
-    setIsLoading(true);
-    if (loadingTimer.current) clearTimeout(loadingTimer.current);
-    loadingTimer.current = setTimeout(() => setIsLoading(false), 300);
-  };
+  // 지도 등급은 자치구 전체를 한 번에 받아온다(시간대가 바뀔 때만 재조회).
+  useEffect(() => {
+    const abortController = new AbortController();
 
-  const feed = useMemo(
-    () => selectMockFeed(district, timeBand),
-    [district, timeBand]
+    getWeatherOverview({ timeBand }, abortController.signal)
+      .then((overview) => {
+        setDistrictGrades(
+          Object.fromEntries(
+            overview.districts.map((item) => [
+              item.district,
+              {
+                score: item.opportunity_score,
+                grade: item.grade,
+                emoji: item.emoji,
+              },
+            ])
+          )
+        );
+      })
+      .catch(() => {
+        // 지도 등급 실패는 상세 조회를 막지 않는다. 등급 없는 지도로 표시된다.
+        setDistrictGrades({});
+      });
+
+    return () => abortController.abort();
+  }, [timeBand]);
+
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    getWeatherFeed({ district, timeBand }, abortController.signal)
+      .then((response) =>
+        setResult({ key: requestKey, feed: response, error: '' })
+      )
+      .catch((error) => {
+        const message = getWeatherApiErrorMessage(error);
+        // 취소된 요청은 빈 문자열로 온다 — 로딩 상태를 유지한다.
+        if (!message) {
+          return;
+        }
+        setResult({ key: requestKey, feed: null, error: message });
+      });
+
+    return () => abortController.abort();
+  }, [district, timeBand, requestKey]);
+
+  const isLoading = result?.key !== requestKey;
+  const feed = isLoading ? null : (result?.feed ?? null);
+  const errorMessage = isLoading ? '' : (result?.error ?? '');
+
+  const contentItems = useMemo(
+    () => toWeatherContentItems(feed?.content?.items),
+    [feed]
   );
 
-  const isNoData = feed.data_quality.status === 'no_data';
+  const isNoData = !feed || feed.data_quality.status === 'no_data';
 
   return (
     <div className="min-h-screen bg-gray-500">
@@ -98,11 +126,7 @@ const WeatherPage = () => {
             시간대
             <select
               value={timeBand}
-              onChange={(event) =>
-                runWithLoading(() =>
-                  setTimeBand(event.target.value as TimeBand)
-                )
-              }
+              onChange={(event) => setTimeBand(event.target.value as TimeBand)}
               className="h-10 rounded-md border border-[#e5e8eb] bg-white px-3 text-xs text-[#191f28] outline-none focus:border-blue-600"
             >
               {TIME_BANDS.map(({ band, label }) => (
@@ -127,9 +151,9 @@ const WeatherPage = () => {
 
             <div className="mt-4 rounded-md bg-[#f7f8fa] p-3">
               <SeoulDistrictMap
-                grades={mockDistrictGrades}
+                grades={districtGrades}
                 selected={district}
-                onSelect={(next) => runWithLoading(() => setDistrict(next))}
+                onSelect={setDistrict}
               />
             </div>
             <div className="mt-3 flex justify-center overflow-x-auto">
@@ -146,7 +170,7 @@ const WeatherPage = () => {
             ) : isNoData ? (
               <section className="rounded-lg border border-[#e5484d] bg-white px-5 py-14 text-center shadow-sm">
                 <p className="text-sm font-bold text-[#e5484d]">
-                  데이터를 불러오지 못했습니다.
+                  {errorMessage || '아직 분석할 데이터가 충분하지 않습니다.'}
                 </p>
                 <p className="mt-2 text-xs text-gray-46">
                   잠시 후 다시 시도하거나 다른 자치구를 선택해주세요.
@@ -179,7 +203,7 @@ const WeatherPage = () => {
                 />
 
                 <WeatherNarrativeCard narrative={feed.narrative} />
-                <WeatherContentList items={mockWeatherContents} />
+                <WeatherContentList items={contentItems} />
               </>
             )}
           </div>
