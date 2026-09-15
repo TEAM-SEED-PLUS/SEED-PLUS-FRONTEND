@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   getWeatherApiErrorMessage,
   getWeatherFeed,
@@ -11,6 +11,8 @@ import type {
   WeatherFeed,
 } from '@/api/weatherFeedTypes';
 import { HeaderUser } from '@/components/layout';
+import LoadingOverlay from '@/components/ui/LoadingOverlay';
+import Skeleton from '@/components/ui/Skeleton';
 import {
   SeoulDistrictMap,
   WeatherLegend,
@@ -38,7 +40,10 @@ const WeatherPage = () => {
   >({});
   // 조회 결과를 '어떤 조건으로 받은 것인지'와 함께 들고 있으면
   // 로딩 여부를 파생시킬 수 있어 effect 안에서 setState를 하지 않아도 된다.
-  const requestKey = `${district}|${timeBand}`;
+  // 재시도 시 같은 조건이어도 새 요청으로 인식되도록 키에 포함한다.
+  const [retryCount, setRetryCount] = useState(0);
+  const requestKey = `${district}|${timeBand}|${retryCount}`;
+  const feedAbortRef = useRef<AbortController | null>(null);
   const [result, setResult] = useState<{
     key: string;
     feed: WeatherFeed | null;
@@ -74,17 +79,18 @@ const WeatherPage = () => {
 
   useEffect(() => {
     const abortController = new AbortController();
+    feedAbortRef.current = abortController;
 
     getWeatherFeed({ district, timeBand }, abortController.signal)
       .then((response) =>
         setResult({ key: requestKey, feed: response, error: '' })
       )
       .catch((error) => {
-        const message = getWeatherApiErrorMessage(error);
-        // 취소된 요청은 빈 문자열로 온다 — 로딩 상태를 유지한다.
-        if (!message) {
-          return;
-        }
+        // 취소는 오류가 아니다(빈 문자열). 화면 전환으로 인한 자동 중단과
+        // 사용자가 누른 취소를 구분할 수 없으므로, 둘 다 재시도 안내로 마무리한다.
+        const message =
+          getWeatherApiErrorMessage(error) ||
+          '조회를 취소했습니다. 다시 시도해주세요.';
         setResult({ key: requestKey, feed: null, error: message });
       });
 
@@ -92,6 +98,8 @@ const WeatherPage = () => {
   }, [district, timeBand, requestKey]);
 
   const isLoading = result?.key !== requestKey;
+  const handleCancel = () => feedAbortRef.current?.abort();
+  const handleRetry = () => setRetryCount((current) => current + 1);
   const feed = isLoading ? null : (result?.feed ?? null);
   const errorMessage = isLoading ? '' : (result?.error ?? '');
 
@@ -104,6 +112,13 @@ const WeatherPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-500">
+      {isLoading && (
+        <LoadingOverlay
+          message="실시간 공공데이터 연동을 통해 상권날씨를 분석 중입니다."
+          description="최대 1분이 소요될 수 있습니다."
+          onCancel={handleCancel}
+        />
+      )}
       <HeaderUser />
 
       <main className="mx-auto w-full max-w-[1400px] px-5 pb-12 pt-[calc(var(--header-height)+24px)] lg:px-8">
@@ -164,9 +179,22 @@ const WeatherPage = () => {
           {/* 우: 선택 자치구 상세 */}
           <div className="flex flex-col gap-5">
             {isLoading ? (
-              <section className="rounded-lg bg-white px-5 py-14 text-center text-sm font-medium text-gray-46 shadow-sm">
-                상권날씨를 불러오고 있습니다.
-              </section>
+              <>
+                <section className="rounded-lg bg-white p-5 shadow-sm">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="mt-4 h-10 w-32" />
+                </section>
+                <section className="rounded-lg bg-white p-5 shadow-sm">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="mt-3 h-3 w-full" />
+                  <Skeleton className="mt-2 h-3 w-3/4" />
+                </section>
+                <section className="rounded-lg bg-white p-5 shadow-sm">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="mt-3 h-3 w-full" />
+                  <Skeleton className="mt-2 h-3 w-2/3" />
+                </section>
+              </>
             ) : isNoData ? (
               <section className="rounded-lg border border-[#e5484d] bg-white px-5 py-14 text-center shadow-sm">
                 <p className="text-sm font-bold text-[#e5484d]">
@@ -175,6 +203,13 @@ const WeatherPage = () => {
                 <p className="mt-2 text-xs text-gray-46">
                   잠시 후 다시 시도하거나 다른 자치구를 선택해주세요.
                 </p>
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="mt-4 h-10 rounded-md bg-blue-600 px-4 text-xs font-bold text-white transition hover:bg-blue-700"
+                >
+                  다시 시도
+                </button>
               </section>
             ) : (
               <>
