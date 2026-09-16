@@ -1,4 +1,13 @@
-const linkGroups = [
+import { Link } from 'react-router-dom';
+
+type FooterLink = {
+  label: string;
+  href?: string | null;
+  /** 앱 내부 라우트 */
+  to?: string;
+};
+
+const linkGroups: { heading: string; links: FooterLink[] }[] = [
   {
     heading: '서비스',
     links: [
@@ -19,8 +28,8 @@ const linkGroups = [
     heading: '회사',
     links: [
       { label: '회사 소개', href: null },
-      { label: '이용약관', href: null },
-      { label: '개인정보처리방침', href: null },
+      { label: '이용약관', to: '/terms' },
+      { label: '개인정보처리방침', to: '/privacy' },
     ],
   },
 ];
@@ -44,7 +53,15 @@ const LandingFooter = () => {
                 {group.heading}
               </p>
               {group.links.map((link) =>
-                link.href ? (
+                link.to ? (
+                  <Link
+                    key={link.label}
+                    to={link.to}
+                    className="text-lg text-gray-46 transition-colors hover:text-blue-600 md:text-xl"
+                  >
+                    {link.label}
+                  </Link>
+                ) : link.href ? (
                   <a
                     key={link.label}
                     href={link.href}
