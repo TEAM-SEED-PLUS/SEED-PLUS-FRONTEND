@@ -2,6 +2,8 @@ export { default as FeedPage } from './Feed/FeedPage';
 export { default as HomePage } from './Home/HomePage';
 export { default as LandingPage } from './Landing/LandingPage';
 export { default as LoginPage } from './Login/LoginPage';
+export { default as PrivacyPolicyPage } from './Legal/PrivacyPolicyPage';
+export { default as TermsPage } from './Legal/TermsPage';
 export { default as MyPage } from './MyPage/MyPage';
 export { default as MyPageSettings } from './MyPage/MyPageSettings';
 export { default as NotFoundPage } from './NotFoundPage';

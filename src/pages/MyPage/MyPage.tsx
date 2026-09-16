@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
-import { HeaderUser } from '@/components/layout';
+import { AppFooter, HeaderUser } from '@/components/layout';
 import {
   ActivityPostCard,
   CategoryTabs,
@@ -249,6 +249,7 @@ const MyPage = () => {
           </>
         )}
       </main>
+      <AppFooter />
     </div>
   );
 };

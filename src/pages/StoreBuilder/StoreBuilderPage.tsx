@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { HeaderUser } from '@/components/layout';
+import { AppFooter, HeaderUser } from '@/components/layout';
 import {
   ExpertMatchSidebar,
   MobileStoreSidebar,
@@ -256,6 +256,7 @@ const StoreBuilderPage = () => {
           onToggleLike={toggleLike}
         />
       </main>
+      <AppFooter className="lg:ml-59 2xl:mr-[264px]" />
 
       {isRevenueModalOpen && (
         <RevenueEstimateModal
