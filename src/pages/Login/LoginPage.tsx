@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@/api';
 import { useAuth } from '@/auth';
-import { HeaderUser } from '@/components/layout';
+import { AppFooter, HeaderUser } from '@/components/layout';
 import { useDocumentTitle } from '@/hooks';
 import { trackEvent } from '@/utils/analytics';
 import { validatePassword } from '@/utils/formValidation';
@@ -212,6 +212,7 @@ const LoginPage = () => {
           </div>
         </section>
       </main>
+      <AppFooter />
     </div>
   );
 };

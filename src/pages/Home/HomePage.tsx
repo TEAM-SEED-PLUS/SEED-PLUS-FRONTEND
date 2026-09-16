@@ -10,7 +10,7 @@ import {
   TrendingNewsCard,
   WeeklyBriefingCard,
 } from '@/components/home';
-import { HeaderUser } from '@/components/layout';
+import { AppFooter, HeaderUser } from '@/components/layout';
 import {
   SeoulDistrictMap,
   WeatherLegend,
@@ -152,6 +152,7 @@ const HomePage = () => {
           <TrendingNewsCard />
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 };

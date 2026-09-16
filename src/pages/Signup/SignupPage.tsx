@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@/api';
 import { useAuth } from '@/auth';
-import { HeaderUser } from '@/components/layout';
+import { AppFooter, HeaderUser } from '@/components/layout';
 import SignupOnboarding from '@/components/signup/SignupOnboarding';
 import SignupTermsModal from '@/components/signup/SignupTermsModal';
 import type { TermsAgreement } from '@/components/signup/SignupTermsModal';
@@ -437,6 +437,7 @@ const SignupPage = () => {
           )}
         </section>
       </main>
+      <AppFooter />
       {isTermsOpen && (
         <SignupTermsModal
           agreement={termsAgreement}
