@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { HeaderUser } from '@/components/layout';
+import { AppFooter, HeaderUser } from '@/components/layout';
 
 interface LegalPageLayoutProps {
   title: string;
@@ -55,6 +55,8 @@ const LegalPageLayout = ({
         </Link>
       </div>
     </main>
+
+    <AppFooter />
   </div>
 );
 

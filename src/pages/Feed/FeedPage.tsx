@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CommunityFeed, FeedSidebar, FeedTabs } from '@/components/feed';
-import { HeaderUser } from '@/components/layout';
+import { AppFooter, HeaderUser } from '@/components/layout';
 import { useDocumentTitle } from '@/hooks';
 import NewsFeed from '@/components/ui/NewsFeed';
 import type { NewsItem } from '@/types/types';
@@ -42,6 +42,7 @@ const FeedPage = () => {
         </section>
         <FeedSidebar />
       </main>
+      <AppFooter />
     </div>
   );
 };

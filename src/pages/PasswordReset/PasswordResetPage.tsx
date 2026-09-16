@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getApiErrorMessage, resetPassword } from '@/api';
-import { HeaderUser } from '@/components/layout';
+import { AppFooter, HeaderUser } from '@/components/layout';
 import { useDocumentTitle } from '@/hooks';
 import {
   normalizeEmail,
@@ -253,6 +253,7 @@ const PasswordResetPage = () => {
           )}
         </section>
       </main>
+      <AppFooter />
     </div>
   );
 };

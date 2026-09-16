@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
-import { HeaderUser, LogoutConfirmModal } from '@/components/layout';
+import { AppFooter, HeaderUser, LogoutConfirmModal } from '@/components/layout';
 import {
   AccountActions,
   NotificationSettings,
@@ -66,6 +66,7 @@ const MyPageSettings = () => {
           onWithdraw={() => setIsWithdrawOpen(true)}
         />
       </main>
+      <AppFooter />
 
       {isLogoutConfirmOpen && (
         <LogoutConfirmModal

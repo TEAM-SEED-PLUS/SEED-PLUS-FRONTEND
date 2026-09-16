@@ -8,7 +8,7 @@ import {
   mockWeatherFeedPartial,
 } from '@/api/weatherFeedMock';
 import type { TimeBand, WeatherFeed } from '@/api/weatherFeedTypes';
-import { HeaderUser } from '@/components/layout';
+import { AppFooter, HeaderUser } from '@/components/layout';
 import {
   SeoulDistrictMap,
   WeatherLegend,
@@ -185,6 +185,7 @@ const WeatherPage = () => {
           </div>
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 };
