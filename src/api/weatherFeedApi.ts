@@ -11,10 +11,11 @@ import type {
 // 상권날씨 데이터는 백엔드를 거치지 않고 AI(FastAPI) 서비스를 FE가 직접 호출한다.
 // 인증·CSRF가 없는 별개 서비스라 httpClient(apiClient)를 재사용하지 않는다.
 //
+// 배포 환경의 base URL은 인프라가 주입한다(2026-09-16 기준).
+//   dev  VITE_DEV_AI_API_BASE_URL  = http://<dev-host>:8000/
+//   prod VITE_PROD_AI_API_BASE_URL = https://www.seedplusai.com/ai/  (Nginx 프록시 → same-origin)
 // 로컬 개발: FastAPI에 CORS 미들웨어가 없어 브라우저 직접 호출이 차단되므로
-// vite.config.ts의 /ai-api 프록시를 경유한다(.env에서 상대 경로로 지정).
-// 배포 환경: 절대 URL을 주입하면 프록시 없이 직접 호출하므로, 그때는
-// AI 서버에 CORS 허용 오리진 설정이 선행돼야 한다.
+// vite.config.ts의 /ai 프록시를 경유한다(.env에서 상대 경로로 지정).
 const getAiBaseUrl = () => {
   const appEnv = getEnv('VITE_APP_ENV') || 'development';
   const baseUrl =
@@ -35,7 +36,10 @@ const getAiBaseUrl = () => {
   return baseUrl.replace(/\/+$/, '');
 };
 
-const aiClient = axios.create({ timeout: 30000 });
+// 상권날씨 분석은 실측 25초 이상 걸리고 인프라(Nginx)도 read 600초로 열어두었다.
+// 기본 타임아웃(30초)이면 부하 시 정상 응답을 끊어버리므로 여유 있게 잡는다.
+// v1에서는 자동 재시도를 두지 않는다(AI/Data 권고).
+const aiClient = axios.create({ timeout: 600000 });
 
 export type WeatherFeedParams = {
   district: string;
