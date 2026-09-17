@@ -2,7 +2,10 @@ type RuntimeEnvKey =
   | 'VITE_GA_MEASUREMENT_ID'
   | 'VITE_APP_ENV'
   | 'VITE_PROD_API_BASE_URL'
-  | 'VITE_DEV_API_BASE_URL';
+  | 'VITE_DEV_API_BASE_URL'
+  // 상권날씨 AI(FastAPI) 서비스. 백엔드를 경유하지 않고 FE가 직접 호출한다.
+  | 'VITE_PROD_AI_API_BASE_URL'
+  | 'VITE_DEV_AI_API_BASE_URL';
 
 declare global {
   interface Window {

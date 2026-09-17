@@ -18,7 +18,10 @@ import {
 } from '@/components/weather';
 import { useDocumentTitle } from '@/hooks';
 import { LightbulbIcon, StarIcon } from '@/components/ui/icons';
-import { GRADE_ICON } from '@/components/weather/weatherGradeStyle';
+import {
+  GRADE_ICON,
+  resolveGrade,
+} from '@/components/weather/weatherGradeStyle';
 
 const TIME_BANDS: { band: TimeBand; label: string }[] = [
   { band: '아침', label: '아침 06:00~12:00' },
@@ -106,12 +109,14 @@ const HomePage = () => {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-extrabold text-[#191f28]">
                   {district} 상권날씨{' '}
-                  <img
-                    src={GRADE_ICON[weather.grade]}
-                    alt=""
-                    aria-hidden
-                    className="inline-block h-5 w-5 align-text-bottom"
-                  />{' '}
+                  {resolveGrade(weather.grade) && (
+                    <img
+                      src={GRADE_ICON[resolveGrade(weather.grade)!]}
+                      alt=""
+                      aria-hidden
+                      className="inline-block h-5 w-5 align-text-bottom"
+                    />
+                  )}{' '}
                   <span className="text-blue-600">{weather.grade}</span>
                 </h2>
                 <button

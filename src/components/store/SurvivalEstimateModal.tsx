@@ -12,7 +12,7 @@ import {
 } from '@/api';
 import WarningIcon from '@/assets/icons/warning-icon.svg';
 import Skeleton from '@/components/ui/Skeleton';
-import CalculationLoadingOverlay from './CalculationLoadingOverlay';
+import LoadingOverlay from '@/components/ui/LoadingOverlay';
 import { SpinnerIcon } from '@/components/ui/icons';
 import SurvivalPdfReport, {
   type PdfComparisonDistrict,
@@ -563,7 +563,9 @@ const SurvivalEstimateModal = ({
       }`}
     >
       {isSubmitting && (
-        <CalculationLoadingOverlay
+        <LoadingOverlay
+          message="실시간 공공데이터 연동을 통해 계산 중입니다."
+          description="최대 5분이 소요될 수 있습니다."
           onCancel={() => calcAbortRef.current?.abort()}
         />
       )}

@@ -3,6 +3,7 @@ import type { WeatherContentItem } from '@/api/weatherFeedTypes';
 
 const TYPE_LABEL: Record<WeatherContentItem['type'], string> = {
   festival: '축제·행사',
+  event: '행사',
   performance: '공연',
   sports: '스포츠',
   video: '영상',
