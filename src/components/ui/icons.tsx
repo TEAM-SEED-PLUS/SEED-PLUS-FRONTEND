@@ -213,6 +213,13 @@ export const CheckIcon = (props: IconProps) => (
   </StrokeIcon>
 );
 
+/** 외부 링크(새 탭) 표시 */
+export const ExternalLinkIcon = (props: IconProps) => (
+  <StrokeIcon {...props}>
+    <path d="M7 17 17 7M9 7h8v8" />
+  </StrokeIcon>
+);
+
 export const MobileIcon = (props: IconProps) => (
   <StrokeIcon {...props}>
     <path d="M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z" />
