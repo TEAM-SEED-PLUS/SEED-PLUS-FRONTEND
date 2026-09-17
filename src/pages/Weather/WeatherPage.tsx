@@ -119,7 +119,7 @@ const WeatherPage = () => {
           onCancel={handleCancel}
         />
       )}
-      <HeaderUser />
+      <HeaderUser activeNav="weather" />
 
       <main className="mx-auto w-full max-w-[1400px] px-5 pb-12 pt-[calc(var(--header-height)+24px)] lg:px-8">
         <div className="flex flex-wrap items-end justify-between gap-3">

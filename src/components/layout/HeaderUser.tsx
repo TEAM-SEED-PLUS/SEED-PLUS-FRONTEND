@@ -6,7 +6,7 @@ import { MenuIcon, ProfileIcon, SearchIcon } from '@/components/ui/icons';
 import { useAuth } from '@/auth';
 import LogoutConfirmModal from './LogoutConfirmModal';
 
-type UserNav = 'home' | 'feed' | 'store';
+type UserNav = 'home' | 'feed' | 'store' | 'weather';
 
 interface HeaderUserProps {
   activeNav?: UserNav;
@@ -30,6 +30,8 @@ const navItems: {
     to: '/store-builder',
     requiresAuth: true,
   },
+  // 상권날씨는 로그인 가드가 없어 비회원에게도 노출한다.
+  { id: 'weather', label: '상권날씨', to: '/weather' },
 ];
 
 const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
