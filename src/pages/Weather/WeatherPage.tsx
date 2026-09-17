@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   getWeatherApiErrorMessage,
   getWeatherFeed,
@@ -12,14 +12,13 @@ import type {
 } from '@/api/weatherFeedTypes';
 import { AppFooter, HeaderUser } from '@/components/layout';
 import { LightbulbIcon, StarIcon } from '@/components/ui/icons';
-import LoadingOverlay from '@/components/ui/LoadingOverlay';
-import Skeleton from '@/components/ui/Skeleton';
 import {
   SeoulDistrictMap,
   TimeBandCards,
   WeatherLegend,
   WeatherNarrativeModal,
   WeatherRadarChart,
+  WeatherSectionLoading,
   WeatherTrendingContent,
 } from '@/components/weather';
 import { SEOUL_DISTRICT_PATHS } from '@/components/weather/seoulMapPaths';
@@ -99,7 +98,6 @@ const WeatherPage = () => {
   // 재시도 시 같은 조건이어도 새 요청으로 인식되도록 키에 포함한다.
   const [retryCount, setRetryCount] = useState(0);
   const requestKey = `${district}|${timeBand}|${retryCount}`;
-  const feedAbortRef = useRef<AbortController | null>(null);
   // 조회 결과를 '어떤 조건으로 받은 것인지'와 함께 들고 있으면
   // 로딩 여부를 파생시킬 수 있어 effect 안에서 setState를 하지 않아도 된다.
   const [result, setResult] = useState<{
@@ -136,18 +134,15 @@ const WeatherPage = () => {
 
   useEffect(() => {
     const abortController = new AbortController();
-    feedAbortRef.current = abortController;
 
     getWeatherFeed({ district, timeBand }, abortController.signal)
       .then((response) =>
         setResult({ key: requestKey, feed: response, error: '' })
       )
       .catch((error) => {
-        // 취소는 오류가 아니다(빈 문자열). 화면 전환으로 인한 자동 중단과
-        // 사용자가 누른 취소를 구분할 수 없으므로, 둘 다 재시도 안내로 마무리한다.
-        const message =
-          getWeatherApiErrorMessage(error) ||
-          '조회를 취소했습니다. 다시 시도해주세요.';
+        // 조건 변경·이탈로 인한 취소는 이미 다음 요청이 진행 중이므로 무시한다.
+        const message = getWeatherApiErrorMessage(error);
+        if (!message) return;
         setResult({ key: requestKey, feed: null, error: message });
       });
 
@@ -186,13 +181,6 @@ const WeatherPage = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-500">
-      {isLoading && (
-        <LoadingOverlay
-          message="실시간 공공데이터 연동을 통해 상권날씨를 분석 중입니다."
-          description="최대 1분이 소요될 수 있습니다."
-          onCancel={() => feedAbortRef.current?.abort()}
-        />
-      )}
       {isNarrativeOpen && feed && (
         <WeatherNarrativeModal
           district={district}
@@ -278,17 +266,7 @@ const WeatherPage = () => {
           {/* 중앙: 선택 자치구 상세 + 브리핑/채팅 */}
           <div className="flex min-w-0 flex-col gap-5">
             {isLoading ? (
-              <section className="rounded-lg bg-white p-5 shadow-sm">
-                <Skeleton className="h-6 w-56" />
-                <Skeleton className="mt-3 h-3 w-3/4" />
-                <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
-                  {Array.from({ length: 4 }, (_, index) => (
-                    <Skeleton key={index} className="h-14" />
-                  ))}
-                </div>
-                <Skeleton className="mt-4 h-44" />
-                <Skeleton className="mt-4 h-10" />
-              </section>
+              <WeatherSectionLoading key={requestKey} district={district} />
             ) : isNoData || !feed ? (
               <section className="rounded-lg border border-[#e5484d] bg-white px-5 py-14 text-center shadow-sm">
                 <p className="text-sm font-bold text-[#e5484d]">

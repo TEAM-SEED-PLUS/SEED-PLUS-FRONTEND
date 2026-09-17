@@ -1,5 +1,5 @@
 import type { WeatherContentItem } from '@/api/weatherFeedTypes';
-import { CalendarIcon, MobileIcon } from '@/components/ui/icons';
+import { CalendarIcon, MobileIcon, SpinnerIcon } from '@/components/ui/icons';
 
 const TYPE_LABEL: Record<WeatherContentItem['type'], string> = {
   festival: '축제',
@@ -27,7 +27,15 @@ const WeatherTrendingContent = ({
       지금 뜨는 소식
     </h3>
 
-    {isLoading ? null : items.length === 0 ? (
+    {isLoading ? (
+      <div
+        role="status"
+        aria-label="소식을 불러오는 중"
+        className="mt-4 flex justify-center py-10"
+      >
+        <SpinnerIcon className="h-6 w-6 text-blue-600" />
+      </div>
+    ) : items.length === 0 ? (
       <p className="mt-4 rounded-md bg-[#f7f8fa] px-4 py-10 text-center text-xs leading-relaxed text-gray-46">
         {district}에 지금 소개할
         <br />
