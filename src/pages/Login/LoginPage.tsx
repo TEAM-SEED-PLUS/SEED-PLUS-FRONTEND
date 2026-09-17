@@ -71,9 +71,9 @@ const LoginPage = () => {
     }`;
 
   return (
-    <div className="min-h-[100dvh] bg-gray-500">
+    <div className="flex min-h-[100dvh] flex-col bg-gray-500">
       <HeaderUser />
-      <main className="flex min-h-[100dvh] items-center justify-center px-0 pt-[var(--header-height)] md:px-6">
+      <main className="flex flex-1 items-center justify-center px-0 pt-[var(--header-height)] md:px-6">
         <section className="w-full max-w-150 border-[#d8dde5] bg-white px-5 py-7 md:rounded-lg md:border md:px-6">
           <div className="text-center">
             <h1 className="text-xl font-extrabold text-[#191f28]">

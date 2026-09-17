@@ -14,9 +14,9 @@ const FeedPage = () => {
   useDocumentTitle('창업 피드');
 
   return (
-    <div className="min-h-screen bg-gray-500">
+    <div className="flex min-h-screen flex-col bg-gray-500">
       <HeaderUser activeNav="feed" />
-      <main className="mx-auto flex w-full max-w-[1500px] gap-6 px-6 pb-10 pt-[calc(var(--header-height)+24px)]">
+      <main className="mx-auto flex w-full max-w-[1500px] flex-1 gap-6 px-6 pb-10 pt-[calc(var(--header-height)+24px)]">
         <section className="min-w-0 flex-1">
           <FeedTabs activeTab={activeTab} onChange={setActiveTab} />
           <div className="mt-5">

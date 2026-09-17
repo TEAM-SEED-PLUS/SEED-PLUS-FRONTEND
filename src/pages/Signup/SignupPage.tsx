@@ -163,10 +163,10 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gray-500">
+    <div className="flex min-h-[100dvh] flex-col bg-gray-500">
       <HeaderUser />
       <main
-        className={`flex min-h-[100dvh] justify-center px-0 py-5 pt-[calc(var(--header-height)+20px)] md:px-6 ${
+        className={`flex flex-1 justify-center px-0 py-5 pt-[calc(var(--header-height)+20px)] md:px-6 ${
           stage === 'onboarding' ? 'items-start' : 'items-center'
         }`}
       >
