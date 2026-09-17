@@ -8,7 +8,7 @@ import {
   mockWeatherFeedPartial,
 } from '@/api/weatherFeedMock';
 import type { TimeBand, WeatherFeed } from '@/api/weatherFeedTypes';
-import { HeaderUser } from '@/components/layout';
+import { AppFooter, HeaderUser } from '@/components/layout';
 import {
   SeoulDistrictMap,
   WeatherLegend,
@@ -75,10 +75,10 @@ const WeatherPage = () => {
   const isNoData = feed.data_quality.status === 'no_data';
 
   return (
-    <div className="min-h-screen bg-gray-500">
+    <div className="flex min-h-screen flex-col bg-gray-500">
       <HeaderUser />
 
-      <main className="mx-auto w-full max-w-[1400px] px-5 pb-12 pt-[calc(var(--header-height)+24px)] lg:px-8">
+      <main className="mx-auto w-full max-w-[1400px] flex-1 px-5 pb-12 pt-[calc(var(--header-height)+24px)] lg:px-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -185,6 +185,7 @@ const WeatherPage = () => {
           </div>
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 };
