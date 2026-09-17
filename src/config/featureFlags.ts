@@ -21,13 +21,12 @@ export const FEATURE_FLAGS = {
   NOTIFICATION_SETTINGS: false,
 
   /**
-   * 헤더 '홈' 탭과 랜딩 '기능 둘러보기' CTA.
+   * 랜딩 '비회원으로 둘러보기' CTA (목적지: mock 홈 /home).
    *
-   * 둘은 같이 움직여야 한다. '기능 둘러보기'의 목적지가 /home이라,
-   * 홈만 감추면 헤더에는 없는 화면으로 CTA가 들어가게 되고
-   * 비회원에게 mock 데이터 화면이 그대로 노출된다.
+   * 헤더 '홈' 탭은 이제 상권날씨 대시보드(/weather)를 가리키며 이 플래그와 무관하다.
+   * 이 CTA는 여전히 mock 데이터 화면으로 들어가므로 감춰둔다.
    *
-   * 해제 조건: 홈 화면이 homeMock·weatherFeedMock 대신 실 API를 쓰게 될 때
+   * 해제 조건: CTA 목적지를 실 API 화면(/weather)으로 바꾸거나 /home이 실 API를 쓰게 될 때
    */
   HOME_TAB: false,
 } as const;
