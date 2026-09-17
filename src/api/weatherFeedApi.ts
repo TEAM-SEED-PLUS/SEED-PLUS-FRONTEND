@@ -83,6 +83,19 @@ export const getWeatherOverview = async (
 };
 
 /** 서버 content.items를 화면용 카드 타입으로 변환한다 */
+// 외부 수집 데이터라 javascript: 등이 섞여도 링크로 쓰지 않도록 http(s)만 통과시킨다.
+export const toSafeLinkUrl = (value: string | null | undefined) => {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === 'http:' || url.protocol === 'https:'
+      ? url.href
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 export const toWeatherContentItems = (
   items: ApiContentItem[] | undefined
 ): WeatherContentItem[] =>
@@ -93,6 +106,7 @@ export const toWeatherContentItems = (
     period: item.period ?? undefined,
     place: item.place ?? undefined,
     thumbnailUrl: item.thumbnail_url ?? undefined,
+    linkUrl: toSafeLinkUrl(item.link_url),
   }));
 
 export const getWeatherApiErrorMessage = (error: unknown) => {

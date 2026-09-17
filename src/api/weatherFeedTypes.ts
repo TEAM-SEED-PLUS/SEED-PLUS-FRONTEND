@@ -101,6 +101,8 @@ export type ApiContentItem = {
   period: string | null;
   place: string | null;
   thumbnail_url: string | null;
+  /** 원문(주최 측·예매처) 페이지 */
+  link_url?: string | null;
 };
 
 export type WeatherFeed = {
@@ -145,7 +147,7 @@ export type WeatherOverviewResponse = {
 // ─────────────────────────────────────────────────────────────
 // 화면 전용 표현 타입.
 // 서버 content.items(ApiContentItem)를 화면용으로 변환해 쓴다.
-// 'video'(기획팀 제작 영상)와 linkUrl·viewCount는 아직 서버 계약에 없어
+// 'video'(기획팀 제작 영상)와 viewCount는 아직 서버 계약에 없어
 // 화면에서만 존재한다. AI 쪽에 추가되면 매퍼에서 채우면 된다.
 // ─────────────────────────────────────────────────────────────
 

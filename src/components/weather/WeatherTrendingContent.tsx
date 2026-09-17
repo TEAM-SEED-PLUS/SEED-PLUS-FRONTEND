@@ -9,6 +9,36 @@ const TYPE_LABEL: Record<WeatherContentItem['type'], string> = {
   video: '영상',
 };
 
+/** 카드 내용 — 링크 유무와 관계없이 동일하게 그린다 */
+const ContentCardBody = ({ item }: { item: WeatherContentItem }) => (
+  <>
+    {item.thumbnailUrl ? (
+      <img
+        src={item.thumbnailUrl}
+        alt=""
+        loading="lazy"
+        className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+      />
+    ) : (
+      <div className="absolute inset-0 flex items-center justify-center bg-[#e5e8eb]">
+        <CalendarIcon className="h-6 w-6 text-[#8b95a1]" />
+      </div>
+    )}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+    <span className="absolute left-2 top-2 rounded-sm bg-black/50 px-1.5 py-0.5 text-[10px] font-bold text-white">
+      {TYPE_LABEL[item.type]}
+    </span>
+    <div className="absolute inset-x-0 bottom-0 p-2.5">
+      <p className="line-clamp-2 text-xs font-bold leading-snug text-white">
+        {item.title}
+      </p>
+      {item.period && (
+        <p className="mt-1 truncate text-[10px] text-white/75">{item.period}</p>
+      )}
+    </div>
+  </>
+);
+
 interface WeatherTrendingContentProps {
   district: string;
   items: WeatherContentItem[];
@@ -48,32 +78,19 @@ const WeatherTrendingContent = ({
             key={item.id}
             className="relative aspect-[3/4] overflow-hidden rounded-md bg-[#191f28]"
           >
-            {item.thumbnailUrl ? (
-              <img
-                src={item.thumbnailUrl}
-                alt=""
-                loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover"
-              />
+            {item.linkUrl ? (
+              <a
+                href={item.linkUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${item.title} (새 탭에서 열림)`}
+                className="group block h-full w-full focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600"
+              >
+                <ContentCardBody item={item} />
+              </a>
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-[#e5e8eb]">
-                <CalendarIcon className="h-6 w-6 text-[#8b95a1]" />
-              </div>
+              <ContentCardBody item={item} />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <span className="absolute left-2 top-2 rounded-sm bg-black/50 px-1.5 py-0.5 text-[10px] font-bold text-white">
-              {TYPE_LABEL[item.type]}
-            </span>
-            <div className="absolute inset-x-0 bottom-0 p-2.5">
-              <p className="line-clamp-2 text-xs font-bold leading-snug text-white">
-                {item.title}
-              </p>
-              {item.period && (
-                <p className="mt-1 truncate text-[10px] text-white/75">
-                  {item.period}
-                </p>
-              )}
-            </div>
           </li>
         ))}
       </ul>
