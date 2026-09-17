@@ -148,11 +148,11 @@ const MyPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-500">
+    <div className="flex min-h-screen flex-col bg-gray-500">
       <HeaderUser />
 
       {/* Desktop */}
-      <main className="mx-auto hidden min-h-[calc(100vh-var(--header-height))] max-w-[1500px] gap-6 px-8 pb-12 pt-[calc(var(--header-height)+32px)] lg:flex">
+      <main className="mx-auto hidden w-full max-w-[1500px] flex-1 gap-6 px-8 pb-12 pt-[calc(var(--header-height)+32px)] lg:flex">
         <div className="min-w-0 flex-1">
           <section>
             <SectionHeading
@@ -180,7 +180,7 @@ const MyPage = () => {
       </main>
 
       {/* Mobile */}
-      <main className="px-5 pb-12 pt-[calc(var(--header-height)+20px)] lg:hidden">
+      <main className="flex-1 px-5 pb-12 pt-[calc(var(--header-height)+20px)] lg:hidden">
         {profileCard('mb-6')}
 
         {mobileView === 'saved' ? (
