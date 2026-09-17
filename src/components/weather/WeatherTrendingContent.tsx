@@ -1,5 +1,10 @@
 import type { WeatherContentItem } from '@/api/weatherFeedTypes';
-import { CalendarIcon, MobileIcon, SpinnerIcon } from '@/components/ui/icons';
+import {
+  CalendarIcon,
+  ExternalLinkIcon,
+  MobileIcon,
+  SpinnerIcon,
+} from '@/components/ui/icons';
 
 const TYPE_LABEL: Record<WeatherContentItem['type'], string> = {
   festival: '축제',
@@ -9,8 +14,17 @@ const TYPE_LABEL: Record<WeatherContentItem['type'], string> = {
   video: '영상',
 };
 
-/** 카드 내용 — 링크 유무와 관계없이 동일하게 그린다 */
-const ContentCardBody = ({ item }: { item: WeatherContentItem }) => (
+/**
+ * 카드 내용. 링크가 있는 카드만 ↗ 표시를 붙여,
+ * 표시가 없는 카드(link_url null)는 누르는 카드가 아님을 자연스럽게 구분한다.
+ */
+const ContentCardBody = ({
+  item,
+  hasLink,
+}: {
+  item: WeatherContentItem;
+  hasLink: boolean;
+}) => (
   <>
     {item.thumbnailUrl ? (
       <img
@@ -28,6 +42,11 @@ const ContentCardBody = ({ item }: { item: WeatherContentItem }) => (
     <span className="absolute left-2 top-2 rounded-sm bg-black/50 px-1.5 py-0.5 text-[10px] font-bold text-white">
       {TYPE_LABEL[item.type]}
     </span>
+    {hasLink && (
+      <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-sm bg-black/50 text-white transition group-hover:bg-blue-600">
+        <ExternalLinkIcon className="h-3 w-3" />
+      </span>
+    )}
     <div className="absolute inset-x-0 bottom-0 p-2.5">
       <p className="line-clamp-2 text-xs font-bold leading-snug text-white">
         {item.title}
@@ -86,10 +105,10 @@ const WeatherTrendingContent = ({
                 aria-label={`${item.title} (새 탭에서 열림)`}
                 className="group block h-full w-full focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600"
               >
-                <ContentCardBody item={item} />
+                <ContentCardBody item={item} hasLink />
               </a>
             ) : (
-              <ContentCardBody item={item} />
+              <ContentCardBody item={item} hasLink={false} />
             )}
           </li>
         ))}
