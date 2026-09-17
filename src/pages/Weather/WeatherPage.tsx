@@ -111,7 +111,7 @@ const WeatherPage = () => {
   const isNoData = !feed || feed.data_quality.status === 'no_data';
 
   return (
-    <div className="min-h-screen bg-gray-500">
+    <div className="flex min-h-screen flex-col bg-gray-500">
       {isLoading && (
         <LoadingOverlay
           message="실시간 공공데이터 연동을 통해 상권날씨를 분석 중입니다."
@@ -121,7 +121,7 @@ const WeatherPage = () => {
       )}
       <HeaderUser activeNav="weather" />
 
-      <main className="mx-auto w-full max-w-[1400px] px-5 pb-12 pt-[calc(var(--header-height)+24px)] lg:px-8">
+      <main className="mx-auto w-full max-w-[1400px] flex-1 px-5 pb-12 pt-[calc(var(--header-height)+24px)] lg:px-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">

@@ -36,10 +36,10 @@ const MyPageSettings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-500">
+    <div className="flex min-h-screen flex-col bg-gray-500">
       <HeaderUser />
 
-      <main className="mx-auto max-w-[640px] px-5 pb-12 pt-[calc(var(--header-height)+20px)] lg:px-8 lg:pt-[calc(var(--header-height)+32px)]">
+      <main className="mx-auto w-full max-w-[640px] flex-1 px-5 pb-12 pt-[calc(var(--header-height)+20px)] lg:px-8 lg:pt-[calc(var(--header-height)+32px)]">
         <div className="mb-6 flex items-center gap-2">
           <button
             type="button"

@@ -18,10 +18,10 @@ const LegalPageLayout = ({
   counterpart,
   children,
 }: LegalPageLayoutProps) => (
-  <div className="min-h-screen bg-gray-500">
+  <div className="flex min-h-screen flex-col bg-gray-500">
     <HeaderUser />
 
-    <main className="mx-auto w-full max-w-[860px] px-5 pb-16 pt-[calc(var(--header-height)+32px)] lg:px-8">
+    <main className="mx-auto w-full max-w-[860px] flex-1 px-5 pb-16 pt-[calc(var(--header-height)+32px)] lg:px-8">
       <header>
         <h1 className="text-2xl font-extrabold text-[#191f28]">{title}</h1>
         <p className="mt-2 text-xs font-medium text-gray-46">

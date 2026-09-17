@@ -42,14 +42,14 @@ const HomePage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-500">
+    <div className="flex min-h-screen flex-col bg-gray-500">
       <HeaderUser activeNav="home" />
 
       <div className="pt-[var(--header-height)]">
         <SignalBanner />
       </div>
 
-      <main className="mx-auto w-full max-w-[1800px] px-5 pb-10 pt-5 lg:px-8">
+      <main className="mx-auto w-full max-w-[1800px] flex-1 px-5 pb-10 pt-5 lg:px-8">
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,550px)_minmax(0,1fr)_minmax(0,413px)]">
           {/* 좌: 상권날씨 지도 */}
           <section className="rounded-lg bg-white p-5 shadow-sm">
