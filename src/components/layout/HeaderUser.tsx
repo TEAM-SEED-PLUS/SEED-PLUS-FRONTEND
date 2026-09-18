@@ -35,7 +35,8 @@ const navItems: {
 const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
   const navigate = useNavigate();
   const { isAuthenticated, logout } = useAuth();
-  const logoTarget = isAuthenticated ? '/store-builder' : '/';
+  // 로고는 로그인 여부와 무관하게 홈(상권날씨)으로 보낸다.
+  const logoTarget = '/weather';
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
   const handleLogout = async () => {
