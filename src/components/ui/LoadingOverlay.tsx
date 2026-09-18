@@ -8,20 +8,26 @@ const formatElapsed = (totalSeconds: number) => {
   return minutes > 0 ? `${minutes}분 ${seconds}초 경과` : `${seconds}초 경과`;
 };
 
-interface CalculationLoadingOverlayProps {
-  onCancel: () => void;
+interface LoadingOverlayProps {
+  /** 무엇을 하는 중인지 (예: '실시간 공공데이터 연동을 통해 계산 중입니다.') */
+  message: string;
+  /** 예상 소요 시간 안내 (예: '최대 5분이 소요될 수 있습니다.') */
+  description?: string;
+  onCancel?: () => void;
 }
 
 /**
- * 계산기 공통 로딩 오버레이.
- * 실시간 수집 기반 분석은 최대 5분까지 걸릴 수 있어, 화면을 덮고
- * 경과 시간과 취소 수단을 함께 제공해 오류로 오인하지 않게 한다.
+ * 실시간 수집 기반 요청 공통 로딩 오버레이.
+ * 응답이 수십 초~수 분 걸려 정지 화면을 오류로 오인하기 쉬우므로,
+ * 화면을 덮고 경과 시간과 취소 수단을 함께 제공한다.
  * 모달 컨테이너의 backdrop-filter가 fixed의 기준을 컨테이너로 바꿔
  * 스크롤 시 오버레이가 밀려나므로, body 포털로 뷰포트에 직접 붙인다.
  */
-const CalculationLoadingOverlay = ({
+const LoadingOverlay = ({
+  message,
+  description,
   onCancel,
-}: CalculationLoadingOverlayProps) => {
+}: LoadingOverlayProps) => {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
@@ -39,23 +45,29 @@ const CalculationLoadingOverlay = ({
     >
       <SpinnerIcon className="h-12 w-12 text-white" />
       <p className="text-sm leading-relaxed font-bold text-white">
-        실시간 공공데이터 연동을 통해 계산 중입니다.
-        <br />
-        최대 5분이 소요될 수 있습니다.
+        {message}
+        {description && (
+          <>
+            <br />
+            {description}
+          </>
+        )}
       </p>
       <p className="text-xs font-medium text-white/80">
         {formatElapsed(elapsedSeconds)}
       </p>
-      <button
-        type="button"
-        onClick={onCancel}
-        className="mt-1 rounded-md border border-white/60 px-4 py-2 text-xs font-bold text-white transition hover:bg-white/10"
-      >
-        취소
-      </button>
+      {onCancel && (
+        <button
+          type="button"
+          onClick={onCancel}
+          className="mt-1 rounded-md border border-white/60 px-4 py-2 text-xs font-bold text-white transition hover:bg-white/10"
+        >
+          취소
+        </button>
+      )}
     </div>,
     document.body
   );
 };
 
-export default CalculationLoadingOverlay;
+export default LoadingOverlay;

@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SEEDPLUS from '@/assets/Logo/SEED+ LOGO.svg';
-import { FEATURE_FLAGS } from '@/config/featureFlags';
 import { MenuIcon, ProfileIcon, SearchIcon } from '@/components/ui/icons';
 import { useAuth } from '@/auth';
 import LogoutConfirmModal from './LogoutConfirmModal';
 
-type UserNav = 'home' | 'feed' | 'store';
+type UserNav = 'home' | 'feed' | 'store' | 'weather';
 
 interface HeaderUserProps {
   activeNav?: UserNav;
@@ -22,8 +21,9 @@ const navItems: {
   /** 프로덕션 비노출 처리된 메뉴 */
   hidden?: boolean;
 }[] = [
-  // 홈 화면이 아직 mock 데이터라 프로덕션에서는 감춰둔다(FEATURE_FLAGS.HOME_TAB).
-  { id: 'home', label: '홈', to: '/home', hidden: !FEATURE_FLAGS.HOME_TAB },
+  // '홈' 탭은 상권날씨 대시보드(/weather)다. 로그인 가드가 없어 비회원에게도 노출한다.
+  // 예전 mock 홈(/home) 탭은 이름이 겹쳐 제거했다(라우트는 남아 있으나 진입 경로 없음).
+  { id: 'weather', label: '홈', to: '/weather' },
   {
     id: 'store',
     label: '내 상가 만들기',

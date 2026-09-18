@@ -1,7 +1,7 @@
 // 상권날씨 Public Feed Schema v1
-// 출처: SEED-PLUS-AI 레포 docs/weather_feed_schema_v1.md
-// 이 타입은 AI 엔진이 Backend에 전달하는 단일 public 계약을 그대로 옮긴 것이다.
-// 실제 API 연동 시 이 타입을 그대로 사용하고 mock만 교체하면 된다.
+// 출처: SEED-PLUS-AI 레포 app/models.py (2026-09-15 기준 실제 응답 계약)
+// 지표류는 수집 실패 시 null이 올 수 있어 nullable로 둔다. 화면에서는
+// null을 0이 아니라 '미산출'로 표기해야 한다.
 
 export type WeatherGrade = '맑음' | '구름' | '흐림' | '비' | '폭풍';
 
@@ -21,24 +21,25 @@ export type DataQualityStatus = 'ok' | 'partial' | 'fallback' | 'no_data';
 export type SourceStatus = 'ok' | 'complete' | 'partial' | 'no_data' | 'failed';
 
 export type WeatherFeedQuery = {
-  district: string;
-  date: string;
-  time: string;
-  time_band: TimeBand;
+  district: string | null;
+  date: string | null;
+  time: string | null;
+  time_band: TimeBand | string | null;
 };
 
 export type MarketWeather = {
-  score: number;
-  grade: WeatherGrade;
-  emoji: string;
+  score: number | null;
+  /** 서버가 등급 문자열을 확장할 수 있어 union으로 좁히지 않는다 */
+  grade: WeatherGrade | string | null;
+  emoji: string | null;
 };
 
 /** rule engine이 확정한 4대 지표 (0~100) */
 export type WeatherIndicators = {
-  inflow_pressure: number;
-  spending_intent: number;
-  competition_pressure: number;
-  operational_risk: number;
+  inflow_pressure: number | null;
+  spending_intent: number | null;
+  competition_pressure: number | null;
+  operational_risk: number | null;
 };
 
 export type WeatherNarrative = {
@@ -51,7 +52,7 @@ export type WeatherNarrative = {
 
 export type ScoreContext = {
   /** 심야에는 previous_evening_reference로 직전 저녁 값을 참고 표기한다. */
-  basis: 'requested_time' | 'previous_evening_reference';
+  basis?: 'requested_time' | 'previous_evening_reference' | string | null;
   reference_date?: string;
   reference_time_band?: string;
   reference_start?: string;
@@ -65,6 +66,11 @@ export type WeatherDataQuality = {
   /** UI에 그대로 노출할 확정 문구 (예: 심야 안내, 데이터 부족 안내) */
   badges: string[];
   fallback_sources: string[];
+  no_data_sources?: string[];
+  stale_sources?: string[];
+  skipped_sources?: string[];
+  failed_sources?: string[];
+  empty_sources?: string[];
   score_context: ScoreContext;
 };
 
@@ -87,27 +93,70 @@ export type WeatherSources = {
   competition_sdot?: SourceInfo;
 };
 
+/** 서버가 내려주는 행사·공연·축제 카드 (schema v1의 content 블록) */
+export type ApiContentItem = {
+  id: string;
+  type: 'festival' | 'event' | 'performance' | 'sports';
+  title: string;
+  period: string | null;
+  place: string | null;
+  thumbnail_url: string | null;
+  /** 원문(주최 측·예매처) 페이지 */
+  link_url?: string | null;
+};
+
 export type WeatherFeed = {
   schema_version: string;
   query: WeatherFeedQuery;
-  opportunity_score: number;
+  opportunity_score: number | null;
   market_weather: MarketWeather;
   indicators: WeatherIndicators;
-  decision_tags: DecisionTag[];
+  /** 서버가 태그를 확장할 수 있어 string으로 받는다 */
+  decision_tags: (DecisionTag | string)[];
   narrative: WeatherNarrative;
   data_quality: WeatherDataQuality;
   sources: WeatherSources;
+  content?: { items: ApiContentItem[] };
   generated_at: string;
 };
 
+/** GET /api/v1/weather-feeds/overview — 자치구별 등급 일괄 조회 */
+export type WeatherOverviewDistrict = {
+  district: string;
+  opportunity_score: number | null;
+  grade: string | null;
+  emoji: string | null;
+};
+
+export type WeatherOverviewResponse = {
+  schema_version: string;
+  query: {
+    date: string | null;
+    time?: string | null;
+    time_band?: string | null;
+  };
+  status: 'ok' | 'partial' | 'failed' | 'no_data' | 'stale';
+  districts: WeatherOverviewDistrict[];
+  generated_at: string;
+  source_time: string | null;
+  age_minutes: number | null;
+  fresh_ttl_minutes: number;
+  is_fresh: boolean;
+};
+
 // ─────────────────────────────────────────────────────────────
-// 아래는 아직 public schema에 없는 임시 계약이다.
-// 업무지시 ⑤(행사·축제·공연·스포츠 카드 + 기획팀 제작 영상)를 그리려면
-// 제목·기간·장소·이미지가 필요한데 schema v1의 sources.content에는 상태값만 있다.
-// AI/DATA 담당자와 협의해 확정되면 이 블록을 schema 쪽으로 옮긴다.
+// 화면 전용 표현 타입.
+// 서버 content.items(ApiContentItem)를 화면용으로 변환해 쓴다.
+// 'video'(기획팀 제작 영상)와 viewCount는 아직 서버 계약에 없어
+// 화면에서만 존재한다. AI 쪽에 추가되면 매퍼에서 채우면 된다.
 // ─────────────────────────────────────────────────────────────
 
-export type ContentItemType = 'festival' | 'performance' | 'sports' | 'video';
+export type ContentItemType =
+  | 'festival'
+  | 'event'
+  | 'performance'
+  | 'sports'
+  | 'video';
 
 export type WeatherContentItem = {
   id: string;

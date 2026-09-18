@@ -13,7 +13,7 @@ import {
 } from '@/api';
 import { useAuth } from '@/auth';
 import Skeleton from '@/components/ui/Skeleton';
-import CalculationLoadingOverlay from './CalculationLoadingOverlay';
+import LoadingOverlay from '@/components/ui/LoadingOverlay';
 import { SpinnerIcon } from '@/components/ui/icons';
 
 interface RevenueEstimateModalProps {
@@ -302,7 +302,9 @@ const RevenueEstimateModal = ({
       }`}
     >
       {isSubmitting && (
-        <CalculationLoadingOverlay
+        <LoadingOverlay
+          message="실시간 공공데이터 연동을 통해 계산 중입니다."
+          description="최대 5분이 소요될 수 있습니다."
           onCancel={() => calcAbortRef.current?.abort()}
         />
       )}
