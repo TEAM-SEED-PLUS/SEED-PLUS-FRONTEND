@@ -389,11 +389,11 @@ const WeatherPage = () => {
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
               <EmptySectionCard
                 title="주간 브리핑"
-                message="주간 상권 브리핑은 데이터 준비 중입니다."
+                message="더욱 풍부하게 상권 정보를 제공하기 위해 준비 중에 있습니다."
               />
               <EmptySectionCard
                 title="SEED+ 실시간 채팅"
-                message="실시간 채팅은 준비 중입니다."
+                message="채팅 서비스 준비 중에 있습니다."
               />
             </div>
           </div>
