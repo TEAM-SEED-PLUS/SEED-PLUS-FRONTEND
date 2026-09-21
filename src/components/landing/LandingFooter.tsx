@@ -19,9 +19,9 @@ const linkGroups: { heading: string; links: FooterLink[] }[] = [
   {
     heading: '고객 지원',
     links: [
-      { label: '공지사항', href: null },
-      { label: 'FAQ', href: null },
-      { label: '문의하기', href: 'mailto:seedbusiness0@gmail.com' },
+      { label: '공지사항', to: '/notice' },
+      { label: 'FAQ', to: '/faq' },
+      { label: '문의하기', to: '/contact' },
     ],
   },
   {
