@@ -55,7 +55,7 @@ const LoginPage = () => {
       });
       // GA4 로그인 완료 이벤트
       trackEvent('login', { method: 'login_id' });
-      navigate('/store-builder');
+      navigate('/weather');
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error));
     } finally {

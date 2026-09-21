@@ -4,7 +4,11 @@ import {
   SEOUL_MAP_BACKGROUND,
   SEOUL_MAP_VIEWBOX,
 } from './seoulMapPaths';
-import { GRADE_FILL, resolveGrade } from './weatherGradeStyle';
+import {
+  GRADE_FILL,
+  GRADE_LABEL_FILL,
+  resolveGrade,
+} from './weatherGradeStyle';
 
 interface SeoulDistrictMapProps {
   grades: Record<string, { grade: WeatherGrade | string | null } | undefined>;
@@ -62,20 +66,23 @@ const SeoulDistrictMap = ({
     })}
 
     {/* 자치구명은 클릭을 가로채지 않도록 pointer-events를 비운다 */}
-    {SEOUL_DISTRICT_PATHS.map(({ name, labelX, labelY }) => (
-      <text
-        key={`label-${name}`}
-        x={labelX}
-        y={labelY}
-        className="pointer-events-none select-none"
-        fontSize={12}
-        letterSpacing={-0.48}
-        fontWeight={name === selected ? 700 : 400}
-        fill="#222222"
-      >
-        {name}
-      </text>
-    ))}
+    {SEOUL_DISTRICT_PATHS.map(({ name, labelX, labelY }) => {
+      const grade = resolveGrade(grades[name]?.grade);
+      return (
+        <text
+          key={`label-${name}`}
+          x={labelX}
+          y={labelY}
+          className="pointer-events-none select-none"
+          fontSize={12}
+          letterSpacing={-0.48}
+          fontWeight={name === selected ? 700 : 400}
+          fill={grade ? GRADE_LABEL_FILL[grade] : '#222222'}
+        >
+          {name}
+        </text>
+      );
+    })}
   </svg>
 );
 
