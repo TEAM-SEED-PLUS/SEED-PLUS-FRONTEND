@@ -35,5 +35,14 @@ export const resolveGrade = (
 ): WeatherGrade | undefined =>
   grade && grade in GRADE_FILL ? (grade as WeatherGrade) : undefined;
 
+/** 어두운 채움(흐림·폭풍) 위에서는 자치구명을 흰색으로 써야 읽힌다 */
+export const GRADE_LABEL_FILL: Record<WeatherGrade, string> = {
+  맑음: '#222222',
+  구름: '#222222',
+  흐림: '#ffffff',
+  비: '#222222',
+  폭풍: '#ffffff',
+};
+
 /** 등급을 산출하지 못한 자치구 채움색 */
 export const GRADE_FILL_UNKNOWN = '#eaecef';
