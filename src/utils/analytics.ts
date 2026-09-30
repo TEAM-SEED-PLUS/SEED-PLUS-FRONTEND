@@ -4,7 +4,7 @@ const gaMeasurementId = getEnv('VITE_GA_MEASUREMENT_ID');
 
 let isGoogleAnalyticsLoaded = false;
 
-export const isGoogleAnalyticsEnabled = Boolean(gaMeasurementId);
+const isGoogleAnalyticsEnabled = Boolean(gaMeasurementId);
 
 export const loadGoogleAnalytics = () => {
   if (

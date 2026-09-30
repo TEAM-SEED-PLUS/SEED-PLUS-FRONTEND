@@ -11,7 +11,7 @@ import type { LegalDocument } from './legalTypes';
 //  - 수탁자 상호와 개정 이력은 확정 정보가 없어 기재하지 않는다.
 //    위탁 표는 원문과 동일하게 업무 구분 기준으로 두고, 수탁자가 확정되면 상호를 추가한다.
 
-export const PRIVACY_POLICY_EFFECTIVE_DATE = '2026년 07월 25일';
+const PRIVACY_POLICY_EFFECTIVE_DATE = '2026년 07월 25일';
 
 export const privacyPolicyDocument: LegalDocument = {
   title: '개인정보처리방침',
