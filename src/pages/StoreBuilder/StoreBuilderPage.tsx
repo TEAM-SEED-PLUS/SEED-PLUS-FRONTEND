@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { AppFooter, HeaderUser } from '@/components/layout';
+import { AppFooter, AuthCheckingScreen, HeaderUser } from '@/components/layout';
 import {
   ExpertMatchSidebar,
   MobileStoreSidebar,
@@ -144,11 +144,7 @@ const StoreBuilderPage = () => {
   } = useStoreBuilderData(isAuthenticated);
 
   if (status === 'loading') {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-500 text-sm font-medium text-gray-46">
-        인증 상태를 확인하고 있습니다.
-      </div>
-    );
+    return <AuthCheckingScreen />;
   }
 
   if (!isAuthenticated) {

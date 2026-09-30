@@ -22,6 +22,10 @@ import {
   validateEmail,
   validateLoginId,
 } from '@/utils/authValidation';
+import {
+  AUTH_INPUT_CLASS,
+  ERROR_INPUT_CLASS,
+} from '@/components/ui/formStyles';
 
 type SignupLocationState = {
   signupSource?: string;
@@ -29,9 +33,6 @@ type SignupLocationState = {
 
 type SignupStage = 'form' | 'onboarding';
 
-const inputClass =
-  'h-12 w-full rounded-sm border border-[#d8dde5] px-4 text-sm text-[#191f28] outline-none placeholder:text-[#b0b8c1] focus:border-blue-600';
-const errorInputClass = 'border-[#e5484d] focus:border-[#e5484d]';
 const labelClass = 'mb-2 block text-sm font-medium text-gray-46';
 
 const toApiBirthDate = (value: string) => {
@@ -240,7 +241,7 @@ const SignupPage = () => {
                         }}
                         onBlur={() => setLoginIdError(validateLoginId(loginId))}
                         placeholder="영문·숫자 4~20자 ex) seedplus01"
-                        className={`${inputClass} ${loginIdError ? errorInputClass : ''}`}
+                        className={`${AUTH_INPUT_CLASS} ${loginIdError ? ERROR_INPUT_CLASS : ''}`}
                         aria-invalid={Boolean(loginIdError)}
                       />
                       {loginIdError && (
@@ -264,7 +265,7 @@ const SignupPage = () => {
                         }}
                         onBlur={() => setEmailError(validateEmail(email))}
                         placeholder="ex) seedplus@example.com"
-                        className={`${inputClass} ${emailError ? errorInputClass : ''}`}
+                        className={`${AUTH_INPUT_CLASS} ${emailError ? ERROR_INPUT_CLASS : ''}`}
                         aria-invalid={Boolean(emailError)}
                       />
                       {emailError && (
@@ -287,7 +288,7 @@ const SignupPage = () => {
                         }}
                         onBlur={() => setNameError(validateName(name))}
                         placeholder="이름을 입력해주세요."
-                        className={`${inputClass} ${nameError ? errorInputClass : ''}`}
+                        className={`${AUTH_INPUT_CLASS} ${nameError ? ERROR_INPUT_CLASS : ''}`}
                         aria-invalid={Boolean(nameError)}
                       />
                       {nameError && (
@@ -315,7 +316,7 @@ const SignupPage = () => {
                           setBirthDateError(validateBirthDate(birthDate))
                         }
                         placeholder="ex) 19900101"
-                        className={`${inputClass} ${birthDateError ? errorInputClass : ''}`}
+                        className={`${AUTH_INPUT_CLASS} ${birthDateError ? ERROR_INPUT_CLASS : ''}`}
                         aria-invalid={Boolean(birthDateError)}
                       />
                       {birthDateError && (
@@ -342,7 +343,7 @@ const SignupPage = () => {
                           setPhoneError(validatePhoneNumber(phoneNumber))
                         }
                         placeholder="ex) 01012345678"
-                        className={`${inputClass} ${phoneError ? errorInputClass : ''}`}
+                        className={`${AUTH_INPUT_CLASS} ${phoneError ? ERROR_INPUT_CLASS : ''}`}
                         aria-invalid={Boolean(phoneError)}
                       />
                       {phoneError && (
@@ -369,7 +370,7 @@ const SignupPage = () => {
                           setPasswordError(validatePassword(password))
                         }
                         placeholder="8자 이상 입력해주세요."
-                        className={`${inputClass} ${passwordError ? errorInputClass : ''}`}
+                        className={`${AUTH_INPUT_CLASS} ${passwordError ? ERROR_INPUT_CLASS : ''}`}
                         aria-invalid={Boolean(passwordError)}
                       />
                       {passwordError && (
