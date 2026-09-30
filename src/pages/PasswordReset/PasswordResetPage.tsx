@@ -10,10 +10,11 @@ import {
   validatePasswordConfirm,
   validateSignupPassword,
 } from '@/utils/authValidation';
+import {
+  AUTH_INPUT_CLASS,
+  ERROR_INPUT_CLASS,
+} from '@/components/ui/formStyles';
 
-const inputClass =
-  'h-12 w-full rounded-sm border border-[#d8dde5] px-4 text-sm text-[#191f28] outline-none placeholder:text-[#b0b8c1] focus:border-blue-600';
-const errorInputClass = 'border-[#e5484d] focus:border-[#e5484d]';
 const labelClass = 'mb-2 block text-sm font-medium text-gray-46';
 
 /**
@@ -124,7 +125,7 @@ const PasswordResetPage = () => {
                     }}
                     onBlur={() => setEmailError(validateEmail(email))}
                     placeholder="ex) seedplus@example.com"
-                    className={`${inputClass} ${emailError ? errorInputClass : ''}`}
+                    className={`${AUTH_INPUT_CLASS} ${emailError ? ERROR_INPUT_CLASS : ''}`}
                     aria-invalid={Boolean(emailError)}
                   />
                   {emailError && (
@@ -154,7 +155,7 @@ const PasswordResetPage = () => {
                       )
                     }
                     placeholder="현재 비밀번호를 입력해주세요."
-                    className={`${inputClass} ${currentPasswordError ? errorInputClass : ''}`}
+                    className={`${AUTH_INPUT_CLASS} ${currentPasswordError ? ERROR_INPUT_CLASS : ''}`}
                     aria-invalid={Boolean(currentPasswordError)}
                   />
                   {currentPasswordError && (
@@ -182,7 +183,7 @@ const PasswordResetPage = () => {
                       setNewPasswordError(validateSignupPassword(newPassword))
                     }
                     placeholder="8자 이상, 영문/숫자/특수문자 포함"
-                    className={`${inputClass} ${newPasswordError ? errorInputClass : ''}`}
+                    className={`${AUTH_INPUT_CLASS} ${newPasswordError ? ERROR_INPUT_CLASS : ''}`}
                     aria-invalid={Boolean(newPasswordError)}
                   />
                   {newPasswordError && (
@@ -215,7 +216,7 @@ const PasswordResetPage = () => {
                       )
                     }
                     placeholder="새 비밀번호를 다시 입력해주세요."
-                    className={`${inputClass} ${confirmationError ? errorInputClass : ''}`}
+                    className={`${AUTH_INPUT_CLASS} ${confirmationError ? ERROR_INPUT_CLASS : ''}`}
                     aria-invalid={Boolean(confirmationError)}
                   />
                   {confirmationError && (

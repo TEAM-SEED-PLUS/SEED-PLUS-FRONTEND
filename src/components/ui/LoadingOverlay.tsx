@@ -1,12 +1,7 @@
-import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { SpinnerIcon } from '@/components/ui/icons';
-
-const formatElapsed = (totalSeconds: number) => {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return minutes > 0 ? `${minutes}분 ${seconds}초 경과` : `${seconds}초 경과`;
-};
+import { useElapsedSeconds } from '@/hooks';
+import { formatElapsed } from '@/utils/formatElapsed';
 
 interface LoadingOverlayProps {
   /** 무엇을 하는 중인지 (예: '실시간 공공데이터 연동을 통해 계산 중입니다.') */
@@ -28,15 +23,7 @@ const LoadingOverlay = ({
   description,
   onCancel,
 }: LoadingOverlayProps) => {
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-
-  useEffect(() => {
-    const timerId = window.setInterval(
-      () => setElapsedSeconds((current) => current + 1),
-      1000
-    );
-    return () => window.clearInterval(timerId);
-  }, []);
+  const elapsedSeconds = useElapsedSeconds();
 
   return createPortal(
     <div

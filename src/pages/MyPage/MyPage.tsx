@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
-import { AppFooter, HeaderUser } from '@/components/layout';
+import { AppFooter, AuthCheckingScreen, HeaderUser } from '@/components/layout';
 import {
   ActivityPostCard,
   CategoryTabs,
@@ -121,11 +121,7 @@ const MyPage = () => {
   }, []);
 
   if (status === 'loading') {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-500 text-sm font-medium text-gray-46">
-        인증 상태를 확인하고 있습니다.
-      </div>
-    );
+    return <AuthCheckingScreen />;
   }
 
   if (!isAuthenticated) {
