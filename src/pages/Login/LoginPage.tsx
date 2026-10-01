@@ -8,16 +8,16 @@ import { useDocumentTitle } from '@/hooks';
 import { trackEvent } from '@/utils/analytics';
 import { validatePassword } from '@/utils/formValidation';
 import { validateLoginId } from '@/utils/authValidation';
+import {
+  AUTH_INPUT_CLASS,
+  ERROR_INPUT_CLASS,
+} from '@/components/ui/formStyles';
 
 type LoginMethod = 'loginId' | 'social';
 
 type LocationState = {
   signupComplete?: boolean;
 };
-
-const inputClass =
-  'h-12 w-full rounded-sm border border-[#d8dde5] px-4 text-sm outline-none placeholder:text-[#b0b8c1] focus:border-blue-600';
-const errorInputClass = 'border-[#e5484d] focus:border-[#e5484d]';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -127,7 +127,7 @@ const LoginPage = () => {
                   }}
                   onBlur={() => setLoginIdError(validateLoginId(loginId))}
                   placeholder="ex) seedplus01"
-                  className={`${inputClass} ${loginIdError ? errorInputClass : ''}`}
+                  className={`${AUTH_INPUT_CLASS} ${loginIdError ? ERROR_INPUT_CLASS : ''}`}
                   aria-invalid={Boolean(loginIdError)}
                 />
                 {loginIdError && (
@@ -152,7 +152,7 @@ const LoginPage = () => {
                   }}
                   onBlur={() => setPasswordError(validatePassword(password))}
                   placeholder="비밀번호를 입력해주세요."
-                  className={`${inputClass} ${passwordError ? errorInputClass : ''}`}
+                  className={`${AUTH_INPUT_CLASS} ${passwordError ? ERROR_INPUT_CLASS : ''}`}
                   aria-invalid={Boolean(passwordError)}
                 />
                 {passwordError && (
