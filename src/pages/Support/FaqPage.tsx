@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronDownIcon } from '@/components/ui/icons';
 import { FAQ_CATEGORIES, faqItems } from '@/content/faqContent';
 import {
@@ -125,6 +126,18 @@ const FaqPage = () => {
             }
           />
         ))}
+      </div>
+
+      <div className="mt-8 flex flex-col items-center gap-3 rounded-lg bg-white px-5 py-8 text-center shadow-sm">
+        <p className="text-sm font-bold text-[#191f28]">
+          궁금한 내용을 찾지 못하셨나요?
+        </p>
+        <Link
+          to="/contact"
+          className="inline-flex h-10 items-center rounded-md bg-blue-600 px-5 text-sm font-bold text-white transition hover:bg-blue-700"
+        >
+          문의하기
+        </Link>
       </div>
     </SupportPageLayout>
   );

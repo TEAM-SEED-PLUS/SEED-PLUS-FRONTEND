@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { notices } from '@/content/noticeContent';
 import { useDocumentTitle } from '@/hooks';
 import SupportPageLayout from './SupportPageLayout';
@@ -9,7 +9,10 @@ const NoticeDetailPage = () => {
   useDocumentTitle(notice ? notice.title : '공지사항');
 
   return (
-    <SupportPageLayout title="공지사항">
+    <SupportPageLayout
+      title="공지사항"
+      backLink={{ to: '/notice', label: '공지사항' }}
+    >
       {!notice ? (
         <div className="rounded-lg bg-white px-5 py-16 text-center shadow-sm">
           <p className="text-sm font-bold text-[#191f28]">
@@ -56,15 +59,6 @@ const NoticeDetailPage = () => {
           </div>
         </article>
       )}
-
-      <div className="mt-6 text-center">
-        <Link
-          to="/notice"
-          className="text-sm font-bold text-blue-600 hover:underline"
-        >
-          목록으로
-        </Link>
-      </div>
     </SupportPageLayout>
   );
 };

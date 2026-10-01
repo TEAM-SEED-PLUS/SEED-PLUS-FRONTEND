@@ -1,13 +1,11 @@
 import { useState, type ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { AUTH_INPUT_CLASS } from '@/components/ui/formStyles';
 import { CameraIcon } from '@/components/ui/icons';
 import { useDocumentTitle } from '@/hooks';
 import SupportPageLayout from './SupportPageLayout';
 
 const ATTACHMENT_SLOTS = 3;
-
-const inputClass =
-  'h-12 w-full rounded-sm border border-[#d8dde5] px-4 text-sm outline-none placeholder:text-[#b0b8c1] focus:border-blue-600';
 
 /** 동의 항목은 기존 법적 문서와 연결한다 (명세: 기존 개인정보 관련 문서와 연결되는 구조) */
 const AGREEMENTS = [
@@ -77,7 +75,7 @@ const ContactPage = () => {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder="제목"
-              className={inputClass}
+              className={AUTH_INPUT_CLASS}
             />
           </label>
 
