@@ -220,6 +220,20 @@ export const ExternalLinkIcon = (props: IconProps) => (
   </StrokeIcon>
 );
 
+export const ChevronDownIcon = (props: IconProps) => (
+  <StrokeIcon {...props}>
+    <path d="m6 9 6 6 6-6" />
+  </StrokeIcon>
+);
+
+/** 첨부파일 슬롯 (문의하기 시안의 카메라 아이콘) */
+export const CameraIcon = (props: IconProps) => (
+  <StrokeIcon {...props} strokeWidth={1.5}>
+    <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.1-2h6.4l1.1 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5v-9Z" />
+    <circle cx="12" cy="13" r="3.2" />
+  </StrokeIcon>
+);
+
 export const MobileIcon = (props: IconProps) => (
   <StrokeIcon {...props}>
     <path d="M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z" />
