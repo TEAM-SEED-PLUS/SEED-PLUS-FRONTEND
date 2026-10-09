@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatUpdatedAt } from '@/utils/formatUpdatedAt';
-import { HeartIcon, RepeatIcon } from '@/components/ui/icons';
+import { HeartIcon, RepeatIcon, TrashIcon } from '@/components/ui/icons';
 import location from '@/assets/icons/location-icon.svg';
 import ruler from '@/assets/icons/ruler-icon.svg';
 import questionMark from '@/assets/icons/questionMark-icon.svg';
@@ -35,6 +35,8 @@ interface StoreCardProps {
   onToggleLike: (store: StoreItem) => void;
   /** 최신화 시각 표기 여부 (마이페이지 저장 목록에서만 사용) */
   showUpdatedAt?: boolean;
+  /** 넘기면 휴지통 버튼을 보여준다 (내가 만든 상가에만 전달) */
+  onDelete?: (store: StoreItem) => void;
 }
 
 const StoreCard = ({
@@ -44,6 +46,7 @@ const StoreCard = ({
   isLikePending,
   onToggleLike,
   showUpdatedAt = false,
+  onDelete,
 }: StoreCardProps) => {
   const [isScoreInfoOpen, setIsScoreInfoOpen] = useState(false);
   const updatedAtLabel = showUpdatedAt ? formatUpdatedAt(store.uploadedAt) : '';
@@ -60,29 +63,41 @@ const StoreCard = ({
               {store.category}
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => onToggleBookmark(store)}
-            disabled={isBookmarkPending}
-            className="flex h-6 w-6 shrink-0 items-center justify-center disabled:opacity-50"
-            aria-label={store.saved ? '북마크 해제' : '북마크 추가'}
-            aria-pressed={store.saved ?? false}
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          <div className="flex shrink-0 items-center gap-2">
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(store)}
+                className="flex h-6 w-6 items-center justify-center text-[#8b95a1] transition hover:text-[#e5484d]"
+                aria-label={`${store.name} 삭제`}
+              >
+                <TrashIcon className="h-5 w-5" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => onToggleBookmark(store)}
+              disabled={isBookmarkPending}
+              className="flex h-6 w-6 shrink-0 items-center justify-center disabled:opacity-50"
+              aria-label={store.saved ? '북마크 해제' : '북마크 추가'}
+              aria-pressed={store.saved ?? false}
             >
-              <path
-                d="M5 4V19.1683C5 19.9595 5.87525 20.4373 6.54076 20.0095L11.4592 16.8476C11.7887 16.6359 12.2113 16.6359 12.5408 16.8476L17.4592 20.0095C18.1248 20.4373 19 19.9595 19 19.1683V4C19 3.44772 18.5523 3 18 3H6C5.44772 3 5 3.44772 5 4Z"
-                fill={store.saved ? '#3182F6' : 'none'}
-                stroke={store.saved ? '#3182F6' : '#8b95a1'}
-                strokeWidth="1.5"
-              />
-            </svg>
-          </button>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5 4V19.1683C5 19.9595 5.87525 20.4373 6.54076 20.0095L11.4592 16.8476C11.7887 16.6359 12.2113 16.6359 12.5408 16.8476L17.4592 20.0095C18.1248 20.4373 19 19.9595 19 19.1683V4C19 3.44772 18.5523 3 18 3H6C5.44772 3 5 3.44772 5 4Z"
+                  fill={store.saved ? '#3182F6' : 'none'}
+                  stroke={store.saved ? '#3182F6' : '#8b95a1'}
+                  strokeWidth="1.5"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="mt-5 flex gap-7 text-xs font-medium text-gray-46">
