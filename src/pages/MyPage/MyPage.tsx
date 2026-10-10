@@ -169,6 +169,16 @@ const MyPage = () => {
       activityScore={null}
       className={className}
       onSettingsClick={() => navigate('/mypage/settings')}
+      plan={
+        FEATURE_FLAGS.BM_PHASE1
+          ? {
+              // TODO(BE): 내 요금제 조회 API 연동. 결제 연동 전이라 모두 FREE다.
+              label: 'FREE 요금제',
+              onPaymentsClick: () => navigate('/mypage/payments'),
+              onPricingClick: () => navigate('/pricing'),
+            }
+          : undefined
+      }
     />
   );
 

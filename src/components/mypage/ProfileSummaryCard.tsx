@@ -7,6 +7,12 @@ interface ProfileSummaryCardProps {
   activityScore: number | null;
   className?: string;
   onSettingsClick?: () => void;
+  /** BM 1차: 넘기면 요금제 줄과 [결제 내역] [요금제 보기] 버튼을 보여준다 */
+  plan?: {
+    label: string;
+    onPaymentsClick: () => void;
+    onPricingClick: () => void;
+  };
 }
 
 const SettingsIcon = () => (
@@ -33,6 +39,7 @@ const ProfileSummaryCard = ({
   activityScore,
   className = '',
   onSettingsClick,
+  plan,
 }: ProfileSummaryCardProps) => {
   const stats = [
     { label: '저장 상가', value: `${savedCount}` },
@@ -79,6 +86,29 @@ const ProfileSummaryCard = ({
           </div>
         ))}
       </div>
+      {plan && (
+        <div className="mt-6">
+          <p className="text-center text-lg font-extrabold">
+            {plan.label} 사용 중
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={plan.onPaymentsClick}
+              className="h-11 rounded-md bg-white text-sm font-bold text-blue-600 transition hover:bg-white/90"
+            >
+              결제 내역
+            </button>
+            <button
+              type="button"
+              onClick={plan.onPricingClick}
+              className="h-11 rounded-md bg-white text-sm font-bold text-blue-600 transition hover:bg-white/90"
+            >
+              요금제 보기
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
