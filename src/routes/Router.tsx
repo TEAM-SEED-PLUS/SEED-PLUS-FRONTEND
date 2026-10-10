@@ -14,6 +14,9 @@ import {
   SignupPage,
   StoreBuilderPage,
   WeatherPage,
+  PricingPage,
+  CheckoutPage,
+  PaymentHistoryPage,
 } from '@/pages';
 
 const Router = () => {
@@ -34,6 +37,10 @@ const Router = () => {
         <Route path="/weather" element={<WeatherPage />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/mypage/settings" element={<MyPageSettings />} />
+        <Route path="/mypage/payments" element={<PaymentHistoryPage />} />
+        {/* BM 1차 — 요금제 소개는 비회원도 볼 수 있고, 결제는 로그인 후 */}
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/pricing/checkout" element={<CheckoutPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
