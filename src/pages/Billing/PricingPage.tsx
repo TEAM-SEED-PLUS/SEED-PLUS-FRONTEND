@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth';
 import { AppFooter, HeaderUser } from '@/components/layout';
+import NoticeModal from '@/components/ui/NoticeModal';
 import {
   FREE_FEATURES,
   PRO_FEATURES,
@@ -10,13 +12,14 @@ import { useDocumentTitle } from '@/hooks';
 import PlanCard from './PlanCard';
 
 const buttonClass =
-  'flex min-h-11 w-full items-center justify-center rounded-md bg-blue-600 px-3 py-2 text-sm leading-snug font-bold text-white transition hover:bg-blue-700 disabled:cursor-default disabled:hover:bg-blue-600';
+  'flex min-h-11 w-full items-center justify-center break-keep rounded-md bg-blue-600 px-3 py-2 text-sm leading-snug font-bold text-white transition hover:bg-blue-700 disabled:cursor-default disabled:hover:bg-blue-600';
 
 /** 요금제/상품 소개 — FREE / PRO / (EXPERT 블러, 2차) */
 const PricingPage = () => {
   useDocumentTitle('요금제 / 상품 소개');
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const [isExpertNoticeOpen, setIsExpertNoticeOpen] = useState(false);
   // TODO(BE): 내 요금제 조회 API가 생기면 그 값으로 판단한다.
   // 결제 연동 전이라 현재 로그인 사용자는 모두 FREE다.
   const currentPlan = isAuthenticated ? 'FREE' : null;
@@ -31,15 +34,15 @@ const PricingPage = () => {
   return (
     <div className="flex min-h-screen flex-col bg-gray-500">
       <HeaderUser />
-      <main className="mx-auto w-full max-w-[1500px] flex-1 px-5 pb-16 pt-[calc(var(--header-height)+28px)] lg:px-8">
-        <h1 className="text-2xl font-extrabold text-[#191f28] md:text-4xl">
+      <main className="mx-auto w-full max-w-[1500px] flex-1 px-5 pb-16 pt-[calc(var(--header-height)+20px)] md:pt-[calc(var(--header-height)+28px)] lg:px-8">
+        <h1 className="hidden text-4xl font-extrabold text-[#191f28] md:block">
           요금제 / 상품 소개
         </h1>
-        <p className="mt-2 text-sm text-[#4e5968]">
+        <p className="mt-2 hidden text-sm text-[#4e5968] md:block">
           SEED+의 요금제와 상품을 확인해보세요!
         </p>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 md:mt-8 gap-6 lg:grid-cols-3">
           <PlanCard
             title="FREE 요금제"
             price="0원"
@@ -79,17 +82,34 @@ const PricingPage = () => {
               </div>
             }
           />
-          {/* EXPERT는 2차 구현 — 판매하지 않으므로 실제 가격·혜택 대신 자리만 블러로 둔다 */}
-          <PlanCard
-            title="EXPERT 요금제"
-            price="준비 중"
-            features={['2차 오픈 예정']}
-            isBlurred
-            footer={<div className="h-11 rounded-md bg-blue-600" aria-hidden />}
-          />
+          {/* EXPERT는 2차 구현 — 판매하지 않으므로 실제 가격·혜택 대신 자리만 블러로 두고, 누르면 준비 중 안내를 띄운다 */}
+          <div className="relative flex flex-col">
+            <PlanCard
+              title="EXPERT 요금제"
+              price="준비 중"
+              features={['2차 오픈 예정']}
+              isBlurred
+              footer={
+                <div className="h-11 rounded-md bg-blue-600" aria-hidden />
+              }
+            />
+            <button
+              type="button"
+              onClick={() => setIsExpertNoticeOpen(true)}
+              aria-label="EXPERT 요금제 (준비 중)"
+              className="absolute inset-0 cursor-pointer rounded-lg"
+            />
+          </div>
         </div>
       </main>
       <AppFooter />
+
+      {isExpertNoticeOpen && (
+        <NoticeModal
+          message="EXPERT 요금제는 준비 중에 있습니다."
+          onClose={() => setIsExpertNoticeOpen(false)}
+        />
+      )}
     </div>
   );
 };

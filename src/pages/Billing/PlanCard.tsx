@@ -27,7 +27,7 @@ const PlanCard = ({
 }: PlanCardProps) => (
   <section
     aria-hidden={isBlurred}
-    className={`flex flex-col rounded-lg bg-white p-6 md:p-8 ${
+    className={`flex h-full flex-col rounded-lg bg-white p-6 md:p-8 ${
       isCurrent ? 'border-4 border-blue-600' : 'border-4 border-transparent'
     } ${isBlurred ? 'pointer-events-none select-none blur-[6px]' : ''}`}
   >
@@ -35,17 +35,17 @@ const PlanCard = ({
       {title}
     </h2>
     <div className="mt-5 flex flex-1 flex-col rounded-lg border border-[#e5e8eb] p-5 md:p-6">
-      <div className="rounded-md bg-[#eef4ff] px-4 py-6 text-center md:py-8">
+      <div className="break-keep rounded-md bg-[#eef4ff] px-4 py-6 text-center md:py-8">
         <p className="text-[#191f28]">
-          <span className="text-3xl font-extrabold md:text-5xl">{price}</span>
+          <span className="text-xl font-extrabold md:text-5xl">{price}</span>
           {priceUnit && (
-            <span className="ml-2 text-lg font-bold md:text-xl">
+            <span className="ml-1 text-xl font-extrabold md:ml-2 md:font-bold">
               {priceUnit}
             </span>
           )}
         </p>
         {priceNote && (
-          <p className="mt-2 text-base font-bold text-[#191f28] md:text-xl">
+          <p className="mt-1 text-xl font-extrabold text-[#191f28] md:mt-2 md:font-bold">
             {priceNote}
           </p>
         )}

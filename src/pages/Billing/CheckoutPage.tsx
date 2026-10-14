@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/auth';
 import { AppFooter, AuthCheckingScreen, HeaderUser } from '@/components/layout';
+import NoticeModal from '@/components/ui/NoticeModal';
 import {
   CHECKOUT_PRODUCTS,
   PAYMENT_METHODS,
@@ -42,15 +43,15 @@ const CheckoutPage = () => {
   return (
     <div className="flex min-h-screen flex-col bg-gray-500">
       <HeaderUser />
-      <main className="mx-auto w-full max-w-[1500px] flex-1 px-5 pb-16 pt-[calc(var(--header-height)+28px)] lg:px-8">
-        <h1 className="text-2xl font-extrabold text-[#191f28] md:text-4xl">
+      <main className="mx-auto w-full max-w-[1500px] flex-1 px-5 pb-16 pt-[calc(var(--header-height)+20px)] md:pt-[calc(var(--header-height)+28px)] lg:px-8">
+        <h1 className="hidden text-4xl font-extrabold text-[#191f28] md:block">
           요금제 / 상품 소개
         </h1>
-        <p className="mt-2 text-sm text-[#4e5968]">
+        <p className="mt-2 hidden text-sm text-[#4e5968] md:block">
           SEED+의 요금제와 상품을 확인해보세요!
         </p>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 md:mt-8 gap-6 lg:grid-cols-2">
           <PlanCard
             title={product.title}
             price={product.price}
@@ -97,34 +98,12 @@ const CheckoutPage = () => {
       <AppFooter />
 
       {isNoticeOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-5"
-          role="dialog"
-          aria-modal="true"
-          aria-label="결제 준비 중 안내"
-          onClick={() => setIsNoticeOpen(false)}
-        >
-          <section
-            className="w-full max-w-[400px] rounded-lg bg-white p-7 shadow-[0_18px_60px_rgba(25,31,40,0.18)]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h2 className="border-b border-[#e5e8eb] pb-4 text-xl font-extrabold text-[#191f28]">
-              안내
-            </h2>
-            <p className="mt-4 text-sm leading-relaxed text-[#333d4b]">
-              결제 기능은 준비 중입니다.
-              <br />
-              오픈 시 공지사항으로 안내드리겠습니다.
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsNoticeOpen(false)}
-              className="mt-6 h-12 w-full rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700"
-            >
-              확인
-            </button>
-          </section>
-        </div>
+        <NoticeModal
+          message={
+            '결제 기능은 준비 중입니다.\n오픈 시 공지사항으로 안내드리겠습니다.'
+          }
+          onClose={() => setIsNoticeOpen(false)}
+        />
       )}
     </div>
   );

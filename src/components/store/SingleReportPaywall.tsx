@@ -4,7 +4,7 @@ interface SingleReportPaywallProps {
 
 /**
  * 생존율 상세 잠금 안내 (Figma '단건 결제' 팝업).
- * 블러 처리된 결과 영역 위에 띄우며, [확인]은 단건 결제 화면으로 보낸다.
+ * 블러 처리된 결과 영역 위에 띄우며, [단건결제 하기]는 단건 결제 화면으로 보낸다.
  */
 const SingleReportPaywall = ({ onConfirm }: SingleReportPaywallProps) => (
   <div className="absolute inset-0 z-10 flex items-start justify-center px-2 pt-16">
@@ -12,7 +12,7 @@ const SingleReportPaywall = ({ onConfirm }: SingleReportPaywallProps) => (
       role="dialog"
       aria-modal="false"
       aria-labelledby="single-report-paywall-title"
-      className="w-full max-w-[400px] rounded-lg border border-[#e5e8eb] bg-white p-7 shadow-[0_18px_60px_rgba(25,31,40,0.18)]"
+      className="w-full max-w-[656px] rounded-lg border border-[#e5e8eb] bg-white p-7 shadow-[0_18px_60px_rgba(25,31,40,0.18)]"
     >
       <h3
         id="single-report-paywall-title"
@@ -31,7 +31,7 @@ const SingleReportPaywall = ({ onConfirm }: SingleReportPaywallProps) => (
         onClick={onConfirm}
         className="mt-6 h-12 w-full rounded-md bg-blue-600 text-base font-bold text-white transition hover:bg-blue-700"
       >
-        확인
+        단건결제 하기
       </button>
     </section>
   </div>
