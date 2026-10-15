@@ -10,6 +10,9 @@ interface StoreGridProps {
   onToggleLike: (store: StoreItem) => void;
   /** 최신화 시각 표기 여부 (마이페이지 저장 목록에서만 사용) */
   showUpdatedAt?: boolean;
+  /** 삭제 가능한 상가인지 (마이페이지에서 내가 만든 상가만 true) */
+  canDelete?: (store: StoreItem) => boolean;
+  onDelete?: (store: StoreItem) => void;
 }
 
 const StoreGrid = ({
@@ -21,6 +24,8 @@ const StoreGrid = ({
   pendingLikeIds,
   onToggleLike,
   showUpdatedAt = false,
+  canDelete,
+  onDelete,
 }: StoreGridProps) => {
   if (isLoading) {
     return (
@@ -57,6 +62,7 @@ const StoreGrid = ({
           isLikePending={pendingLikeIds.includes(store.id)}
           onToggleLike={onToggleLike}
           showUpdatedAt={showUpdatedAt}
+          onDelete={onDelete && canDelete?.(store) ? onDelete : undefined}
         />
       ))}
     </div>

@@ -15,16 +15,11 @@ const NAME_PATTERN = /^[가-힣a-zA-Z\s]{2,30}$/;
 const VERIFY_CODE_PATTERN = /^\d{6}$/;
 
 /** V-04 프로필 이미지 제약 */
-export const PROFILE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
-export const PROFILE_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png'];
-
-/** V-05 인증코드 만료(초) */
-export const VERIFY_CODE_TTL_SECONDS = 300;
-/** V-05 재전송 쿨다운(초) */
-export const VERIFY_CODE_RESEND_COOLDOWN_SECONDS = 60;
+const PROFILE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+const PROFILE_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png'];
 
 /** 가입 가능 최소 연령 (개인정보보호법 제22조의2) */
-export const MIN_SIGNUP_AGE = 14;
+const MIN_SIGNUP_AGE = 14;
 
 /** 서버가 소문자로 정규화해 저장하므로 클라이언트도 동일하게 맞춘다 */
 export const normalizeEmail = (value: string) => value.trim().toLowerCase();

@@ -1,11 +1,6 @@
-import { useEffect, useState } from 'react';
 import { SpinnerIcon } from '@/components/ui/icons';
-
-const formatElapsed = (totalSeconds: number) => {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return minutes > 0 ? `${minutes}분 ${seconds}초 경과` : `${seconds}초 경과`;
-};
+import { useElapsedSeconds } from '@/hooks';
+import { formatElapsed } from '@/utils/formatElapsed';
 
 interface WeatherSectionLoadingProps {
   district: string;
@@ -18,15 +13,7 @@ interface WeatherSectionLoadingProps {
  * 요청이 바뀔 때 경과 시간을 0부터 다시 세도록 부모에서 key로 다시 마운트한다.
  */
 const WeatherSectionLoading = ({ district }: WeatherSectionLoadingProps) => {
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-
-  useEffect(() => {
-    const timerId = window.setInterval(
-      () => setElapsedSeconds((current) => current + 1),
-      1000
-    );
-    return () => window.clearInterval(timerId);
-  }, []);
+  const elapsedSeconds = useElapsedSeconds();
 
   return (
     <section

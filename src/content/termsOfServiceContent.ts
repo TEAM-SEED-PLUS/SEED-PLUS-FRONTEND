@@ -4,7 +4,7 @@ import type { LegalDocument } from './legalTypes';
 // 서비스 이용약관 부분을 공개 페이지용으로 옮긴 문서다.
 // 원문 문구를 그대로 사용하며, 회원가입 동의 모달(signupTermsContent)과 동일한 내용이다.
 
-export const TERMS_OF_SERVICE_EFFECTIVE_DATE = '2026년 07월 25일';
+const TERMS_OF_SERVICE_EFFECTIVE_DATE = '2026년 07월 25일';
 
 export const termsOfServiceDocument: LegalDocument = {
   title: '서비스 이용약관',

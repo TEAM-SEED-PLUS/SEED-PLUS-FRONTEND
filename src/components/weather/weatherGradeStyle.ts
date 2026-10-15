@@ -43,6 +43,3 @@ export const GRADE_LABEL_FILL: Record<WeatherGrade, string> = {
   비: '#222222',
   폭풍: '#ffffff',
 };
-
-/** 등급을 산출하지 못한 자치구 채움색 */
-export const GRADE_FILL_UNKNOWN = '#eaecef';

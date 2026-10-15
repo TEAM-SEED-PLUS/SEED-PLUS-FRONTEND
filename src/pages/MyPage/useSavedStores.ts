@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   bookmarkBuilderStore,
+  deleteBuilderStore,
   getBuilderStoreDetail,
   getMyBookmarkedStores,
   getMyBuilderStores,
@@ -129,6 +130,17 @@ const useSavedStores = (enabled: boolean) => {
     }
   };
 
+  // 내가 만든 상가 삭제. 실패는 확인 모달 안에서 안내하도록 호출부로 던진다.
+  const deleteStore = async (store: StoreItem) => {
+    await deleteBuilderStore(store.id);
+    setStores((current) => current.filter((item) => item.id !== store.id));
+    setCreatedIds((current) => {
+      const next = new Set(current);
+      next.delete(store.id);
+      return next;
+    });
+  };
+
   const toggleLike = async (store: StoreItem) => {
     if (pendingLikeIds.includes(store.id)) {
       return;
@@ -172,6 +184,7 @@ const useSavedStores = (enabled: boolean) => {
     pendingLikeIds,
     toggleBookmark,
     toggleLike,
+    deleteStore,
   };
 };
 

@@ -7,10 +7,10 @@ import {
   validatePasswordConfirm,
   validateSignupPassword,
 } from '@/utils/authValidation';
+import { ERROR_INPUT_CLASS } from '@/components/ui/formStyles';
 
 const inputClass =
   'h-11 w-full rounded-md border border-[#d8dde5] bg-white px-3 text-sm text-[#191f28] outline-none placeholder:text-[#b0b8c1] focus:border-blue-600';
-const errorInputClass = 'border-[#e5484d] focus:border-[#e5484d]';
 const labelClass = 'mb-2 block text-sm font-medium text-[#4e5968]';
 
 /** 설정 화면의 프로필 수정 — PATCH /api/v1/users/me (이름·비밀번호) */
@@ -106,7 +106,7 @@ const ProfileSettings = () => {
                 }
               }}
               placeholder="이름을 입력해주세요."
-              className={`${inputClass} ${nameError ? errorInputClass : ''}`}
+              className={`${inputClass} ${nameError ? ERROR_INPUT_CLASS : ''}`}
               aria-invalid={Boolean(nameError)}
             />
             <button
@@ -149,7 +149,7 @@ const ProfileSettings = () => {
               setNewPasswordError(validateSignupPassword(newPassword))
             }
             placeholder="8자 이상, 영문/숫자/특수문자 포함"
-            className={`${inputClass} ${newPasswordError ? errorInputClass : ''}`}
+            className={`${inputClass} ${newPasswordError ? ERROR_INPUT_CLASS : ''}`}
             aria-invalid={Boolean(newPasswordError)}
           />
           {newPasswordError && (
@@ -179,7 +179,7 @@ const ProfileSettings = () => {
               )
             }
             placeholder="새 비밀번호를 다시 입력해주세요."
-            className={`${inputClass} ${confirmationError ? errorInputClass : ''}`}
+            className={`${inputClass} ${confirmationError ? ERROR_INPUT_CLASS : ''}`}
             aria-invalid={Boolean(confirmationError)}
           />
           {confirmationError && (

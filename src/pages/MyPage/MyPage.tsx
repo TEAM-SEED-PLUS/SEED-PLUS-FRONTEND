@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
-import { AppFooter, HeaderUser } from '@/components/layout';
+import { AppFooter, AuthCheckingScreen, HeaderUser } from '@/components/layout';
 import {
   ActivityPostCard,
   CategoryTabs,
@@ -11,6 +11,8 @@ import {
 import type { ActivityPost } from '@/components/mypage';
 import { StoreGrid } from '@/components/store';
 import type { StoreItem } from '@/components/store';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import { getApiErrorMessage } from '@/api';
 import useSavedStores from './useSavedStores';
 
 // 소통 활동 내역은 아직 API가 없다.
@@ -71,7 +73,32 @@ const MyPage = () => {
     pendingLikeIds,
     toggleBookmark,
     toggleLike,
+    deleteStore,
   } = useSavedStores(isAuthenticated);
+  const [storeToDelete, setStoreToDelete] = useState<StoreItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  const closeDeleteModal = () => {
+    setStoreToDelete(null);
+    setDeleteError('');
+  };
+
+  const confirmDelete = async () => {
+    if (!storeToDelete) {
+      return;
+    }
+    setIsDeleting(true);
+    setDeleteError('');
+    try {
+      await deleteStore(storeToDelete);
+      closeDeleteModal();
+    } catch (error) {
+      setDeleteError(getApiErrorMessage(error));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const filteredSavedStores = useMemo(() => {
     if (activeSavedFilter === 1) {
@@ -113,6 +140,8 @@ const MyPage = () => {
       pendingLikeIds={pendingLikeIds}
       onToggleLike={toggleLike}
       showUpdatedAt
+      canDelete={(store) => createdIds.has(store.id)}
+      onDelete={setStoreToDelete}
     />
   );
 
@@ -121,11 +150,7 @@ const MyPage = () => {
   }, []);
 
   if (status === 'loading') {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-500 text-sm font-medium text-gray-46">
-        인증 상태를 확인하고 있습니다.
-      </div>
-    );
+    return <AuthCheckingScreen />;
   }
 
   if (!isAuthenticated) {
@@ -250,6 +275,18 @@ const MyPage = () => {
         )}
       </main>
       <AppFooter />
+      {storeToDelete && (
+        <ConfirmModal
+          title="상가 삭제"
+          message={`'${storeToDelete.name}' 상가를 삭제할까요?\n삭제한 상가는 복구할 수 없습니다.`}
+          confirmLabel="삭제"
+          isDestructive
+          isPending={isDeleting}
+          errorMessage={deleteError}
+          onConfirm={confirmDelete}
+          onCancel={closeDeleteModal}
+        />
+      )}
     </div>
   );
 };

@@ -95,6 +95,21 @@ export const signup = async (payload: SignupRequest) => {
 };
 
 /** 비밀번호 변경 — 비로그인 상태에서 email+현재 비밀번호로 본인 확인 */
+/**
+ * 임시 비밀번호 발급. 가입 이메일로 임시 비밀번호를 보낸다.
+ * 가입 여부를 노출하지 않도록 서버는 가입되지 않은 이메일에도 항상 200을 준다.
+ */
+export const requestTemporaryPassword = async (email: string) => {
+  await apiClient.post(
+    '/api/v1/auth/password/temporary',
+    { email },
+    {
+      headers: await getCsrfHeaders(),
+      skipAuthRefresh: true,
+    }
+  );
+};
+
 export const resetPassword = async (payload: PasswordResetRequest) => {
   await apiClient.post('/api/v1/auth/password/reset', payload, {
     headers: await getCsrfHeaders(),
