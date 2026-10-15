@@ -83,6 +83,7 @@
 - `.env`, 배포 설정, Docker, nginx, GitHub Secrets 관련 변경은 신중하게 처리한다.
 - 패키지 설치는 필요성과 영향 범위를 설명한 뒤 진행한다.
 - 불필요한 파일 정리나 리팩토링은 요청 범위 밖이면 수행하지 않는다.
+- `main`에는 `develop` → `main` PR만 머지한다. release/hotfix 브랜치를 `main`에 직접 머지하지 않는다(Docker 이미지는 `develop` push 때만 빌드되어, 거치지 않은 커밋은 prod 배포 시 이미지가 없어 서비스가 내려간다).
 
 ## 8. 커밋 메시지 규칙
 
