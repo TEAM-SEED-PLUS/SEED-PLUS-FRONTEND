@@ -213,6 +213,13 @@ export const CheckIcon = (props: IconProps) => (
   </StrokeIcon>
 );
 
+/** 정렬/필터 메뉴 열기 */
+export const FilterIcon = (props: IconProps) => (
+  <StrokeIcon {...props}>
+    <path d="M4 6h16M7 12h10M10 18h4" />
+  </StrokeIcon>
+);
+
 /** 외부 링크(새 탭) 표시 */
 export const ExternalLinkIcon = (props: IconProps) => (
   <StrokeIcon {...props}>

@@ -21,7 +21,7 @@ const partnerLinks = [
 ];
 
 const ExpertMatchSidebar = () => (
-  <aside className="fixed right-0 top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[264px] border-l border-[#e5e8eb] bg-white px-5 py-5 2xl:block">
+  <aside className="fixed right-0 top-[var(--header-height)] hidden h-[calc(100vh-var(--header-height))] w-[264px] border-l border-[#e5e8eb] bg-white px-5 py-5 xl:block">
     <h2 className="text-base font-extrabold text-[#191f28]">제휴 파트너</h2>
 
     <div className="mt-4 space-y-3">
