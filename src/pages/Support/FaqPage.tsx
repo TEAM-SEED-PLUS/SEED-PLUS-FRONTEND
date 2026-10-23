@@ -1,32 +1,39 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDownIcon } from '@/components/ui/icons';
-import { FAQ_CATEGORIES, faqItems } from '@/content/faqContent';
+import { fetchFaqs } from '@/api';
 import {
-  FAQ_AUDIENCE_LABEL,
-  type FaqAudience,
+  FAQ_CATEGORIES,
+  FAQ_CATEGORY_LABEL,
+  FAQ_GROUPS,
+  FAQ_GROUP_LABEL,
+  type FaqGroup,
   type FaqItem,
 } from '@/content/supportTypes';
 import { useDocumentTitle } from '@/hooks';
 import CategoryChips from './CategoryChips';
 import SupportPageLayout from './SupportPageLayout';
+import SupportStatus from './SupportStatus';
+import { useSupportData } from './useSupportData';
 
 const ALL = '전체';
-const CATEGORY_OPTIONS = [ALL, ...FAQ_CATEGORIES] as const;
-const AUDIENCES: FaqAudience[] = ['general', 'partner'];
+const CATEGORY_OPTIONS = [
+  ALL,
+  ...FAQ_CATEGORIES.map((category) => FAQ_CATEGORY_LABEL[category]),
+];
 
 interface FaqColumnProps {
-  audience: FaqAudience;
+  group: FaqGroup;
   items: FaqItem[];
-  openId: string | null;
-  onToggle: (id: string) => void;
+  openId: number | null;
+  onToggle: (id: number) => void;
 }
 
 /** 시안의 대상별 칼럼 — '질문 N' 라벨 아래 접었다 펴는 문답 상자 */
-const FaqColumn = ({ audience, items, openId, onToggle }: FaqColumnProps) => (
+const FaqColumn = ({ group, items, openId, onToggle }: FaqColumnProps) => (
   <section className="rounded-lg bg-white p-5 shadow-sm md:p-6">
     <h2 className="border-b border-[#e5e8eb] pb-4 text-lg font-extrabold text-[#191f28]">
-      {FAQ_AUDIENCE_LABEL[audience]}
+      {FAQ_GROUP_LABEL[group]}
     </h2>
 
     {items.length === 0 ? (
@@ -57,19 +64,12 @@ const FaqColumn = ({ audience, items, openId, onToggle }: FaqColumnProps) => (
                   />
                 </button>
                 {isOpen && (
-                  <div
+                  <p
                     id={panelId}
-                    className="px-4 pb-4 text-sm text-[#333d4b]"
+                    className="whitespace-pre-line px-4 pb-4 text-sm leading-relaxed text-[#333d4b]"
                   >
-                    {item.answer.map((paragraph, paragraphIndex) => (
-                      <p
-                        key={paragraph}
-                        className="mt-2 leading-relaxed first:mt-0"
-                      >
-                        {paragraphIndex === 0 ? `A. ${paragraph}` : paragraph}
-                      </p>
-                    ))}
-                  </div>
+                    A. {item.answer}
+                  </p>
                 )}
               </div>
             </li>
@@ -83,20 +83,25 @@ const FaqColumn = ({ audience, items, openId, onToggle }: FaqColumnProps) => (
 const FaqPage = () => {
   useDocumentTitle('FAQ');
   const [category, setCategory] = useState<string>(ALL);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<number | null>(null);
+  const { state, retry } = useSupportData(fetchFaqs);
 
-  const itemsByAudience = useMemo(() => {
+  // 칼럼 안 순서는 BE가 내려주는 displayOrder 순을 그대로 쓴다.
+  const itemsByGroup = useMemo(() => {
+    const items = state.status === 'success' ? state.data : [];
     const filtered =
       category === ALL
-        ? faqItems
-        : faqItems.filter((item) => item.category === category);
+        ? items
+        : items.filter(
+            (item) => FAQ_CATEGORY_LABEL[item.category] === category
+          );
     return Object.fromEntries(
-      AUDIENCES.map((audience) => [
-        audience,
-        filtered.filter((item) => item.audience === audience),
+      FAQ_GROUPS.map((group) => [
+        group,
+        filtered.filter((item) => item.group === group),
       ])
-    ) as Record<FaqAudience, FaqItem[]>;
-  }, [category]);
+    ) as Record<FaqGroup, FaqItem[]>;
+  }, [state, category]);
 
   return (
     <SupportPageLayout
@@ -114,19 +119,25 @@ const FaqPage = () => {
         />
       }
     >
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        {AUDIENCES.map((audience) => (
-          <FaqColumn
-            key={audience}
-            audience={audience}
-            items={itemsByAudience[audience]}
-            openId={openId}
-            onToggle={(id) =>
-              setOpenId((current) => (current === id ? null : id))
-            }
-          />
-        ))}
-      </div>
+      {state.status === 'loading' ? (
+        <SupportStatus kind="loading" />
+      ) : state.status === 'error' ? (
+        <SupportStatus kind="error" message={state.message} onRetry={retry} />
+      ) : (
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          {FAQ_GROUPS.map((group) => (
+            <FaqColumn
+              key={group}
+              group={group}
+              items={itemsByGroup[group]}
+              openId={openId}
+              onToggle={(id) =>
+                setOpenId((current) => (current === id ? null : id))
+              }
+            />
+          ))}
+        </div>
+      )}
 
       <div className="mt-8 flex flex-col items-center gap-3 rounded-lg bg-white px-5 py-8 text-center shadow-sm">
         <p className="text-sm font-bold text-[#191f28]">

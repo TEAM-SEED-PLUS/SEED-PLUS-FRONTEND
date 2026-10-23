@@ -1,36 +1,37 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { notices } from '@/content/noticeContent';
-import { NOTICE_CATEGORIES } from '@/content/supportTypes';
+import { fetchNotices } from '@/api';
+import {
+  NOTICE_CATEGORIES,
+  NOTICE_CATEGORY_LABEL,
+  formatPublishedDate,
+} from '@/content/supportTypes';
 import { useDocumentTitle } from '@/hooks';
 import CategoryChips from './CategoryChips';
 import SupportPageLayout from './SupportPageLayout';
+import SupportStatus from './SupportStatus';
+import { useSupportData } from './useSupportData';
 
 const ALL = '전체';
-const CATEGORY_OPTIONS = [ALL, ...NOTICE_CATEGORIES] as const;
-
-/** 중요 공지를 먼저, 그 안에서는 최신 게시일 순으로 정렬한다 */
-const sortNotices = (items: typeof notices) =>
-  [...items].sort((left, right) => {
-    if (!!left.isImportant !== !!right.isImportant) {
-      return left.isImportant ? -1 : 1;
-    }
-    return right.date.localeCompare(left.date);
-  });
+const CATEGORY_OPTIONS = [
+  ALL,
+  ...NOTICE_CATEGORIES.map((category) => NOTICE_CATEGORY_LABEL[category]),
+];
 
 const NoticeListPage = () => {
   useDocumentTitle('공지사항');
   const [category, setCategory] = useState<string>(ALL);
+  const { state, retry } = useSupportData(fetchNotices);
 
-  const visibleNotices = useMemo(
-    () =>
-      sortNotices(
-        category === ALL
-          ? notices
-          : notices.filter((notice) => notice.category === category)
-      ),
-    [category]
-  );
+  // 정렬(중요 공지 먼저 → 최신 게시일 순)은 BE 응답 순서를 그대로 쓴다.
+  const visibleNotices = useMemo(() => {
+    if (state.status !== 'success') return [];
+    return category === ALL
+      ? state.data
+      : state.data.filter(
+          (notice) => NOTICE_CATEGORY_LABEL[notice.category] === category
+        );
+  }, [state, category]);
 
   return (
     <SupportPageLayout
@@ -44,10 +45,19 @@ const NoticeListPage = () => {
         />
       }
     >
-      {visibleNotices.length === 0 ? (
-        <p className="rounded-lg bg-white px-5 py-16 text-center text-sm text-gray-46">
-          {category} 공지가 아직 없습니다.
-        </p>
+      {state.status === 'loading' ? (
+        <SupportStatus kind="loading" />
+      ) : state.status === 'error' ? (
+        <SupportStatus kind="error" message={state.message} onRetry={retry} />
+      ) : visibleNotices.length === 0 ? (
+        <SupportStatus
+          kind="empty"
+          message={
+            category === ALL
+              ? '등록된 공지가 아직 없습니다.'
+              : `${category} 공지가 아직 없습니다.`
+          }
+        />
       ) : (
         <ul className="rounded-lg bg-white px-5 shadow-sm">
           {visibleNotices.map((notice) => (
@@ -59,7 +69,7 @@ const NoticeListPage = () => {
                 to={`/notice/${notice.id}`}
                 className="flex items-start gap-3 py-5 transition hover:opacity-70"
               >
-                {notice.isImportant ? (
+                {notice.pinned ? (
                   <span className="mt-1 shrink-0 rounded-full bg-[#191f28] px-2 py-0.5 text-[10px] font-bold text-white">
                     중요 공지
                   </span>
@@ -73,9 +83,9 @@ const NoticeListPage = () => {
                     {notice.title}
                   </span>
                   <span className="mt-1.5 flex items-center gap-2 text-xs text-[#4e5968]">
-                    <span>{notice.date}</span>
+                    <span>{formatPublishedDate(notice.publishedAt)}</span>
                     <span className="rounded-sm bg-[#f2f4f6] px-1.5 py-0.5 text-[10px] font-bold text-[#6b7684]">
-                      {notice.category}
+                      {NOTICE_CATEGORY_LABEL[notice.category]}
                     </span>
                   </span>
                 </span>
