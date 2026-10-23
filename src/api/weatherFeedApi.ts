@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getEnv } from '@/utils/env';
+import { apiClient } from './httpClient';
 import type {
   ApiContentItem,
   TimeBand,
@@ -8,38 +8,28 @@ import type {
   WeatherOverviewResponse,
 } from './weatherFeedTypes';
 
-// 상권날씨 데이터는 백엔드를 거치지 않고 AI(FastAPI) 서비스를 FE가 직접 호출한다.
-// 인증·CSRF가 없는 별개 서비스라 httpClient(apiClient)를 재사용하지 않는다.
-//
-// 배포 환경의 base URL은 인프라가 주입한다(2026-09-16 기준).
-//   dev  VITE_DEV_AI_API_BASE_URL  = http://<dev-host>:8000/
-//   prod VITE_PROD_AI_API_BASE_URL = https://www.seedplusai.com/ai/  (Nginx 프록시 → same-origin)
-// 로컬 개발: FastAPI에 CORS 미들웨어가 없어 브라우저 직접 호출이 차단되므로
-// vite.config.ts의 /ai 프록시를 경유한다(.env에서 상대 경로로 지정).
-const getAiBaseUrl = () => {
-  const appEnv = getEnv('VITE_APP_ENV') || 'development';
-  const baseUrl =
-    appEnv === 'production'
-      ? getEnv('VITE_PROD_AI_API_BASE_URL')
-      : getEnv('VITE_DEV_AI_API_BASE_URL');
-
-  if (!baseUrl) {
-    throw new Error(
-      `상권날씨 AI 서버 주소가 설정되지 않았습니다. ${
-        appEnv === 'production'
-          ? 'VITE_PROD_AI_API_BASE_URL'
-          : 'VITE_DEV_AI_API_BASE_URL'
-      }를 확인해주세요.`
-    );
-  }
-
-  return baseUrl.replace(/\/+$/, '');
+// 상권날씨는 Spring 백엔드가 같은 호스트의 AI(FastAPI)를 대신 호출해 준다(BE #49).
+// 응답 본문은 FastAPI Public Feed Schema v1 그대로이고 Spring 공통 응답으로 감싸져 온다.
+type ApiResponse<T> = {
+  status: number | string;
+  code: number;
+  message: string;
+  data: T;
 };
 
-// 상권날씨 분석은 실측 25초 이상 걸리고 인프라(Nginx)도 read 600초로 열어두었다.
-// 기본 타임아웃(30초)이면 부하 시 정상 응답을 끊어버리므로 여유 있게 잡는다.
+type ApiErrorResponse = {
+  status?: number | string;
+  code?: number;
+  message?: string;
+};
+
+/** BE가 FastAPI 연결 실패·타임아웃·오류 응답을 502로 바꿔 줄 때의 코드 */
+const WEATHER_UPSTREAM_ERROR_CODE = 9600;
+
+// 상세는 캐시가 없으면 AI 분석에 25초 이상 걸린다.
+// BE가 FastAPI를 기다리는 시간보다 FE가 먼저 끊으면 정상 응답을 버리게 되므로 넉넉히 둔다.
 // v1에서는 자동 재시도를 두지 않는다(AI/Data 권고).
-const aiClient = axios.create({ timeout: 600000 });
+const WEATHER_FEED_TIMEOUT_MS = 120000;
 
 export type WeatherFeedParams = {
   district: string;
@@ -54,22 +44,23 @@ export const getWeatherFeed = async (
   { district, date, time, timeBand }: WeatherFeedParams,
   signal?: AbortSignal
 ) => {
-  const response = await aiClient.get<WeatherFeed>(
-    `${getAiBaseUrl()}/api/v1/weather-feeds`,
+  const response = await apiClient.get<ApiResponse<WeatherFeed>>(
+    '/api/v1/weather-feeds',
     {
       params: { district, date, time, time_band: timeBand },
       signal,
+      timeout: WEATHER_FEED_TIMEOUT_MS,
     }
   );
-  return response.data;
+  return response.data.data;
 };
 
 export const getWeatherOverview = async (
   params: { date?: string; time?: string; timeBand?: TimeBand } = {},
   signal?: AbortSignal
 ) => {
-  const response = await aiClient.get<WeatherOverviewResponse>(
-    `${getAiBaseUrl()}/api/v1/weather-feeds/overview`,
+  const response = await apiClient.get<ApiResponse<WeatherOverviewResponse>>(
+    '/api/v1/weather-feeds/overview',
     {
       params: {
         date: params.date,
@@ -79,7 +70,7 @@ export const getWeatherOverview = async (
       signal,
     }
   );
-  return response.data;
+  return response.data.data;
 };
 
 /** 서버 content.items를 화면용 카드 타입으로 변환한다 */
@@ -114,12 +105,22 @@ export const getWeatherApiErrorMessage = (error: unknown) => {
     return '';
   }
 
-  if (axios.isAxiosError(error)) {
+  if (axios.isAxiosError<ApiErrorResponse>(error)) {
+    if (error.code === 'ECONNABORTED') {
+      return '상권날씨 분석이 지연되고 있습니다. 잠시 후 다시 시도해주세요.';
+    }
+
     if (!error.response) {
       return '상권날씨 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.';
     }
 
-    if (error.response.status === 422) {
+    const { status, data } = error.response;
+
+    if (status === 502 || data?.code === WEATHER_UPSTREAM_ERROR_CODE) {
+      return '상권날씨 분석 서버가 응답하지 않습니다. 잠시 후 다시 시도해주세요.';
+    }
+
+    if (status === 400 || status === 422) {
       return '조회 조건이 올바르지 않습니다. 지역과 시간대를 확인해주세요.';
     }
 

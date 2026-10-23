@@ -186,13 +186,13 @@ const LoginPage = () => {
 
           <div className="mt-10 space-y-1.5 text-center text-sm font-medium">
             <div className="text-gray-46">
-              비밀번호를 바꾸시겠어요?{' '}
+              비밀번호를 잊으셨나요?{' '}
               <button
                 type="button"
                 onClick={() => navigate('/password-reset')}
                 className="inline-flex min-h-11 items-center px-1 font-bold text-blue-600"
               >
-                비밀번호 변경
+                비밀번호 찾기
               </button>
             </div>
             <div className="text-gray-46">

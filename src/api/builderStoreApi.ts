@@ -283,6 +283,13 @@ export const updateBuilderStoreVisibility = async (
   return response.data.data;
 };
 
+/** 내가 만든 가상 점포 삭제 (작성자만 가능, 남의 상가는 403) */
+export const deleteBuilderStore = async (builderStoreId: number) => {
+  await apiClient.delete(`/api/v1/builder-stores/${builderStoreId}`, {
+    headers: await getCsrfHeaders(),
+  });
+};
+
 export const getBuilderStoreDetail = async (builderStoreId: number) => {
   const response = await apiClient.get<ApiResponse<BuilderStoreDetailResponse>>(
     `/api/v1/builder-stores/${builderStoreId}`
