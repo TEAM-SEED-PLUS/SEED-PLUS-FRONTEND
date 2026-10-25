@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createInquiry, getApiErrorMessage } from '@/api';
 import { useAuth } from '@/auth';
 import { AUTH_INPUT_CLASS } from '@/components/ui/formStyles';
+import { ChevronDownIcon } from '@/components/ui/icons';
 import {
   INQUIRY_TYPES,
   INQUIRY_TYPE_LABEL,
@@ -123,14 +124,14 @@ const ContactPage = () => {
         </p>
 
         <div className="mt-4 space-y-4">
-          <label className="block">
+          <label className="relative block">
             <span className="sr-only">문의 유형</span>
             <select
               value={type}
               onChange={(event) =>
                 setType(event.target.value as InquiryType | '')
               }
-              className={`${AUTH_INPUT_CLASS} bg-white ${
+              className={`${AUTH_INPUT_CLASS} cursor-pointer appearance-none bg-white pr-11 ${
                 type === '' ? 'text-[#b0b8c1]' : ''
               }`}
             >
@@ -147,6 +148,11 @@ const ContactPage = () => {
                 </option>
               ))}
             </select>
+            {/* 기본 화살표는 테두리에 붙어 보여 숨기고, 입력창 안쪽 여백에 맞춰 직접 둔다 */}
+            <ChevronDownIcon
+              aria-hidden
+              className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6b7684]"
+            />
           </label>
 
           {memberName === undefined && (
