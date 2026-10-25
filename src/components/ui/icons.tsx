@@ -213,10 +213,31 @@ export const CheckIcon = (props: IconProps) => (
   </StrokeIcon>
 );
 
+/** 정렬/필터 메뉴 열기 */
+export const FilterIcon = (props: IconProps) => (
+  <StrokeIcon {...props}>
+    <path d="M4 6h16M7 12h10M10 18h4" />
+  </StrokeIcon>
+);
+
 /** 외부 링크(새 탭) 표시 */
 export const ExternalLinkIcon = (props: IconProps) => (
   <StrokeIcon {...props}>
     <path d="M7 17 17 7M9 7h8v8" />
+  </StrokeIcon>
+);
+
+export const ChevronDownIcon = (props: IconProps) => (
+  <StrokeIcon {...props}>
+    <path d="m6 9 6 6 6-6" />
+  </StrokeIcon>
+);
+
+/** 첨부파일 슬롯 (문의하기 시안의 카메라 아이콘) */
+export const CameraIcon = (props: IconProps) => (
+  <StrokeIcon {...props} strokeWidth={1.5}>
+    <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.1-2h6.4l1.1 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5v-9Z" />
+    <circle cx="12" cy="13" r="3.2" />
   </StrokeIcon>
 );
 

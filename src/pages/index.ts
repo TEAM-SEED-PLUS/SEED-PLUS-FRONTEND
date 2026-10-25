@@ -14,3 +14,7 @@ export { default as StoreBuilderPage } from './StoreBuilder/StoreBuilderPage';
 export { default as PricingPage } from './Billing/PricingPage';
 export { default as CheckoutPage } from './Billing/CheckoutPage';
 export { default as PaymentHistoryPage } from './Billing/PaymentHistoryPage';
+export { default as NoticeListPage } from './Support/NoticeListPage';
+export { default as NoticeDetailPage } from './Support/NoticeDetailPage';
+export { default as FaqPage } from './Support/FaqPage';
+export { default as ContactPage } from './Support/ContactPage';
