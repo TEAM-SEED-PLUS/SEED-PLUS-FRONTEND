@@ -11,6 +11,9 @@ export { default as PasswordResetPage } from './PasswordReset/PasswordResetPage'
 export { default as SignupPage } from './Signup/SignupPage';
 export { default as WeatherPage } from './Weather/WeatherPage';
 export { default as StoreBuilderPage } from './StoreBuilder/StoreBuilderPage';
+export { default as PricingPage } from './Billing/PricingPage';
+export { default as CheckoutPage } from './Billing/CheckoutPage';
+export { default as PaymentHistoryPage } from './Billing/PaymentHistoryPage';
 export { default as NoticeListPage } from './Support/NoticeListPage';
 export { default as NoticeDetailPage } from './Support/NoticeDetailPage';
 export { default as FaqPage } from './Support/FaqPage';
