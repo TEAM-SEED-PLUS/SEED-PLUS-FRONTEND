@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { weatherFeedQuery, weatherOverviewQuery } from '@/api/weatherQueries';
+import { readWeatherSelection } from '@/utils/weatherSelection';
 import SEEDPLUS from '@/assets/Logo/SEED+ LOGO.svg';
 import { MenuIcon, ProfileIcon, SearchIcon } from '@/components/ui/icons';
 import { useAuth } from '@/auth';
@@ -36,6 +39,15 @@ const navItems: {
 
 const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // 홈(상권날씨) 탭에 마우스를 올리거나 포커스하면 마지막으로 보던 자치구 결과를 미리 받아둔다.
+  // 아직 신선한 캐시가 있으면 요청하지 않는다(staleTime). 25개 구 전체는 AI 부담이 커서 받지 않는다.
+  const prefetchWeather = () => {
+    const { district, timeBand } = readWeatherSelection();
+    void queryClient.prefetchQuery(weatherOverviewQuery());
+    void queryClient.prefetchQuery(weatherFeedQuery(district, timeBand));
+  };
   const { isAuthenticated, logout } = useAuth();
   // 로고는 로그인 여부와 무관하게 홈(상권날씨)으로 보낸다.
   const logoTarget = '/weather';
@@ -85,6 +97,16 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
                 <Link
                   key={item.id}
                   to={item.to}
+                  onMouseEnter={
+                    item.id === 'weather' && activeNav !== 'weather'
+                      ? prefetchWeather
+                      : undefined
+                  }
+                  onFocus={
+                    item.id === 'weather' && activeNav !== 'weather'
+                      ? prefetchWeather
+                      : undefined
+                  }
                   className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
                     activeNav === item.id
                       ? 'text-blue-600'

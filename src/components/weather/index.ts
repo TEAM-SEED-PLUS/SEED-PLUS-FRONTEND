@@ -6,3 +6,4 @@ export { default as WeatherRadarChart } from './WeatherRadarChart';
 export { default as WeatherTrendingContent } from './WeatherTrendingContent';
 export { default as WeatherNarrativeModal } from './WeatherNarrativeModal';
 export { default as WeatherSectionLoading } from './WeatherSectionLoading';
+export { default as WeatherSwitchingBadge } from './WeatherSwitchingBadge';
