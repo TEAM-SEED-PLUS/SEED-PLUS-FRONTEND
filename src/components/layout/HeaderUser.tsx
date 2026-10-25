@@ -24,6 +24,8 @@ const navItems: {
   // '홈' 탭은 상권날씨 대시보드(/weather)다. 로그인 가드가 없어 비회원에게도 노출한다.
   // 예전 mock 홈(/home) 탭은 이름이 겹쳐 제거했다(라우트는 남아 있으나 진입 경로 없음).
   { id: 'weather', label: '홈', to: '/weather' },
+  // 피드(뉴스·소통)는 조회에 로그인이 필요 없다. 글쓰기 등은 화면 안에서 로그인으로 보낸다.
+  { id: 'feed', label: '피드', to: '/feed' },
   {
     id: 'store',
     label: '내 상가 만들기',
