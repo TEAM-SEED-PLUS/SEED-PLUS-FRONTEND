@@ -12,6 +12,18 @@ import {
 import { useDocumentTitle } from '@/hooks';
 import SupportPageLayout from './SupportPageLayout';
 
+/** BE(InquiryMailProperties)가 문의 메일을 보내는 운영 주소 */
+const SUPPORT_EMAIL = 'seedbusiness0@gmail.com';
+
+const SupportEmailLink = () => (
+  <a
+    href={`mailto:${SUPPORT_EMAIL}`}
+    className="font-bold text-blue-600 hover:underline"
+  >
+    {SUPPORT_EMAIL}
+  </a>
+);
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
@@ -92,6 +104,10 @@ const ContactPage = () => {
             답변은 <span className="font-bold text-[#191f28]">{email}</span>
             으로 보내드립니다.
           </p>
+          <p className="text-xs text-gray-46">
+            문의 내용은 <SupportEmailLink />
+            으로 전달되었습니다.
+          </p>
           <div className="mt-3 flex gap-2">
             <button
               type="button"
@@ -119,9 +135,15 @@ const ContactPage = () => {
         noValidate
         className="rounded-lg bg-white p-5 shadow-sm md:p-6"
       >
-        <p className="border-b border-[#e5e8eb] pb-4 text-sm text-[#191f28]">
-          문의하실 내용을 하단에 입력해주세요.
-        </p>
+        <div className="border-b border-[#e5e8eb] pb-4">
+          <p className="text-sm text-[#191f28]">
+            문의하실 내용을 하단에 입력해주세요.
+          </p>
+          <p className="mt-1 text-xs text-gray-46">
+            접수된 문의는 <SupportEmailLink />
+            으로 전달됩니다.
+          </p>
+        </div>
 
         <div className="mt-4 space-y-4">
           <label className="relative block">
