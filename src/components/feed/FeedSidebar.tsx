@@ -4,8 +4,9 @@ import {
   ShoppingCartIcon,
 } from '@/components/ui/icons';
 
-// 사이드바 3개 섹션 모두 아직 API가 없다.
-// 값을 지어내지 않고 빈 목록으로 두고, 각 섹션에 빈 상태 문구를 노출한다.
+// 사이드바 3개 섹션 모두 아직 API가 없다. 값을 지어내지 않고 빈 목록으로 둔다.
+// 데이터 스토리·진행중인 공동구매는 개발 전이라 빈 상태도 보이지 않게 하고, 연동해 항목이 생기면 그때 노출한다.
+// 상권 알림은 빈 상태 문구를 그대로 노출한다.
 // TODO(BE): 데이터 스토리 / 공동구매 / 상권 알림 엔드포인트 확정 시 연동.
 type Story = { title: string; bg: string };
 type Purchase = { title: string; meta: string };
@@ -24,14 +25,14 @@ const EmptyNotice = ({ message }: { message: string }) => (
 const FeedSidebar = () => {
   return (
     <aside className="hidden w-[360px] shrink-0 space-y-5 xl:block">
-      <section className="rounded-xl border border-[#e5e8eb] bg-white">
-        <div className="flex items-center gap-2 border-b border-[#e5e8eb] px-5 py-4 text-sm font-bold">
-          <BarChartIcon className="h-4 w-4 text-blue-600" />
-          데이터 스토리
-          <span className="text-xs font-medium text-gray-46">상권 쇼츠</span>
-        </div>
-        <div className="px-5 py-4">
-          {stories.length > 0 ? (
+      {stories.length > 0 && (
+        <section className="rounded-xl border border-[#e5e8eb] bg-white">
+          <div className="flex items-center gap-2 border-b border-[#e5e8eb] px-5 py-4 text-sm font-bold">
+            <BarChartIcon className="h-4 w-4 text-blue-600" />
+            데이터 스토리
+            <span className="text-xs font-medium text-gray-46">상권 쇼츠</span>
+          </div>
+          <div className="px-5 py-4">
             <div className="grid grid-cols-3 gap-2">
               {stories.map((story) => (
                 <button
@@ -43,20 +44,18 @@ const FeedSidebar = () => {
                 </button>
               ))}
             </div>
-          ) : (
-            <EmptyNotice message="아직 등록된 데이터 스토리가 없습니다." />
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
-      <section className="rounded-xl border border-[#e5e8eb] bg-white">
-        <div className="flex items-center gap-2 border-b border-[#e5e8eb] px-5 py-4 text-sm font-bold">
-          <ShoppingCartIcon className="h-4 w-4 text-blue-600" />
-          진행중인 공동구매
-        </div>
-        <div className="space-y-3 p-5">
-          {purchases.length > 0 ? (
-            purchases.map((purchase) => (
+      {purchases.length > 0 && (
+        <section className="rounded-xl border border-[#e5e8eb] bg-white">
+          <div className="flex items-center gap-2 border-b border-[#e5e8eb] px-5 py-4 text-sm font-bold">
+            <ShoppingCartIcon className="h-4 w-4 text-blue-600" />
+            진행중인 공동구매
+          </div>
+          <div className="space-y-3 p-5">
+            {purchases.map((purchase) => (
               <button
                 key={purchase.title}
                 type="button"
@@ -69,12 +68,10 @@ const FeedSidebar = () => {
                   {purchase.meta}
                 </div>
               </button>
-            ))
-          ) : (
-            <EmptyNotice message="진행중인 공동구매가 없습니다." />
-          )}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="rounded-xl border border-[#e5e8eb] bg-white">
         <div className="flex items-center gap-2 border-b border-[#e5e8eb] px-5 py-4 text-sm font-bold">

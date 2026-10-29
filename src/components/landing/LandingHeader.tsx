@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/auth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
 import logoHeader from '@/assets/landing/logo-header.png';
 
@@ -9,15 +10,24 @@ const navItems = [
 ];
 
 const LandingHeader = () => {
+  const navigate = useNavigate();
+  const { status } = useAuth();
+  const isAuthenticated = status === 'authenticated';
+
   return (
     <header className="sticky top-0 z-50 h-[88px] w-full border-b border-[#f2f4f6] bg-white">
       <div className="mx-auto flex h-full w-full max-w-[1420px] items-center justify-between px-3 sm:px-6">
         <div className="flex items-center gap-12">
           <Link
             to="/"
-            aria-label="SEED+ 홈"
+            aria-label={isAuthenticated ? '상권날씨로 이동' : 'SEED+ 홈'}
             onClick={(event) => {
               event.preventDefault();
+              // 로그인 사용자는 서비스(상권날씨)로, 비회원은 랜딩 맨 위로 보낸다.
+              if (isAuthenticated) {
+                navigate('/weather');
+                return;
+              }
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
           >
@@ -36,12 +46,15 @@ const LandingHeader = () => {
           </nav>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
-          <Link
-            to="/login"
-            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold whitespace-nowrap text-white transition-opacity hover:opacity-90 sm:rounded-xl sm:px-7 sm:py-3 sm:text-lg"
-          >
-            로그인
-          </Link>
+          {/* 로그인 여부 확인 중에는 감춰 로그인 사용자에게 버튼이 깜빡 보이지 않게 한다 */}
+          {status === 'guest' && (
+            <Link
+              to="/login"
+              className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold whitespace-nowrap text-white transition-opacity hover:opacity-90 sm:rounded-xl sm:px-7 sm:py-3 sm:text-lg"
+            >
+              로그인
+            </Link>
+          )}
           {/*
             비회원 둘러보기 진입점.
             내 상가 만들기(/store-builder)는 BUILDER 명세 BLD-09에 따라 비회원 조회가

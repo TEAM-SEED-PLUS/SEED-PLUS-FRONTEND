@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { weatherFeedQuery, weatherOverviewQuery } from '@/api/weatherQueries';
+import { readWeatherSelection } from '@/utils/weatherSelection';
 import SEEDPLUS from '@/assets/Logo/SEED+ LOGO.svg';
 import { MenuIcon, ProfileIcon, SearchIcon } from '@/components/ui/icons';
 import { useAuth } from '@/auth';
@@ -21,9 +24,11 @@ const navItems: {
   /** 프로덕션 비노출 처리된 메뉴 */
   hidden?: boolean;
 }[] = [
-  // '홈' 탭은 상권날씨 대시보드(/weather)다. 로그인 가드가 없어 비회원에게도 노출한다.
+  // 상권날씨 대시보드(/weather). 로그인 가드가 없어 비회원에게도 노출한다.
   // 예전 mock 홈(/home) 탭은 이름이 겹쳐 제거했다(라우트는 남아 있으나 진입 경로 없음).
-  { id: 'weather', label: '홈', to: '/weather' },
+  { id: 'weather', label: '상권날씨', to: '/weather' },
+  // 피드(뉴스·소통)는 조회에 로그인이 필요 없다. 글쓰기 등은 화면 안에서 로그인으로 보낸다.
+  { id: 'feed', label: '피드', to: '/feed' },
   {
     id: 'store',
     label: '내 상가 만들기',
@@ -34,6 +39,15 @@ const navItems: {
 
 const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  // 상권날씨 탭에 마우스를 올리거나 포커스하면 마지막으로 보던 자치구 결과를 미리 받아둔다.
+  // 아직 신선한 캐시가 있으면 요청하지 않는다(staleTime). 25개 구 전체는 AI 부담이 커서 받지 않는다.
+  const prefetchWeather = () => {
+    const { district, timeBand } = readWeatherSelection();
+    void queryClient.prefetchQuery(weatherOverviewQuery());
+    void queryClient.prefetchQuery(weatherFeedQuery(district, timeBand));
+  };
   const { isAuthenticated, logout } = useAuth();
   // 로고는 로그인 여부와 무관하게 홈(상권날씨)으로 보낸다.
   const logoTarget = '/weather';
@@ -83,6 +97,16 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
                 <Link
                   key={item.id}
                   to={item.to}
+                  onMouseEnter={
+                    item.id === 'weather' && activeNav !== 'weather'
+                      ? prefetchWeather
+                      : undefined
+                  }
+                  onFocus={
+                    item.id === 'weather' && activeNav !== 'weather'
+                      ? prefetchWeather
+                      : undefined
+                  }
                   className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
                     activeNav === item.id
                       ? 'text-blue-600'
