@@ -25,12 +25,12 @@ const CATEGORY_OPTIONS = [
 interface FaqColumnProps {
   group: FaqGroup;
   items: FaqItem[];
-  openId: number | null;
+  openIds: ReadonlySet<number>;
   onToggle: (id: number) => void;
 }
 
 /** 시안의 대상별 칼럼 — '질문 N' 라벨 아래 접었다 펴는 문답 상자 */
-const FaqColumn = ({ group, items, openId, onToggle }: FaqColumnProps) => (
+const FaqColumn = ({ group, items, openIds, onToggle }: FaqColumnProps) => (
   <section className="rounded-lg bg-white p-5 shadow-sm md:p-6">
     <h2 className="border-b border-[#e5e8eb] pb-4 text-lg font-extrabold text-[#191f28]">
       {FAQ_GROUP_LABEL[group]}
@@ -43,7 +43,7 @@ const FaqColumn = ({ group, items, openId, onToggle }: FaqColumnProps) => (
     ) : (
       <ul className="mt-5 space-y-5">
         {items.map((item, index) => {
-          const isOpen = item.id === openId;
+          const isOpen = openIds.has(item.id);
           const panelId = `faq-panel-${item.id}`;
           return (
             <li key={item.id}>
@@ -83,7 +83,8 @@ const FaqColumn = ({ group, items, openId, onToggle }: FaqColumnProps) => (
 const FaqPage = () => {
   useDocumentTitle('FAQ');
   const [category, setCategory] = useState<string>(ALL);
-  const [openId, setOpenId] = useState<number | null>(null);
+  // 여러 질문을 함께 펼쳐 비교할 수 있게 열린 질문을 모두 기억한다.
+  const [openIds, setOpenIds] = useState<ReadonlySet<number>>(() => new Set());
   const { state, retry } = useSupportData(fetchFaqs);
 
   // 칼럼 안 순서는 BE가 내려주는 displayOrder 순을 그대로 쓴다.
@@ -112,10 +113,7 @@ const FaqPage = () => {
           label="FAQ 카테고리"
           options={CATEGORY_OPTIONS}
           selected={category}
-          onSelect={(value) => {
-            setCategory(value);
-            setOpenId(null);
-          }}
+          onSelect={setCategory}
         />
       }
     >
@@ -130,9 +128,14 @@ const FaqPage = () => {
               key={group}
               group={group}
               items={itemsByGroup[group]}
-              openId={openId}
+              openIds={openIds}
               onToggle={(id) =>
-                setOpenId((current) => (current === id ? null : id))
+                setOpenIds((current) => {
+                  const next = new Set(current);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                })
               }
             />
           ))}
