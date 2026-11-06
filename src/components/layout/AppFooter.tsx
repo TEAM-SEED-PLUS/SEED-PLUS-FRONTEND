@@ -16,7 +16,22 @@ const AppFooter = ({ className = '' }: AppFooterProps) => (
   >
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-2 text-xs text-gray-46 md:flex-row md:items-center md:justify-between">
       <p>© 2026 주식회사 스페이로. All rights reserved.</p>
-      <nav className="flex items-center gap-4">
+      <nav className="flex flex-wrap items-center gap-4">
+        <Link
+          to="/notice"
+          className="font-medium transition hover:text-blue-600"
+        >
+          공지사항
+        </Link>
+        <Link to="/faq" className="font-medium transition hover:text-blue-600">
+          FAQ
+        </Link>
+        <Link
+          to="/contact"
+          className="font-medium transition hover:text-blue-600"
+        >
+          문의하기
+        </Link>
         <Link
           to="/terms"
           className="font-medium transition hover:text-blue-600"

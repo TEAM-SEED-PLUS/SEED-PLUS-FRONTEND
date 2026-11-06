@@ -29,4 +29,15 @@ export const FEATURE_FLAGS = {
    * 해제 조건: CTA 목적지를 실 API 화면(/weather)으로 바꾸거나 /home이 실 API를 쓰게 될 때
    */
   HOME_TAB: false,
+
+  /**
+   * BM 1차 — 생존율 상세 잠금(블러 + 단건 결제 안내).
+   *
+   * 아직 '누가 PRO인지·어떤 리포트를 샀는지' 알려주는 권한 API와 PG 연동이 없어,
+   * 켜면 모든 사용자가 결제할 방법 없이 잠긴다. 배포 환경에서는 꺼두고
+   * 로컬에서만 VITE_ENABLE_BM_PHASE1=true로 켜서 화면을 확인한다.
+   *
+   * 해제 조건: BE 권한 API(plan / report_id unlock) + 결제 연동
+   */
+  BM_PHASE1: import.meta.env.VITE_ENABLE_BM_PHASE1 === 'true',
 } as const;

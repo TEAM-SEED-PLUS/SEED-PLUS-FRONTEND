@@ -1,15 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import {
   getWeatherApiErrorMessage,
-  getWeatherFeed,
-  getWeatherOverview,
   toWeatherContentItems,
 } from '@/api/weatherFeedApi';
-import type {
-  TimeBand,
-  WeatherFeed,
-  WeatherOverviewDistrict,
-} from '@/api/weatherFeedTypes';
+import type { TimeBand, WeatherOverviewDistrict } from '@/api/weatherFeedTypes';
+import { weatherFeedQuery, weatherOverviewQuery } from '@/api/weatherQueries';
 import { AppFooter, HeaderUser } from '@/components/layout';
 import { LightbulbIcon, StarIcon } from '@/components/ui/icons';
 import {
@@ -19,6 +15,7 @@ import {
   WeatherNarrativeModal,
   WeatherRadarChart,
   WeatherSectionLoading,
+  WeatherSwitchingBadge,
   WeatherTrendingContent,
 } from '@/components/weather';
 import { SEOUL_DISTRICT_PATHS } from '@/components/weather/seoulMapPaths';
@@ -27,15 +24,18 @@ import {
   resolveGrade,
 } from '@/components/weather/weatherGradeStyle';
 import { useDocumentTitle } from '@/hooks';
+import { formatTimeBandRange, TIME_BAND_RANGES } from '@/utils/timeBand';
 import {
-  formatTimeBandRange,
-  getCurrentTimeBand,
-  TIME_BAND_RANGES,
-} from '@/utils/timeBand';
+  DEFAULT_WEATHER_DISTRICT,
+  readWeatherSelection,
+  writeWeatherSelection,
+} from '@/utils/weatherSelection';
 
 const DISTRICTS = SEOUL_DISTRICT_PATHS.map((path) => path.name).sort(
   (left, right) => left.localeCompare(right, 'ko')
 );
+
+const EMPTY_OVERVIEW: Partial<Record<TimeBand, WeatherOverviewDistrict[]>> = {};
 
 const formatGeneratedAt = (value: string) => {
   const date = new Date(value);
@@ -85,74 +85,47 @@ const EmptySectionCard = ({
 
 const WeatherPage = () => {
   useDocumentTitle('상권날씨');
-  const [district, setDistrict] = useState('종로구');
-  // 서버는 현재 시간대의 overview 스냅샷만 생성하므로 한국 시간 기준 현재 시간대로 시작한다.
-  const [timeBand, setTimeBand] = useState<TimeBand>(() =>
-    getCurrentTimeBand()
+  // 다른 화면에 다녀와도 보던 자치구·시간대를 이어 보여준다(탭 단위 기억).
+  const [initialSelection] = useState(readWeatherSelection);
+  const [district, setDistrict] = useState(() =>
+    DISTRICTS.includes(initialSelection.district)
+      ? initialSelection.district
+      : DEFAULT_WEATHER_DISTRICT
   );
-  const [overviewByBand, setOverviewByBand] = useState<
-    Partial<Record<TimeBand, WeatherOverviewDistrict[]>>
-  >({});
+  // 서버는 현재 시간대의 overview 스냅샷만 생성하므로 기본은 한국 시간 기준 현재 시간대다.
+  const [timeBand, setTimeBand] = useState<TimeBand>(initialSelection.timeBand);
   const [isNarrativeOpen, setIsNarrativeOpen] = useState(false);
 
-  // 재시도 시 같은 조건이어도 새 요청으로 인식되도록 키에 포함한다.
-  const [retryCount, setRetryCount] = useState(0);
-  const requestKey = `${district}|${timeBand}|${retryCount}`;
-  // 조회 결과를 '어떤 조건으로 받은 것인지'와 함께 들고 있으면
-  // 로딩 여부를 파생시킬 수 있어 effect 안에서 setState를 하지 않아도 된다.
-  const [result, setResult] = useState<{
-    key: string;
-    feed: WeatherFeed | null;
-    error: string;
-  } | null>(null);
-
-  // 시간대별 overview는 미리 만들어진 스냅샷을 읽기만 해 가볍다.
-  // 지도와 시간대 카드가 함께 쓰도록 전 시간대를 한 번에 받아둔다.
   useEffect(() => {
-    const abortController = new AbortController();
+    writeWeatherSelection(district, timeBand);
+  }, [district, timeBand]);
 
-    Promise.allSettled(
-      TIME_BAND_RANGES.map(({ band }) =>
-        getWeatherOverview({ timeBand: band }, abortController.signal).then(
-          (overview) => [band, overview.districts] as const
-        )
-      )
-    ).then((settled) => {
-      if (abortController.signal.aborted) return;
-      setOverviewByBand(
-        Object.fromEntries(
-          settled.map((item, index) => [
-            TIME_BAND_RANGES[index].band,
-            item.status === 'fulfilled' ? item.value[1] : [],
-          ])
-        )
-      );
-    });
+  // 응답은 TanStack Query 캐시에 남아, 화면을 다시 열면 로딩 없이 바로 보인다.
+  // 5분이 지난 값이면 뒤에서 다시 받아 바뀐 경우에만 화면이 갱신된다.
+  const overviewQuery = useQuery(weatherOverviewQuery());
+  const overviewByBand = overviewQuery.data ?? EMPTY_OVERVIEW;
 
-    return () => abortController.abort();
-  }, [retryCount]);
-
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    getWeatherFeed({ district, timeBand }, abortController.signal)
-      .then((response) =>
-        setResult({ key: requestKey, feed: response, error: '' })
-      )
-      .catch((error) => {
-        // 조건 변경·이탈로 인한 취소는 이미 다음 요청이 진행 중이므로 무시한다.
-        const message = getWeatherApiErrorMessage(error);
-        if (!message) return;
-        setResult({ key: requestKey, feed: null, error: message });
-      });
-
-    return () => abortController.abort();
-  }, [district, timeBand, requestKey]);
-
-  const isLoading = result?.key !== requestKey;
-  const feed = isLoading ? null : (result?.feed ?? null);
-  const errorMessage = isLoading ? '' : (result?.error ?? '');
-  const isNoData = !feed || feed.data_quality.status === 'no_data';
+  // 자치구·시간대를 바꾸면 새 응답이 올 때까지 이전 결과를 흐리게 남겨둔다(화면이 비지 않게).
+  const feedQuery = useQuery({
+    ...weatherFeedQuery(district, timeBand),
+    placeholderData: keepPreviousData,
+  });
+  const feed = feedQuery.data ?? null;
+  // 처음 받는 중(보여줄 이전 결과도 없음)일 때만 섹션 전체를 로딩으로 바꾼다.
+  const isLoading = feedQuery.isPending;
+  // 이전 조건의 결과를 보여주는 중 — 새 조건의 결과를 받는 중이다.
+  const isSwitching = feedQuery.isPlaceholderData;
+  const errorMessage = feedQuery.isError
+    ? getWeatherApiErrorMessage(feedQuery.error)
+    : '';
+  // 이전 결과를 보여주는 동안 제목은 그 결과의 자치구로 맞춘다.
+  const shownDistrict = (isSwitching && feed?.query.district) || district;
+  const isNoData =
+    feedQuery.isError || !feed || feed.data_quality.status === 'no_data';
+  const retry = () => {
+    void feedQuery.refetch();
+    if (overviewQuery.isError) void overviewQuery.refetch();
+  };
 
   const mapGrades = useMemo(
     () =>
@@ -183,7 +156,7 @@ const WeatherPage = () => {
     <div className="flex min-h-screen flex-col bg-gray-500">
       {isNarrativeOpen && feed && (
         <WeatherNarrativeModal
-          district={district}
+          district={shownDistrict}
           narrative={feed.narrative}
           onClose={() => setIsNarrativeOpen(false)}
         />
@@ -266,7 +239,10 @@ const WeatherPage = () => {
           {/* 중앙: 선택 자치구 상세 + 브리핑/채팅 */}
           <div className="flex min-w-0 flex-col gap-5">
             {isLoading ? (
-              <WeatherSectionLoading key={requestKey} district={district} />
+              <WeatherSectionLoading
+                key={`${district}|${timeBand}`}
+                district={district}
+              />
             ) : isNoData || !feed ? (
               <section className="rounded-lg border border-[#e5484d] bg-white px-5 py-14 text-center shadow-sm">
                 <p className="text-sm font-bold text-[#e5484d]">
@@ -277,112 +253,125 @@ const WeatherPage = () => {
                 </p>
                 <button
                   type="button"
-                  onClick={() => setRetryCount((current) => current + 1)}
+                  onClick={retry}
                   className="mt-4 h-10 rounded-md bg-blue-600 px-4 text-xs font-bold text-white transition hover:bg-blue-700"
                 >
                   다시 시도
                 </button>
               </section>
             ) : (
-              <section className="rounded-lg bg-white p-5 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-lg font-extrabold text-[#191f28]">
-                      {district} 상권날씨{' '}
-                      {grade && (
-                        <img
-                          src={GRADE_ICON[grade]}
-                          alt=""
-                          aria-hidden
-                          className="inline-block h-5 w-5 align-text-bottom"
-                        />
-                      )}{' '}
-                      <span className="text-blue-600">
-                        {feed.market_weather.grade ?? '미산출'}
-                      </span>
-                    </h2>
-                    {feed.decision_tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-md bg-[#e8f1ff] px-2 py-1 text-[11px] font-bold text-blue-600"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsNarrativeOpen(true)}
-                      className="h-9 rounded-md bg-blue-600 px-4 text-xs font-bold text-white transition hover:bg-blue-700"
-                    >
-                      AI 분석하기
-                    </button>
-                    <button
-                      type="button"
-                      disabled
-                      title="즐겨찾기는 준비 중입니다."
-                      className="flex h-9 items-center gap-1 rounded-md border border-[#e5e8eb] px-3 text-xs font-bold text-[#8b95a1] disabled:cursor-not-allowed"
-                    >
-                      <StarIcon className="h-3.5 w-3.5" />
-                      즐겨찾기
-                    </button>
-                  </div>
-                </div>
-
-                <p className="mt-2 text-xs text-gray-46">
-                  {feed.narrative.judgement_sentence}{' '}
-                  {formatGeneratedAt(feed.generated_at) &&
-                    `(${formatGeneratedAt(feed.generated_at)} 기준)`}
-                </p>
-                {feed.data_quality.badges.length > 0 && (
-                  <p className="mt-2 text-[11px] font-bold text-[#8a6d00]">
-                    ※ {feed.data_quality.badges.join(' · ')}
-                  </p>
-                )}
-
-                <div className="mt-4">
-                  <TimeBandCards
+              <section
+                aria-busy={isSwitching}
+                className="relative rounded-lg bg-white p-5 shadow-sm"
+              >
+                {isSwitching && (
+                  <WeatherSwitchingBadge
+                    key={`${district}|${timeBand}`}
                     district={district}
-                    selected={timeBand}
-                    overviewByBand={overviewByBand}
-                    onSelect={setTimeBand}
                   />
-                </div>
-
-                <div className="mt-4 flex flex-col items-center gap-4 rounded-md bg-[#eef4ff] p-4 md:flex-row md:justify-center">
-                  <WeatherRadarChart
-                    axes={[
-                      ...metrics,
-                      { label: '기회 점수', value: feed.opportunity_score },
-                    ]}
-                  />
-                  <div className="grid w-full max-w-[380px] grid-cols-2 gap-2">
-                    {metrics.map((metric) => (
-                      <div
-                        key={metric.label}
-                        className="rounded-md bg-white px-3 py-2.5 text-xs font-bold shadow-sm"
-                      >
-                        <span className={metricTone(metric.value)}>
-                          {metric.label} : {metric.value ?? '?'}점
+                )}
+                <div
+                  className={`transition-opacity ${isSwitching ? 'opacity-40' : ''}`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-lg font-extrabold text-[#191f28]">
+                        {shownDistrict} 상권날씨{' '}
+                        {grade && (
+                          <img
+                            src={GRADE_ICON[grade]}
+                            alt=""
+                            aria-hidden
+                            className="inline-block h-5 w-5 align-text-bottom"
+                          />
+                        )}{' '}
+                        <span className="text-blue-600">
+                          {feed.market_weather.grade ?? '미산출'}
                         </span>
-                      </div>
-                    ))}
-                    <div className="col-span-2 rounded-md bg-white px-3 py-2.5 text-center text-xs font-bold text-blue-600 shadow-sm">
-                      기회 점수 : {feed.opportunity_score ?? '?'}점
+                      </h2>
+                      {feed.decision_tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-md bg-[#e8f1ff] px-2 py-1 text-[11px] font-bold text-blue-600"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsNarrativeOpen(true)}
+                        className="h-9 rounded-md bg-blue-600 px-4 text-xs font-bold text-white transition hover:bg-blue-700"
+                      >
+                        AI 분석하기
+                      </button>
+                      <button
+                        type="button"
+                        disabled
+                        title="즐겨찾기는 준비 중입니다."
+                        className="flex h-9 items-center gap-1 rounded-md border border-[#e5e8eb] px-3 text-xs font-bold text-[#8b95a1] disabled:cursor-not-allowed"
+                      >
+                        <StarIcon className="h-3.5 w-3.5" />
+                        즐겨찾기
+                      </button>
                     </div>
                   </div>
-                </div>
 
-                {feed.narrative.recommended_actions[0] && (
-                  <div className="mt-4 rounded-md border border-[#c9d6ec] bg-[#f5f9ff] px-4 py-3 text-xs text-[#191f28]">
-                    <LightbulbIcon className="mr-1 inline-block h-4 w-4 align-text-bottom text-blue-600" />
-                    <strong className="font-extrabold text-blue-600">
-                      추천 액션:
-                    </strong>{' '}
-                    {feed.narrative.recommended_actions[0]}
+                  <p className="mt-2 text-xs text-gray-46">
+                    {feed.narrative.judgement_sentence}{' '}
+                    {formatGeneratedAt(feed.generated_at) &&
+                      `(${formatGeneratedAt(feed.generated_at)} 기준)`}
+                  </p>
+                  {feed.data_quality.badges.length > 0 && (
+                    <p className="mt-2 text-[11px] font-bold text-[#8a6d00]">
+                      ※ {feed.data_quality.badges.join(' · ')}
+                    </p>
+                  )}
+
+                  <div className="mt-4">
+                    <TimeBandCards
+                      district={shownDistrict}
+                      selected={timeBand}
+                      overviewByBand={overviewByBand}
+                      onSelect={setTimeBand}
+                    />
                   </div>
-                )}
+
+                  <div className="mt-4 flex flex-col items-center gap-4 rounded-md bg-[#eef4ff] p-4 md:flex-row md:justify-center">
+                    <WeatherRadarChart
+                      axes={[
+                        ...metrics,
+                        { label: '기회 점수', value: feed.opportunity_score },
+                      ]}
+                    />
+                    <div className="grid w-full max-w-[380px] grid-cols-2 gap-2">
+                      {metrics.map((metric) => (
+                        <div
+                          key={metric.label}
+                          className="rounded-md bg-white px-3 py-2.5 text-xs font-bold shadow-sm"
+                        >
+                          <span className={metricTone(metric.value)}>
+                            {metric.label} : {metric.value ?? '?'}점
+                          </span>
+                        </div>
+                      ))}
+                      <div className="col-span-2 rounded-md bg-white px-3 py-2.5 text-center text-xs font-bold text-blue-600 shadow-sm">
+                        기회 점수 : {feed.opportunity_score ?? '?'}점
+                      </div>
+                    </div>
+                  </div>
+
+                  {feed.narrative.recommended_actions[0] && (
+                    <div className="mt-4 rounded-md border border-[#c9d6ec] bg-[#f5f9ff] px-4 py-3 text-xs text-[#191f28]">
+                      <LightbulbIcon className="mr-1 inline-block h-4 w-4 align-text-bottom text-blue-600" />
+                      <strong className="font-extrabold text-blue-600">
+                        추천 액션:
+                      </strong>{' '}
+                      {feed.narrative.recommended_actions[0]}
+                    </div>
+                  )}
+                </div>
               </section>
             )}
 
@@ -402,7 +391,8 @@ const WeatherPage = () => {
           <WeatherTrendingContent
             district={district}
             items={contentItems}
-            isLoading={isLoading}
+            // 이전 자치구의 소식이 새 자치구 이름 아래 보이지 않도록 바꾸는 중에도 로딩으로 둔다.
+            isLoading={isLoading || isSwitching}
           />
         </div>
       </main>

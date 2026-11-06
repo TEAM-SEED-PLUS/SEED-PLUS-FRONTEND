@@ -44,25 +44,34 @@ const TimeBandCards = ({
           }`}
         >
           <p className="text-[11px] font-medium text-gray-46">
-            {band} {formatTimeBandRange(band)}
+            <span className="whitespace-nowrap">{band}</span>{' '}
+            <span className="whitespace-nowrap">
+              {formatTimeBandRange(band)}
+            </span>
           </p>
           {item && item.opportunity_score !== null ? (
-            <p className="mt-1 flex items-center gap-1 text-sm font-bold text-[#191f28]">
+            // 카드가 좁아지면 한글이 글자 단위로 줄바꿈돼 세로로 쌓였다.
+            // 등급·점수를 각각 한 덩어리(nowrap)로 두고, 모자라면 점수만 다음 줄로 넘긴다.
+            <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-sm font-bold text-[#191f28]">
               {grade && (
                 <img
                   src={GRADE_ICON[grade]}
                   alt=""
                   aria-hidden
-                  className="h-4 w-4"
+                  className="h-4 w-4 shrink-0"
                 />
               )}
-              {item.grade ?? '미산출'}
-              <span className="text-xs font-bold text-blue-600">
-                · {item.opportunity_score}점
+              <span className="whitespace-nowrap">
+                {item.grade ?? '미산출'}
+              </span>
+              <span className="whitespace-nowrap text-xs font-bold text-blue-600">
+                {item.opportunity_score}점
               </span>
             </p>
           ) : (
-            <p className="mt-1 text-sm font-bold text-[#b0b8c1]">집계 전</p>
+            <p className="mt-1 whitespace-nowrap text-sm font-bold text-[#b0b8c1]">
+              집계 전
+            </p>
           )}
         </button>
       );
