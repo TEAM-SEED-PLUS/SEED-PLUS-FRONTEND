@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { GoogleAnalyticsTracker } from '@/components/analytics';
+import { FEATURE_FLAGS } from '@/config/featureFlags';
 import {
   FeedPage,
   HomePage,
@@ -46,10 +47,15 @@ const Router = () => {
         <Route path="/weather" element={<WeatherPage />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/mypage/settings" element={<MyPageSettings />} />
-        <Route path="/mypage/payments" element={<PaymentHistoryPage />} />
-        {/* BM 1차 — 요금제 소개는 비회원도 볼 수 있고, 결제는 로그인 후 */}
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/pricing/checkout" element={<CheckoutPage />} />
+        {/* BM 1차 — 요금제 소개는 비회원도 볼 수 있고, 결제는 로그인 후.
+            권한·결제 API 전이라 플래그가 꺼져 있으면 주소로 들어와도 404로 둔다. */}
+        {FEATURE_FLAGS.BM_PHASE1 && (
+          <>
+            <Route path="/mypage/payments" element={<PaymentHistoryPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/pricing/checkout" element={<CheckoutPage />} />
+          </>
+        )}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
