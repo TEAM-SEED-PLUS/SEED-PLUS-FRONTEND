@@ -1,11 +1,15 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 type FooterLink = {
   label: string;
-  href?: string | null;
+  /** 랜딩 안의 섹션(#id) */
+  href?: string;
   /** 앱 내부 라우트 */
   to?: string;
 };
+
+const LINK_CLASS =
+  'text-lg text-gray-46 transition-colors hover:text-blue-600 md:text-xl';
 
 const linkGroups: { heading: string; links: FooterLink[] }[] = [
   {
@@ -27,7 +31,7 @@ const linkGroups: { heading: string; links: FooterLink[] }[] = [
   {
     heading: '회사',
     links: [
-      { label: '회사 소개', href: null },
+      { label: '회사 소개', to: '/company' },
       { label: '이용약관', to: '/terms' },
       { label: '개인정보처리방침', to: '/privacy' },
     ],
@@ -35,6 +39,9 @@ const linkGroups: { heading: string; links: FooterLink[] }[] = [
 ];
 
 const LandingFooter = () => {
+  // 회사 소개 페이지에서도 쓰이므로, 랜딩 밖에서는 섹션 링크를 랜딩으로 보낸다.
+  const isLanding = useLocation().pathname === '/';
+
   return (
     <footer className="w-full snap-end border-t border-[#e5e8eb] bg-white py-20">
       <div className="mx-auto w-full max-w-[1200px] px-6">
@@ -53,29 +60,18 @@ const LandingFooter = () => {
                 {group.heading}
               </p>
               {group.links.map((link) =>
-                link.to ? (
-                  <Link
-                    key={link.label}
-                    to={link.to}
-                    className="text-lg text-gray-46 transition-colors hover:text-blue-600 md:text-xl"
-                  >
-                    {link.label}
-                  </Link>
-                ) : link.href ? (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    className="text-lg text-gray-46 transition-colors hover:text-blue-600 md:text-xl"
-                  >
+                link.href && isLanding ? (
+                  <a key={link.label} href={link.href} className={LINK_CLASS}>
                     {link.label}
                   </a>
                 ) : (
-                  <span
+                  <Link
                     key={link.label}
-                    className="text-lg text-gray-46 md:text-xl"
+                    to={link.to ?? `/${link.href}`}
+                    className={LINK_CLASS}
                   >
                     {link.label}
-                  </span>
+                  </Link>
                 )
               )}
             </div>
