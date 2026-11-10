@@ -18,3 +18,4 @@ export { default as NoticeListPage } from './Support/NoticeListPage';
 export { default as NoticeDetailPage } from './Support/NoticeDetailPage';
 export { default as FaqPage } from './Support/FaqPage';
 export { default as ContactPage } from './Support/ContactPage';
+export { default as CompanyPage } from './Company/CompanyPage';

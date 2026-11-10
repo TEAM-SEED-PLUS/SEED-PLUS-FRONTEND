@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
 import logoHeader from '@/assets/landing/logo-header.png';
@@ -13,6 +13,10 @@ const LandingHeader = () => {
   const navigate = useNavigate();
   const { status } = useAuth();
   const isAuthenticated = status === 'authenticated';
+  // 회사 소개 페이지도 이 헤더를 쓴다. 섹션 이동·로고 동작이 랜딩 안/밖에서 다르다.
+  const isLanding = useLocation().pathname === '/';
+  const navLinkClass =
+    'text-lg font-medium text-[#444444] transition-colors hover:text-blue-600';
 
   return (
     <header className="sticky top-0 z-50 h-[88px] w-full border-b border-[#f2f4f6] bg-white">
@@ -22,27 +26,43 @@ const LandingHeader = () => {
             to="/"
             aria-label={isAuthenticated ? '상권날씨로 이동' : 'SEED+ 홈'}
             onClick={(event) => {
-              event.preventDefault();
               // 로그인 사용자는 서비스(상권날씨)로, 비회원은 랜딩 맨 위로 보낸다.
               if (isAuthenticated) {
+                event.preventDefault();
                 navigate('/weather');
                 return;
               }
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              if (isLanding) {
+                event.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+              }
+              // 다른 페이지에서 랜딩으로 넘어갈 때는 이전 스크롤 위치가 남지 않게 한다.
+              window.scrollTo({ top: 0, behavior: 'instant' });
             }}
           >
             <img src={logoHeader} alt="SEED+" className="h-8 w-auto sm:h-10" />
           </Link>
           <nav className="hidden items-center gap-12 md:flex">
-            {navItems.map((item) => (
-              <a
-                key={item.target}
-                href={item.target}
-                className="text-lg font-medium text-[#444444] transition-colors hover:text-blue-600"
-              >
-                {item.label}
-              </a>
-            ))}
+            {navItems.map((item) =>
+              isLanding ? (
+                <a
+                  key={item.target}
+                  href={item.target}
+                  className={navLinkClass}
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <Link
+                  key={item.target}
+                  to={`/${item.target}`}
+                  className={navLinkClass}
+                >
+                  {item.label}
+                </Link>
+              )
+            )}
           </nav>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
