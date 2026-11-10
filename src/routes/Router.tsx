@@ -22,6 +22,7 @@ import {
   NoticeDetailPage,
   FaqPage,
   ContactPage,
+  CompanyPage,
 } from '@/pages';
 
 const Router = () => {
@@ -43,6 +44,7 @@ const Router = () => {
         <Route path="/notice/:noticeId" element={<NoticeDetailPage />} />
         <Route path="/faq" element={<FaqPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/company" element={<CompanyPage />} />
         <Route path="/store-builder" element={<StoreBuilderPage />} />
         <Route path="/weather" element={<WeatherPage />} />
         <Route path="/mypage" element={<MyPage />} />

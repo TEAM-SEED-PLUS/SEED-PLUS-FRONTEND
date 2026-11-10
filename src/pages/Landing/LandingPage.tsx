@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   FeatureSection,
   HeroSection,
@@ -8,17 +9,18 @@ import {
   ReviewSection,
   UsageSection,
 } from '@/components/landing';
-import { useDocumentTitle } from '@/hooks';
+import { useDocumentTitle, useLandingSnap } from '@/hooks';
 
 const LandingPage = () => {
+  const { hash } = useLocation();
   useDocumentTitle();
+  useLandingSnap();
 
-  // 스냅은 랜딩에서만 동작해야 하므로 이 페이지에 머무는 동안만 html에 붙인다.
+  // 회사 소개 등 다른 페이지에서 '/#about'처럼 섹션을 지정해 들어온 경우 그 섹션으로 내려간다.
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.add('landing-snap');
-    return () => root.classList.remove('landing-snap');
-  }, []);
+    if (!hash) return;
+    document.getElementById(hash.slice(1))?.scrollIntoView();
+  }, [hash]);
 
   return (
     <div className="min-h-screen bg-white">
