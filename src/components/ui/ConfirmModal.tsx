@@ -4,7 +4,7 @@ interface ConfirmModalProps {
   title: string;
   message: string;
   confirmLabel: string;
-  /** 삭제처럼 되돌릴 수 없는 동작이면 확인 버튼을 붉게 표시한다 */
+  /** 삭제처럼 되돌릴 수 없는 동작이면 경고 아이콘을 붙이고 확인 버튼을 붉게 표시한다 */
   isDestructive?: boolean;
   isPending?: boolean;
   /** 처리 실패 시 모달 안에 보여줄 문구 */
@@ -13,7 +13,7 @@ interface ConfirmModalProps {
   onCancel: () => void;
 }
 
-/** 경고 아이콘 + 취소/확인 두 버튼으로 이뤄진 공통 확인 모달 */
+/** 취소/확인 두 버튼으로 이뤄진 공통 확인 모달 */
 const ConfirmModal = ({
   title,
   message,
@@ -36,7 +36,8 @@ const ConfirmModal = ({
       onClick={(event) => event.stopPropagation()}
     >
       <div className="flex items-center gap-2">
-        <img src={WarningIcon} alt="" className="h-5 w-5" />
+        {/* 붉은 경고 아이콘은 되돌릴 수 없는 동작에만 쓴다. 로그아웃 같은 일반 확인에 붙이면 과하다. */}
+        {isDestructive && <img src={WarningIcon} alt="" className="h-5 w-5" />}
         <h2 className="text-lg font-extrabold text-[#191f28]">{title}</h2>
       </div>
       <p className="mt-3 whitespace-pre-line text-sm font-medium text-[#4e5968]">
