@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { IndustryResponse, RegionResponse } from '@/api';
+import { FEATURE_FLAGS } from '@/config/featureFlags';
 import DownChevronIcon from '@/assets/icons/down-chevron-icon.svg';
 import LeftChevronIcon from '@/assets/icons/left-chevron-icon.svg';
 
@@ -52,13 +53,15 @@ const MobileStoreSidebar = ({
   return (
     <aside className="fixed inset-x-0 bottom-0 top-[var(--header-height)] z-20 overflow-y-auto bg-white px-3 py-3 md:hidden">
       <div className="space-y-2">
-        <button
-          type="button"
-          disabled
-          className="h-10 w-full cursor-not-allowed rounded-md bg-blue-600 text-xs font-bold text-white opacity-80"
-        >
-          피드
-        </button>
+        {FEATURE_FLAGS.FEED && (
+          <button
+            type="button"
+            disabled
+            className="h-10 w-full cursor-not-allowed rounded-md bg-blue-600 text-xs font-bold text-white opacity-80"
+          >
+            피드
+          </button>
+        )}
         <button
           type="button"
           onClick={onOpenCreateStore}
