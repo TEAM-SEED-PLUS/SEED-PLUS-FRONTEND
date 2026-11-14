@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { hasSessionHint, useAuth } from '@/auth';
+import { useAuth } from '@/auth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
 import logoHeader from '@/assets/landing/logo-header.png';
 
@@ -13,10 +13,6 @@ const LandingHeader = () => {
   const navigate = useNavigate();
   const { status } = useAuth();
   const isAuthenticated = status === 'authenticated';
-  // 로그인 여부 확인(1~2초)이 끝나기 전에는, 이 브라우저에 로그인 흔적이 있을 때만
-  // 버튼을 감춘다. 처음 온 방문자와 로그아웃한 사용자에게는 곧바로 보여준다.
-  const showLogin =
-    status === 'guest' || (status === 'loading' && !hasSessionHint());
   // 회사 소개 페이지도 이 헤더를 쓴다. 섹션 이동·로고 동작이 랜딩 안/밖에서 다르다.
   const isLanding = useLocation().pathname === '/';
   const navLinkClass =
@@ -70,14 +66,16 @@ const LandingHeader = () => {
           </nav>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
-          {showLogin && (
-            <Link
-              to="/login"
-              className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold whitespace-nowrap text-white transition-opacity hover:opacity-90 sm:rounded-xl sm:px-7 sm:py-3 sm:text-lg"
-            >
-              로그인
-            </Link>
-          )}
+          {/*
+            로그인 버튼은 로그인 여부와 무관하게 항상 보여준다(확인을 기다리느라 늦게 뜨지 않게).
+            이미 로그인한 사용자는 /login이 로그인 화면을 건너뛰고 상권날씨로 보낸다.
+          */}
+          <Link
+            to={isAuthenticated ? '/weather' : '/login'}
+            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold whitespace-nowrap text-white transition-opacity hover:opacity-90 sm:rounded-xl sm:px-7 sm:py-3 sm:text-lg"
+          >
+            로그인
+          </Link>
           {/*
             비회원 둘러보기 진입점.
             내 상가 만들기(/store-builder)는 BUILDER 명세 BLD-09에 따라 비회원 조회가

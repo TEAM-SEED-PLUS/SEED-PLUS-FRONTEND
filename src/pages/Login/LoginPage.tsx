@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { getApiErrorMessage } from '@/api';
-import { useAuth } from '@/auth';
-import { AppFooter, HeaderUser } from '@/components/layout';
+import { hasSessionHint, useAuth } from '@/auth';
+import { AppFooter, AuthCheckingScreen, HeaderUser } from '@/components/layout';
 import { useDocumentTitle } from '@/hooks';
 import { trackEvent } from '@/utils/analytics';
 import { validatePassword } from '@/utils/formValidation';
@@ -22,7 +22,7 @@ type LocationState = {
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, status } = useAuth();
   useDocumentTitle('로그인');
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('loginId');
   const [loginId, setLoginId] = useState('');
@@ -69,6 +69,17 @@ const LoginPage = () => {
         ? 'border-blue-600 text-[#191f28]'
         : 'border-transparent text-[#4e5968] hover:text-blue-600'
     }`;
+
+  // 이미 로그인한 사용자는 로그인 화면을 건너뛰고 상권날씨로 보낸다.
+  if (status === 'authenticated') {
+    return <Navigate to="/weather" replace />;
+  }
+
+  // 로그인 흔적이 있는 브라우저는 확인이 끝날 때까지 폼을 그리지 않는다(폼이 깜빡 보였다 넘어가지 않게).
+  // 흔적이 없으면 기다리지 않고 바로 폼을 보여준다.
+  if (status === 'loading' && hasSessionHint()) {
+    return <AuthCheckingScreen />;
+  }
 
   return (
     <div className="flex min-h-[100dvh] flex-col bg-gray-500">
