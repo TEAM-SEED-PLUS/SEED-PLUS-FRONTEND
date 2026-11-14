@@ -32,7 +32,8 @@ const Router = () => {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/home" element={<HomePage />} />
-        <Route path="/feed" element={<FeedPage />} />
+        {/* 피드는 운영 비노출 — 플래그가 꺼져 있으면 주소로 들어와도 404로 둔다 */}
+        {FEATURE_FLAGS.FEED && <Route path="/feed" element={<FeedPage />} />}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/password-reset" element={<PasswordResetPage />} />

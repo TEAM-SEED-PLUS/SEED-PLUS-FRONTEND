@@ -7,6 +7,8 @@
  *
  * 되살릴 때는 각 항목의 '해제 조건'을 먼저 확인할 것.
  */
+import { getEnv } from '@/utils/env';
+
 export const FEATURE_FLAGS = {
   /**
    * 마이페이지 '소통 활동 내역' 섹션.
@@ -40,4 +42,14 @@ export const FEATURE_FLAGS = {
    * 해제 조건: BE 권한 API(plan / report_id unlock) + 결제 연동
    */
   BM_PHASE1: import.meta.env.VITE_ENABLE_BM_PHASE1 === 'true',
+
+  /**
+   * 피드(/feed) — 헤더 탭과 라우트.
+   *
+   * 운영에는 내보내지 않고 개발 환경(로컬·dev 서버)에서만 보인다.
+   * dev와 prod가 같은 이미지를 쓰므로 빌드 값이 아니라 런타임 VITE_APP_ENV로 가른다.
+   *
+   * 해제 조건: 운영 공개 결정 (그때 sitemap.xml에 /feed 추가)
+   */
+  FEED: getEnv('VITE_APP_ENV') !== 'production',
 } as const;

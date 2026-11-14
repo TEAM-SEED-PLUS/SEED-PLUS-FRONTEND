@@ -6,6 +6,7 @@ import { readWeatherSelection } from '@/utils/weatherSelection';
 import SEEDPLUS from '@/assets/Logo/SEED+ LOGO.svg';
 import { MenuIcon, ProfileIcon, SearchIcon } from '@/components/ui/icons';
 import { useAuth } from '@/auth';
+import { FEATURE_FLAGS } from '@/config/featureFlags';
 import LogoutConfirmModal from './LogoutConfirmModal';
 
 type UserNav = 'home' | 'feed' | 'store' | 'weather';
@@ -24,11 +25,12 @@ const navItems: {
   /** 프로덕션 비노출 처리된 메뉴 */
   hidden?: boolean;
 }[] = [
-  // 상권날씨 대시보드(/weather). 로그인 가드가 없어 비회원에게도 노출한다.
+  // 상권날씨 대시보드(/weather). 회원 전용이지만 탭은 비회원에게도 보여주고,
+  // 누르면 화면의 로그인 가드가 /login으로 보낸다.
   // 예전 mock 홈(/home) 탭은 이름이 겹쳐 제거했다(라우트는 남아 있으나 진입 경로 없음).
   { id: 'weather', label: '상권날씨', to: '/weather' },
   // 피드(뉴스·소통)는 조회에 로그인이 필요 없다. 글쓰기 등은 화면 안에서 로그인으로 보낸다.
-  { id: 'feed', label: '피드', to: '/feed' },
+  { id: 'feed', label: '피드', to: '/feed', hidden: !FEATURE_FLAGS.FEED },
   {
     id: 'store',
     label: '내 상가 만들기',
@@ -44,6 +46,8 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
   // 상권날씨 탭에 마우스를 올리거나 포커스하면 마지막으로 보던 자치구 결과를 미리 받아둔다.
   // 아직 신선한 캐시가 있으면 요청하지 않는다(staleTime). 25개 구 전체는 AI 부담이 커서 받지 않는다.
   const prefetchWeather = () => {
+    // 비회원은 눌러도 로그인으로 가므로 미리 받지 않는다.
+    if (!isAuthenticated) return;
     const { district, timeBand } = readWeatherSelection();
     void queryClient.prefetchQuery(weatherOverviewQuery());
     void queryClient.prefetchQuery(weatherFeedQuery(district, timeBand));

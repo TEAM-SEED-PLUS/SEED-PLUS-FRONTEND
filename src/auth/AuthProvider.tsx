@@ -12,6 +12,7 @@ import {
 } from '@/api';
 import { setAnalyticsUserId } from '@/utils/analytics';
 import { AuthContext } from './AuthContext';
+import { setSessionHint } from './sessionHint';
 import type { AuthContextValue, AuthStatus } from './AuthContext';
 import type { UserMeResponse } from '@/api';
 
@@ -71,6 +72,13 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
       active = false;
     };
   }, []);
+
+  // 다음 방문 때 확인이 끝나기 전에도 로그인 버튼을 보여줄지 정할 수 있게 남겨둔다.
+  useEffect(() => {
+    if (status !== 'loading') {
+      setSessionHint(status === 'authenticated');
+    }
+  }, [status]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
