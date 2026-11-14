@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import {
   getWeatherApiErrorMessage,
@@ -6,7 +7,7 @@ import {
 } from '@/api/weatherFeedApi';
 import type { TimeBand, WeatherOverviewDistrict } from '@/api/weatherFeedTypes';
 import { weatherFeedQuery, weatherOverviewQuery } from '@/api/weatherQueries';
-import { AppFooter, HeaderUser } from '@/components/layout';
+import { AppFooter, AuthCheckingScreen, HeaderUser } from '@/components/layout';
 import { LightbulbIcon, StarIcon } from '@/components/ui/icons';
 import {
   SeoulDistrictMap,
@@ -23,6 +24,7 @@ import {
   GRADE_ICON,
   resolveGrade,
 } from '@/components/weather/weatherGradeStyle';
+import { useAuth } from '@/auth';
 import { useDocumentTitle } from '@/hooks';
 import { formatTimeBandRange, TIME_BAND_RANGES } from '@/utils/timeBand';
 import {
@@ -83,8 +85,7 @@ const EmptySectionCard = ({
   </section>
 );
 
-const WeatherPage = () => {
-  useDocumentTitle('상권날씨');
+const WeatherDashboard = () => {
   // 다른 화면에 다녀와도 보던 자치구·시간대를 이어 보여준다(탭 단위 기억).
   const [initialSelection] = useState(readWeatherSelection);
   const [district, setDistrict] = useState(() =>
@@ -399,6 +400,22 @@ const WeatherPage = () => {
       <AppFooter />
     </div>
   );
+};
+
+// 상권날씨는 회원 전용이다. 비회원에게는 데이터 요청도 보내지 않도록 가드를 화면 밖에 둔다.
+const WeatherPage = () => {
+  useDocumentTitle('상권날씨');
+  const { status, isAuthenticated } = useAuth();
+
+  if (status === 'loading') {
+    return <AuthCheckingScreen />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <WeatherDashboard />;
 };
 
 export default WeatherPage;
