@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/auth';
+import { hasSessionHint, useAuth } from '@/auth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
 import logoHeader from '@/assets/landing/logo-header.png';
 
@@ -13,6 +13,10 @@ const LandingHeader = () => {
   const navigate = useNavigate();
   const { status } = useAuth();
   const isAuthenticated = status === 'authenticated';
+  // 로그인 여부 확인(1~2초)이 끝나기 전에는, 이 브라우저에 로그인 흔적이 있을 때만
+  // 버튼을 감춘다. 처음 온 방문자와 로그아웃한 사용자에게는 곧바로 보여준다.
+  const showLogin =
+    status === 'guest' || (status === 'loading' && !hasSessionHint());
   // 회사 소개 페이지도 이 헤더를 쓴다. 섹션 이동·로고 동작이 랜딩 안/밖에서 다르다.
   const isLanding = useLocation().pathname === '/';
   const navLinkClass =
@@ -66,8 +70,7 @@ const LandingHeader = () => {
           </nav>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* 로그인 여부 확인 중에는 감춰 로그인 사용자에게 버튼이 깜빡 보이지 않게 한다 */}
-          {status === 'guest' && (
+          {showLogin && (
             <Link
               to="/login"
               className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold whitespace-nowrap text-white transition-opacity hover:opacity-90 sm:rounded-xl sm:px-7 sm:py-3 sm:text-lg"
