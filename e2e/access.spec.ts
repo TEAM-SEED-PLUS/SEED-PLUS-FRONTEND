@@ -3,6 +3,11 @@ import { test, expect } from '@playwright/test';
 test('비회원이 상권날씨에 들어가면 로그인 페이지로 보내진다', async ({
   page,
 }) => {
+  await page.route('**/api/v1/auth/csrf', (route) =>
+    route.fulfill({
+      status: 401,
+    })
+  );
   await page.goto('/weather');
 
   const loginInput = page.getByRole('textbox', { name: '아이디' });
