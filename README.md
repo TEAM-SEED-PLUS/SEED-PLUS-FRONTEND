@@ -1,3 +1,12 @@
+## Frontend Architecture
+
+![SEED+ 프론트엔드 아키텍처: 라우터에서 페이지와 컴포넌트로 이어지는 렌더 흐름, 상태와 httpClient, 검증·배포 파이프라인](docs/images/frontend-architecture.png)
+
+- **전역 상태는 로그인 하나**: 전역 상태 라이브러리 없이 `AuthContext`만 둡니다. 서버 데이터는 화면 전용 훅에서 불러오고, 다시 들어왔을 때 바로 보여야 하는 상권 날씨는 TanStack Query로 캐시합니다.
+- **요청은 한 통로로**: 모든 요청이 `src/api/httpClient.ts`를 거치고, 토큰 주입과 401 재발급·재시도를 여기서 처리합니다.
+- **규칙은 순수 함수와 테스트로**: 기획서의 유효성 규칙 V-01~V-07을 `src/utils/authValidation.ts`에 같은 번호로 두고 Vitest로 검증합니다.
+- **검증과 배포**: 커밋 훅(브랜치 이름·커밋 메시지·IP 하드코딩 검사) → PR CI(lint·타입 체크·Vitest·Playwright E2E·빌드) → Vite 빌드 결과를 nginx(Docker)로 서빙합니다.
+
 ## Branch Convention
 
 ```
