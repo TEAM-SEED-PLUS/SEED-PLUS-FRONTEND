@@ -5,6 +5,7 @@ import {
   ExpertMatchSidebar,
   MobileStoreSidebar,
   RangeFilterSheet,
+  readStoreBuilderIntent,
   RevenueEstimateModal,
   StoreFilterSidebar,
   StoreGrid,
@@ -95,8 +96,15 @@ const rangeFilterConfigs = {
 };
 
 const StoreBuilderPage = () => {
-  const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
-  const [isSurvivalModalOpen, setIsSurvivalModalOpen] = useState(false);
+  const location = useLocation();
+  // 다른 화면의 모바일 메뉴에서 계산기·필터를 고르고 넘어온 경우, 처음 열릴 때 그대로 반영한다.
+  const [intent] = useState(() => readStoreBuilderIntent(location.state));
+  const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(
+    intent.openCalculator === 'revenue'
+  );
+  const [isSurvivalModalOpen, setIsSurvivalModalOpen] = useState(
+    intent.openCalculator === 'survival'
+  );
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [activeRangeFilter, setActiveRangeFilter] =
     useState<StoreRangeFilterKey | null>(null);
@@ -104,7 +112,7 @@ const StoreBuilderPage = () => {
   // 로고·'내 상가 만들기' 내비는 같은 라우트로의 Link라 페이지가 리마운트되지
   // 않는다. 같은 경로여도 클릭마다 location.key는 바뀌므로 그때 오버레이를 닫는다.
   // (effect 대신 렌더 중 상태 조정 — react-hooks/set-state-in-effect 규칙 준수)
-  const { key: locationKey } = useLocation();
+  const { key: locationKey } = location;
   const [prevLocationKey, setPrevLocationKey] = useState(locationKey);
   if (locationKey !== prevLocationKey) {
     setPrevLocationKey(locationKey);
@@ -141,7 +149,10 @@ const StoreBuilderPage = () => {
     reloadStores,
     toggleBookmark,
     toggleLike,
-  } = useStoreBuilderData(isAuthenticated);
+  } = useStoreBuilderData(isAuthenticated, {
+    industryId: intent.industryId,
+    regionId: intent.regionId,
+  });
 
   if (status === 'loading') {
     return <AuthCheckingScreen />;
@@ -171,6 +182,7 @@ const StoreBuilderPage = () => {
       />
       <MobileStoreSidebar
         isOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
         onOpenCreateStore={() => {
           setIsMobileSidebarOpen(false);
           setIsRevenueModalOpen(true);

@@ -8,6 +8,7 @@ import { MenuIcon, ProfileIcon, SearchIcon } from '@/components/ui/icons';
 import { useAuth } from '@/auth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
 import LogoutConfirmModal from './LogoutConfirmModal';
+import MobileNavMenu from './MobileNavMenu';
 
 type UserNav = 'home' | 'feed' | 'store' | 'weather';
 
@@ -56,6 +57,12 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
   // 로고는 로그인 여부와 무관하게 홈(상권날씨)으로 보낸다.
   const logoTarget = '/weather';
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  // 화면이 메뉴 동작을 넘겨주지 않으면(내 상가 만들기 외 모든 화면) 헤더가 직접 메뉴를 연다.
+  // 내 상가 만들기는 필터·계산기 상태를 화면이 갖고 있어 메뉴도 화면이 직접 그린다.
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const visibleNavItems = navItems.filter(
+    (item) => !item.hidden && (!item.requiresAuth || isAuthenticated)
+  );
 
   const handleLogout = async () => {
     try {
@@ -92,34 +99,29 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
           </Link>
 
           <nav className="flex flex-1 items-center gap-1">
-            {navItems
-              .filter(
-                (item) =>
-                  !item.hidden && (!item.requiresAuth || isAuthenticated)
-              )
-              .map((item) => (
-                <Link
-                  key={item.id}
-                  to={item.to}
-                  onMouseEnter={
-                    item.id === 'weather' && activeNav !== 'weather'
-                      ? prefetchWeather
-                      : undefined
-                  }
-                  onFocus={
-                    item.id === 'weather' && activeNav !== 'weather'
-                      ? prefetchWeather
-                      : undefined
-                  }
-                  className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
-                    activeNav === item.id
-                      ? 'text-blue-600'
-                      : 'text-gray-46 hover:bg-gray-500'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+            {visibleNavItems.map((item) => (
+              <Link
+                key={item.id}
+                to={item.to}
+                onMouseEnter={
+                  item.id === 'weather' && activeNav !== 'weather'
+                    ? prefetchWeather
+                    : undefined
+                }
+                onFocus={
+                  item.id === 'weather' && activeNav !== 'weather'
+                    ? prefetchWeather
+                    : undefined
+                }
+                className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${
+                  activeNav === item.id
+                    ? 'text-blue-600'
+                    : 'text-gray-46 hover:bg-gray-500'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
 
           <div className="flex items-center gap-3">
@@ -149,8 +151,11 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
         <div className="relative flex h-full items-center justify-between px-2 md:hidden">
           <button
             type="button"
-            onClick={onMenuClick}
+            onClick={
+              onMenuClick ?? (() => setIsMobileMenuOpen((current) => !current))
+            }
             aria-label="메뉴 열기"
+            aria-expanded={onMenuClick ? undefined : isMobileMenuOpen}
             className="flex h-10 w-10 items-center justify-center rounded-md text-[#333d4b] transition hover:bg-gray-500"
           >
             <MenuIcon className="h-5 w-5" />
@@ -202,6 +207,12 @@ const HeaderUser = ({ activeNav, onMenuClick }: HeaderUserProps) => {
           </div>
         </div>
       </header>
+      {!onMenuClick && (
+        <MobileNavMenu
+          isOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
+        />
+      )}
       {isLogoutConfirmOpen && (
         <LogoutConfirmModal
           onConfirm={handleLogout}

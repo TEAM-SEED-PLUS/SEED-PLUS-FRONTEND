@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { mockGuest } from './helpers/auth';
+import { mockProductionEnv } from './helpers/env';
 
 test('비회원이 상권날씨에 들어가면 로그인 페이지로 보내진다', async ({
   page,
@@ -16,15 +17,7 @@ test('비회원이 상권날씨에 들어가면 로그인 페이지로 보내진
 test('운영환경에서 /feed로 이동하면 404 페이지가 올바르게 표시된다', async ({
   page,
 }) => {
-  await page.route('/env-config.js', (route) =>
-    route.fulfill({
-      contentType: 'application/javascript',
-      body: `window.__ENV__ = ${JSON.stringify({
-        VITE_APP_ENV: 'production',
-        VITE_PROD_API_BASE_URL: 'https://api.example.com',
-      })};`,
-    })
-  );
+  await mockProductionEnv(page);
 
   await page.goto('/feed');
 

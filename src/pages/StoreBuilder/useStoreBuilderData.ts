@@ -128,11 +128,17 @@ const isInRange = (
   return true;
 };
 
-const useStoreBuilderData = (enabled: boolean) => {
+const useStoreBuilderData = (
+  enabled: boolean,
+  // 다른 화면의 메뉴에서 업종·지역을 고르고 넘어온 경우의 첫 선택값
+  initialFilter: { industryId?: number; regionId?: number } = {}
+) => {
   const [selectedIndustryId, setSelectedIndustryId] = useState<number | null>(
-    null
+    initialFilter.industryId ?? null
   );
-  const [selectedRegionId, setSelectedRegionId] = useState<number | null>(null);
+  const [selectedRegionId, setSelectedRegionId] = useState<number | null>(
+    initialFilter.regionId ?? null
+  );
   const [rangeFilters, setRangeFilters] =
     useState<StoreRangeFilters>(defaultRangeFilters);
   const [rawStores, setRawStores] = useState<StoreItem[]>([]);
