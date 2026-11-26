@@ -10,3 +10,5 @@ export type { StoreItem } from './StoreCard';
 export { default as StoreGrid } from './StoreGrid';
 export { default as StoreToolbar } from './StoreToolbar';
 export { default as SurvivalEstimateModal } from './SurvivalEstimateModal';
+export { readStoreBuilderIntent } from './storeBuilderIntent';
+export type { StoreBuilderIntent } from './storeBuilderIntent';
